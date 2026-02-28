@@ -1,0 +1,335 @@
+# Implementation Plan: Communication & Messaging
+
+## Overview
+
+Incremental implementation of the Communication & Messaging feature for the `automojo-agent-kit` SDK. Tasks build bottom-up: foundational data types first (enums, addresses, messages), then configuration and registries, then serializers, then transport abstraction and built-in transports, then routing and pub/sub, then request/response, and finally agent integration and extension points. All source files go under `source/packages/automojo/agentkit/` with all-lowercase filenames (no underscores). Tests go under `source/testroots/testbase/agentkit/` mirroring the source hierarchy, using the `testbase` framework.
+
+## Tasks
+
+- [ ] 1. Implement messaging error types and MessagePattern enum
+  - [ ] 1.1 Create `messagingerrors.py` with TransportError, MessageSerializationError, MessageRoutingError, and MessageTimeoutError
+    - All errors inherit from AgentKitError
+    - Each error stores its specific fields as read-only properties
+    - Each error provides a `_format_message` method and `__repr__`
+    - _Requirements: 23.1, 23.2, 23.3, 23.4, 23.5, 23.6, 23.7, 23.8, 23.9_
+  - [ ] 1.2 Create `messagepattern.py` with the MessagePattern enum
+    - Define REQUEST, RESPONSE, FIRE_AND_FORGET, EVENT values
+    - Implement `from_string` class method that raises SemanticError for invalid values
+    - _Requirements: 5.1, 5.2, 5.3_
+  - [ ] 1.3 Write unit tests for messaging error types
+    - Test construction, property access, repr, and error messages for all four error types
+    - Test file: `source/testroots/testbase/agentkit/test_messagingerrors.py`
+    - _Requirements: 23.1–23.9_
+  - [ ] 1.4 Write unit tests for MessagePattern enum
+    - Test all enum values, from_string with valid and invalid inputs
+    - Test file: `source/testroots/testbase/agentkit/test_messagepattern.py`
+    - _Requirements: 5.1, 5.2, 5.3_
+
+- [ ] 2. Implement AgentAddress
+  - [ ] 2.1 Create `agentaddress.py` with the AgentAddress class
+    - Immutable with read-only properties: agent_identifier, transport_name, endpoint
+    - Implement as_dict, to_json, from_dict, from_json
+    - Implement __eq__ (compare by agent_identifier and transport_name), __hash__, __repr__, __str__
+    - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9, 7.10, 7.11, 26.7, 26.8_
+  - [ ] 2.2 Write property test for AgentAddress JSON round-trip
+    - **Property: AgentAddress JSON round-trip consistency**
+    - For all valid AgentAddress instances, `from_json(to_json(addr))` produces an equivalent object
+    - **Validates: Requirements 7.7, 24.10**
+  - [ ] 2.3 Write unit tests for AgentAddress
+    - Test construction, property access, as_dict, __eq__, __hash__, __repr__, __str__
+    - Test AgentAddress as dict key and set member
+    - Test file: `source/testroots/testbase/agentkit/test_agentaddress.py`
+    - _Requirements: 7.1–7.11_
+
+- [ ] 3. Implement Message and MessageEnvelope
+  - [ ] 3.1 Create `message.py` with the Message class
+    - Immutable with auto-generated UUID identifier and UTC timestamp defaults
+    - Read-only properties: identifier, sender, recipient, payload, pattern, headers, correlation_id, timestamp
+    - Implement as_dict, to_json, from_dict, from_json
+    - Implement __repr__ (truncated payload preview), __str__
+    - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 4.10, 4.11, 26.3, 26.4_
+  - [ ] 3.2 Create `messageenvelope.py` with the MessageEnvelope class
+    - Immutable with read-only properties: message, transport_name, attempt_count, delivery_status
+    - Validate delivery_status against VALID_STATUSES {"pending", "delivered", "failed"}
+    - Implement as_dict, __repr__, __str__
+    - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 26.5, 26.6_
+  - [ ] 3.3 Write property test for Message JSON round-trip
+    - **Property: Message JSON round-trip consistency**
+    - For all valid Message instances with JSON-serializable payloads, `from_json(to_json(msg))` produces an equivalent object
+    - **Validates: Requirements 4.9, 24.9**
+  - [ ] 3.4 Write unit tests for Message and MessageEnvelope
+    - Test auto-generated identifier and timestamp, property access, as_dict, from_dict, __repr__, __str__
+    - Test MessageEnvelope construction, property access, as_dict, __repr__, __str__
+    - Test file: `source/testroots/testbase/agentkit/test_message.py`
+    - _Requirements: 4.1–4.11, 6.1–6.5_
+
+- [ ] 4. Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [ ] 5. Implement TransportConfiguration
+  - [ ] 5.1 Create `transportconfiguration.py` with the TransportConfiguration class
+    - Validate required fields (protocol_type, host, port) and valid protocol types
+    - Raise ConfigurationError for missing fields or invalid protocol type
+    - Support credential_references resolution through automojo-credentials
+    - Implement as_dict, to_json, to_yaml (exclude credential values)
+    - Implement from_dict, from_json, from_json_file, from_yaml, from_yaml_file class methods
+    - File path resolution relative to AppContext from automojo-this-app
+    - Implement __repr__, __str__
+    - _Requirements: 2.1–2.19, 26.21, 26.22_
+  - [ ] 5.2 Write property test for TransportConfiguration JSON round-trip
+    - **Property: TransportConfiguration JSON round-trip consistency**
+    - For all valid TransportConfiguration instances, `from_json(to_json(cfg))` produces an equivalent object
+    - **Validates: Requirements 2.16, 24.11**
+  - [ ] 5.3 Write property test for TransportConfiguration YAML round-trip
+    - **Property: TransportConfiguration YAML round-trip consistency**
+    - For all valid TransportConfiguration instances, `from_yaml(to_yaml(cfg))` produces an equivalent object
+    - **Validates: Requirements 2.17**
+  - [ ] 5.4 Write unit tests for TransportConfiguration
+    - Test construction, validation errors, from_dict, as_dict, to_json, to_yaml, __repr__, __str__
+    - Test ConfigurationError for missing required fields and invalid protocol type
+    - Test file: `source/testroots/testbase/agentkit/test_transportconfiguration.py`
+    - _Requirements: 2.1–2.19_
+
+- [ ] 6. Implement Transport base class and TransportRegistry
+  - [ ] 6.1 Create `transport.py` with the Transport abstract base class
+    - Abstract methods: connect, disconnect, send, receive
+    - Concrete: is_connected, name, protocol_type, configuration, tags, credential_names properties
+    - Raise SemanticError if name or protocol_type is missing/empty
+    - Structured logging under `automojo.agentkit.messaging.transport`
+    - Implement __repr__, __str__
+    - _Requirements: 1.1–1.11, 26.1, 26.2_
+  - [ ] 6.2 Create `transportregistry.py` with the TransportRegistry class
+    - register (raise SemanticError on duplicate name), deregister, lookup, lookup_by_protocol, lookup_by_tags, list_all, has_transport
+    - Read-only count property
+    - Implement __repr__, __str__
+    - _Requirements: 3.1–3.11, 26.9, 26.10_
+  - [ ] 6.3 Write unit tests for Transport base class
+    - Test SemanticError for missing name/protocol_type
+    - Test is_connected, property access, __repr__, __str__
+    - Create a minimal concrete Transport subclass for testing
+    - Test file: `source/testroots/testbase/agentkit/test_transport.py`
+    - _Requirements: 1.1–1.11_
+  - [ ] 6.4 Write unit tests for TransportRegistry
+    - Test register, deregister, lookup, lookup_by_protocol, lookup_by_tags, list_all, has_transport, count
+    - Test SemanticError on duplicate registration
+    - Test file: `source/testroots/testbase/agentkit/test_transportregistry.py`
+    - _Requirements: 3.1–3.11_
+
+- [ ] 7. Implement MessageSerializer base class, built-in serializers, and MessageSerializerRegistry
+  - [ ] 7.1 Create `messageserializer.py` with the MessageSerializer abstract base class
+    - Abstract methods: serialize, deserialize
+    - Read-only properties: format_name, content_type
+    - Implement __repr__, __str__
+    - _Requirements: 9.1–9.4, 9.14, 9.15_
+  - [ ] 7.2 Create `jsonmessageserializer.py` with the JsonMessageSerializer class
+    - Serialize Python objects to JSON bytes, deserialize JSON bytes to Python objects
+    - Raise MessageSerializationError with object type on non-serializable input
+    - Raise MessageSerializationError with bytes length on invalid JSON input
+    - _Requirements: 9.5, 9.8, 9.9_
+  - [ ] 7.3 Create `msgpackmessageserializer.py` with the MsgpackMessageSerializer class
+    - Serialize Python objects to MessagePack bytes, deserialize MessagePack bytes to Python objects
+    - Raise MessageSerializationError with bytes length on invalid MessagePack input
+    - _Requirements: 9.6, 9.10_
+  - [ ] 7.4 Create `protobufmessageserializer.py` with the ProtobufMessageSerializer class
+    - Serialize Protobuf message objects to bytes, deserialize bytes to Protobuf message objects
+    - Raise MessageSerializationError with expected message type on invalid Protobuf input
+    - _Requirements: 9.7, 9.11_
+  - [ ] 7.5 Create `messageserializerregistry.py` with the MessageSerializerRegistry class
+    - register (raise SemanticError on duplicate format name), deregister, lookup, list_all, has_serializer
+    - Read-only count property
+    - Implement __repr__, __str__
+    - _Requirements: 10.1–10.9, 26.11, 26.12_
+  - [ ] 7.6 Write property test for JsonMessageSerializer round-trip
+    - **Property: JSON serializer round-trip consistency**
+    - For all valid JSON-serializable Python objects, `deserialize(serialize(obj))` produces an equivalent object
+    - **Validates: Requirements 9.12**
+  - [ ] 7.7 Write property test for MsgpackMessageSerializer round-trip
+    - **Property: MsgPack serializer round-trip consistency**
+    - For all valid MessagePack-serializable Python objects, `deserialize(serialize(obj))` produces an equivalent object
+    - **Validates: Requirements 9.13**
+  - [ ] 7.8 Write unit tests for serializers and registry
+    - Test JsonMessageSerializer serialize/deserialize, error cases
+    - Test MsgpackMessageSerializer serialize/deserialize, error cases
+    - Test ProtobufMessageSerializer serialize/deserialize, error cases
+    - Test MessageSerializerRegistry register, deregister, lookup, list_all, has_serializer, count, duplicate error
+    - Test file: `source/testroots/testbase/agentkit/test_messageserializer.py`
+    - _Requirements: 9.1–9.15, 10.1–10.9_
+
+- [ ] 8. Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [ ] 9. Implement MessageRouter and AddressResolver
+  - [ ] 9.1 Create `messagerouter.py` with the MessageRouter class
+    - register_by_topic, register_by_pattern, register_by_filter — each returns a registration ID
+    - deregister by registration ID
+    - route method invokes all matching handlers in registration order
+    - Raise MessageRoutingError if no handler matches
+    - Log handler exceptions at WARNING and continue invoking remaining handlers
+    - Read-only handler_count property
+    - Implement __repr__, __str__
+    - _Requirements: 11.1–11.11, 26.13, 26.14_
+  - [ ] 9.2 Create `addressresolver.py` with the AddressResolver class
+    - resolve method: static lookup first, then dynamic AgentRegistry lookup
+    - register_address, deregister_address for static mappings
+    - Raise MessageRoutingError if agent cannot be resolved
+    - Implement __repr__, __str__
+    - _Requirements: 8.1–8.8_
+  - [ ] 9.3 Write unit tests for MessageRouter
+    - Test register_by_topic, register_by_pattern, register_by_filter, deregister
+    - Test route invokes matching handlers in order, raises MessageRoutingError on no match
+    - Test handler exception logging and continuation
+    - Test file: `source/testroots/testbase/agentkit/test_messagerouter.py`
+    - _Requirements: 11.1–11.11_
+  - [ ] 9.4 Write unit tests for AddressResolver
+    - Test static resolution, dynamic resolution with mock AgentRegistry
+    - Test MessageRoutingError for unresolvable agents
+    - Test register_address, deregister_address
+    - Test file: `source/testroots/testbase/agentkit/test_addressresolver.py`
+    - _Requirements: 8.1–8.8_
+
+- [ ] 10. Implement Subscription and PubSubBroker
+  - [ ] 10.1 Create `subscription.py` with the Subscription class
+    - Immutable with auto-generated UUID identifier
+    - Read-only properties: identifier, subscriber_agent_id, topic
+    - Implement as_dict, __repr__, __str__
+    - _Requirements: 15.1–15.6, 26.19, 26.20_
+  - [ ] 10.2 Create `pubsubbroker.py` with the PubSubBroker class
+    - subscribe, unsubscribe, publish methods
+    - topic_matches with wildcard support: `*` (single segment), `#` (zero or more segments), `.` separator
+    - Invoke subscriber handlers in registration order
+    - Log handler exceptions at WARNING and continue delivering to remaining subscribers
+    - active_topics property, get_subscriber_count, get_subscriber_ids methods
+    - Structured logging under `automojo.agentkit.messaging.pubsub`
+    - Implement __repr__, __str__
+    - _Requirements: 14.1–14.12, 26.15, 26.16_
+  - [ ] 10.3 Write property test for PubSubBroker wildcard topic matching
+    - **Property: Wildcard topic matching correctness**
+    - `*` matches exactly one segment, `#` matches zero or more segments, exact topics match themselves
+    - **Validates: Requirements 14.10**
+  - [ ] 10.4 Write unit tests for Subscription and PubSubBroker
+    - Test Subscription construction, auto-generated ID, property access, as_dict, __repr__, __str__
+    - Test PubSubBroker subscribe, unsubscribe, publish, wildcard matching, handler exception handling
+    - Test active_topics, get_subscriber_count, get_subscriber_ids
+    - Test file: `source/testroots/testbase/agentkit/test_pubsubbroker.py`
+    - _Requirements: 14.1–14.12, 15.1–15.6_
+
+- [ ] 11. Implement RequestResponseHandler
+  - [ ] 11.1 Create `requestresponsehandler.py` with the RequestResponseHandler class
+    - send_request: generate correlation_id, send through transport, wait for correlated response
+    - handle_response: match correlation_id to pending request and deliver
+    - cancel: cancel pending request, raise MessageTimeoutError to waiting caller
+    - Raise MessageTimeoutError on timeout
+    - Support multiple concurrent pending requests
+    - Read-only pending_count property
+    - Structured logging under `automojo.agentkit.messaging.requestresponse`
+    - Implement __repr__, __str__
+    - _Requirements: 12.1–12.10, 26.17, 26.18_
+  - [ ] 11.2 Write unit tests for RequestResponseHandler
+    - Test send_request, handle_response correlation matching, cancel, timeout behavior
+    - Test pending_count, __repr__, __str__
+    - Use mock Transport for send operations
+    - Test file: `source/testroots/testbase/agentkit/test_requestresponsehandler.py`
+    - _Requirements: 12.1–12.10_
+
+- [ ] 12. Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [ ] 13. Implement MessagingConfiguration
+  - [ ] 13.1 Create `messagingconfiguration.py` with the MessagingConfiguration class
+    - Validate required fields (default_transport, default_serialization_format, default_request_timeout)
+    - Raise ConfigurationError for missing required fields
+    - Support credential_references resolution through automojo-credentials
+    - Implement as_dict, to_json, from_dict, from_json, from_json_file, from_yaml, from_yaml_file
+    - File path resolution relative to AppContext from automojo-this-app
+    - Implement __repr__, __str__
+    - _Requirements: 20.1–20.15, 26.23, 26.24_
+  - [ ] 13.2 Write property test for MessagingConfiguration JSON round-trip
+    - **Property: MessagingConfiguration JSON round-trip consistency**
+    - For all valid MessagingConfiguration instances, `from_json(to_json(cfg))` produces an equivalent object
+    - **Validates: Requirements 20.13, 24.12**
+  - [ ] 13.3 Write unit tests for MessagingConfiguration
+    - Test construction, validation errors, from_dict, as_dict, to_json, __repr__, __str__
+    - Test file: `source/testroots/testbase/agentkit/test_messagingconfiguration.py`
+    - _Requirements: 20.1–20.15_
+
+- [ ] 14. Implement built-in transports
+  - [ ] 14.1 Create `transports/` subdirectory and `transports/httptransport.py` with HttpTransport
+    - Implement connect, disconnect, send, receive using HTTP POST semantics
+    - Support configurable headers, TLS, credential resolution for auth headers
+    - Raise TransportError for connection errors, timeouts, and 5xx responses
+    - Structured logging for connect/disconnect/send/receive
+    - _Requirements: 16.1–16.8, 13.1–13.4, 25.2, 25.3, 25.4, 25.5, 25.6_
+  - [ ] 14.2 Create `transports/websockettransport.py` with WebSocketTransport
+    - Implement connect (persistent connection), disconnect (graceful close), send, receive
+    - Support TLS (wss://), connection_state property
+    - Raise TransportError for connection loss
+    - _Requirements: 17.1–17.8_
+  - [ ] 14.3 Create `transports/grpctransport.py` with GrpcTransport
+    - Implement connect (gRPC channel), disconnect (close channel), send (unary call), receive
+    - Support TLS, credential resolution for channel credentials
+    - Raise TransportError for connection errors and deadline exceeded
+    - _Requirements: 18.1–18.8_
+  - [ ] 14.4 Create `transports/messagequeuetransport.py` with MessageQueueTransport
+    - Implement connect (broker connection), disconnect, send (publish to queue), receive (consume from queue)
+    - Support configurable queue names from options, credential resolution
+    - Raise TransportError for connection errors and queue not found
+    - _Requirements: 19.1–19.9_
+  - [ ] 14.5 Write unit tests for built-in transports
+    - Test HttpTransport: connect, disconnect, send, receive, error cases (connection error, timeout, 5xx)
+    - Test WebSocketTransport: connect, disconnect, send, receive, connection_state, connection loss
+    - Test GrpcTransport: connect, disconnect, send, receive, error cases
+    - Test MessageQueueTransport: connect, disconnect, send, receive, queue not found
+    - Use testbase mocking for HTTP/WebSocket/gRPC/queue clients
+    - Test file: `source/testroots/testbase/agentkit/transports/test_transports.py`
+    - _Requirements: 16.1–16.8, 17.1–17.8, 18.1–18.8, 19.1–19.9_
+
+- [ ] 15. Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [ ] 16. Implement Agent messaging integration and extension points
+  - [ ] 16.1 Extend the Agent base class with messaging properties and methods
+    - Add transports, message_router, pubsub, address_resolver read-only properties
+    - Add register_transport, send_message, request, publish, subscribe methods
+    - send_message: resolve address, serialize payload, send through transport, return MessageEnvelope
+    - request: delegate to RequestResponseHandler.send_request
+    - publish: construct EVENT message, delegate to PubSubBroker.publish
+    - subscribe: delegate to PubSubBroker.subscribe
+    - Raise SemanticError if requested transport not found
+    - _Requirements: 21.1–21.10_
+  - [ ] 16.2 Implement Agent lifecycle integration for messaging
+    - On INITIALIZED: construct TransportRegistry, MessageRouter, PubSubBroker, AddressResolver, RequestResponseHandler from MessagingConfiguration
+    - On INITIALIZED: discover and register Transport and MessageSerializer plugins from automojo-extension
+    - On STOPPED: disconnect all transports, clear TransportRegistry, remove all PubSubBroker subscriptions
+    - Default to JsonMessageSerializer and no transports when no MessagingConfiguration provided
+    - Handle plugin load failures (log WARNING, continue) and name conflicts (log WARNING, skip)
+    - _Requirements: 21.11–21.15, 22.1–22.8, 25.1_
+  - [ ] 16.3 Write unit tests for Agent messaging integration
+    - Test transports, message_router, pubsub, address_resolver properties
+    - Test send_message, request, publish, subscribe methods
+    - Test SemanticError for missing transport
+    - Test lifecycle: INITIALIZED constructs messaging components, STOPPED cleans up
+    - Test plugin discovery and conflict handling with mocks
+    - Test default behavior when no MessagingConfiguration provided
+    - Use testbase mocking for Agent, Transport, AgentRegistry, and extension points
+    - Test file: `source/testroots/testbase/agentkit/test_agentmessaging.py`
+    - _Requirements: 21.1–21.15, 22.1–22.8_
+
+- [ ] 17. Wire module exports and create package __init__.py entries
+  - Update `source/packages/automojo/agentkit/__init__.py` to export all messaging classes
+  - Ensure all imports resolve correctly across the messaging module
+  - _Requirements: All_
+
+- [ ] 18. Final checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+## Notes
+
+- Tasks marked with `*` are optional and can be skipped for faster MVP
+- Each task references specific requirements for traceability
+- Checkpoints ensure incremental validation
+- Property tests validate universal correctness properties (round-trip serialization, wildcard matching)
+- Unit tests validate specific examples and edge cases
+- All filenames are all-lowercase with no underscores per project naming conventions
+- Tests use the `testbase` framework and `testbase.mocking` (not pytest or unittest.mock)
+- Source files: `source/packages/automojo/agentkit/`
+- Test files: `source/testroots/testbase/agentkit/`
