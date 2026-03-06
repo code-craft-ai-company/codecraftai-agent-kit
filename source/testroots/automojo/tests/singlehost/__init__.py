@@ -1,0 +1,1 @@
+# automojo singlehost tests namespace

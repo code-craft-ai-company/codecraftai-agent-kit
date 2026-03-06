@@ -1,0 +1,1 @@
+# automojo agentkit tests namespace
