@@ -462,11 +462,11 @@ Tests use testbase and reside under source/testroots/automojo/tests/singlehost/a
 - Property-based tests: universal properties across randomly generated inputs
 
 ### Property-Based Testing Configuration
-- Library: Hypothesis for Python property-based testing
+- Library: automojo.testbase.properties (built-in testbase property testing engine)
 - Minimum 100 iterations per property test
 - Each test tagged: Feature: core-agent-framework, Property N: title
 - Each correctness property implemented by a single property-based test
-- Hypothesis strategies generate random identity fields, config dicts, state sequences, hook lists, and agent hierarchies
+- testbase property strategies generate random identity fields, config dicts, state sequences, hook lists, and agent hierarchies
 
 ### Unit Test Focus Areas
 - Structural checks (abstract method enforcement, read-only properties)

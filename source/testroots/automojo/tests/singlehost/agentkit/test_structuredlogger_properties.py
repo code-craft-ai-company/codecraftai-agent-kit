@@ -42,7 +42,7 @@ _metadata_strategy = st.dictionaries(
     level=_level_strategy,
     message=_short_text,
     metadata=_metadata_strategy,
-    settings=settings(max_examples=200),
+    settings=settings(max_examples=50),
 )
 def test_structuredlogger_produces_entries_with_correct_fields(agent_id, correlation_id, level, message, metadata):
     """

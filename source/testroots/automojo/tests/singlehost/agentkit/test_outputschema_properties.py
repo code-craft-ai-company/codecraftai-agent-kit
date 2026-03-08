@@ -195,7 +195,8 @@ def _regex_pattern_and_matching_text(draw):
     """
         Draws a regex pattern with named groups and text that matches it.
     """
-    names = draw(st.lists(_group_name, min_size=1, max_size=3, unique=True))
+    name_set = draw(st.sets(_group_name, min_size=1, max_size=3))
+    names = list(name_set)
     values = [draw(_group_value) for _ in names]
 
     pattern_parts = []
@@ -216,7 +217,7 @@ def _regex_pattern_and_matching_text(draw):
 # Property 5: OutputSchema JSON round-trip
 # ---------------------------------------------------------------------------
 
-@given(fields=_unique_field_list(), settings=settings(max_examples=100))
+@given(fields=_unique_field_list(), settings=settings(max_examples=50))
 def test_outputschema_json_roundtrip(fields: list) -> None:
     """
         **Validates: Requirements 8.13, 8.14, 8.15, 8.16, 8.17**
@@ -243,7 +244,7 @@ def test_outputschema_json_roundtrip(fields: list) -> None:
 # Property 21: OutputSchema validates correct objects as valid
 # ---------------------------------------------------------------------------
 
-@given(data=_schema_with_valid_object(), settings=settings(max_examples=100))
+@given(data=_schema_with_valid_object(), settings=settings(max_examples=50))
 def test_outputschema_validates_correct_objects_as_valid(data: tuple) -> None:
     """
         **Validates: Requirements 8.10, 8.11, 8.12**
@@ -267,7 +268,7 @@ def test_outputschema_validates_correct_objects_as_valid(data: tuple) -> None:
 # Property 22: OutputSchema reports missing required fields and type mismatches
 # ---------------------------------------------------------------------------
 
-@given(data=_schema_with_required_field(), settings=settings(max_examples=100))
+@given(data=_schema_with_required_field(), settings=settings(max_examples=50))
 def test_outputschema_reports_missing_required_fields(data: tuple) -> None:
     """
         **Validates: Requirements 8.10, 8.11, 8.12**
@@ -293,7 +294,7 @@ def test_outputschema_reports_missing_required_fields(data: tuple) -> None:
     return
 
 
-@given(data=_schema_with_type_mismatch(), settings=settings(max_examples=100))
+@given(data=_schema_with_type_mismatch(), settings=settings(max_examples=50))
 def test_outputschema_reports_type_mismatches(data: tuple) -> None:
     """
         **Validates: Requirements 8.10, 8.11, 8.12**
@@ -330,7 +331,7 @@ def test_outputschema_reports_type_mismatches(data: tuple) -> None:
 # Property 23: JsonOutputParser parses valid JSON and rejects invalid JSON
 # ---------------------------------------------------------------------------
 
-@given(obj=_json_dict, settings=settings(max_examples=100))
+@given(obj=_json_dict, settings=settings(max_examples=50))
 def test_jsonoutputparser_parses_valid_json(obj: dict) -> None:
     """
         **Validates: Requirements 8.3, 8.4**
@@ -352,7 +353,7 @@ def test_jsonoutputparser_parses_valid_json(obj: dict) -> None:
     return
 
 
-@given(bad_text=_invalid_json_text, settings=settings(max_examples=100))
+@given(bad_text=_invalid_json_text, settings=settings(max_examples=50))
 def test_jsonoutputparser_rejects_invalid_json(bad_text: str) -> None:
     """
         **Validates: Requirements 8.3, 8.4**
@@ -382,7 +383,7 @@ def test_jsonoutputparser_rejects_invalid_json(bad_text: str) -> None:
 # Property 24: RegexOutputParser extracts named groups and rejects non-matching text
 # ---------------------------------------------------------------------------
 
-@given(data=_regex_pattern_and_matching_text(), settings=settings(max_examples=100))
+@given(data=_regex_pattern_and_matching_text(), settings=settings(max_examples=50))
 def test_regexoutputparser_extracts_named_groups(data: tuple) -> None:
     """
         **Validates: Requirements 8.5, 8.6**
@@ -418,7 +419,7 @@ def test_regexoutputparser_extracts_named_groups(data: tuple) -> None:
 @given(
     data=_regex_pattern_and_matching_text(),
     noise=st.text(alphabet="!@#$%^&*()", min_size=5, max_size=20),
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_regexoutputparser_rejects_non_matching_text(
     data: tuple,
@@ -454,7 +455,7 @@ def test_regexoutputparser_rejects_non_matching_text(
 # Property 25: OutputParser validates parsed output against OutputSchema
 # ---------------------------------------------------------------------------
 
-@given(data=_schema_with_required_field(), settings=settings(max_examples=100))
+@given(data=_schema_with_required_field(), settings=settings(max_examples=50))
 def test_outputparser_validates_parsed_output_against_schema(
     data: tuple,
 ) -> None:

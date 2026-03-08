@@ -2470,11 +2470,11 @@ Tests use testbase and reside under `source/testroots/automojo/tests/singlehost/
 - Property-based tests: universal properties across randomly generated inputs
 
 ### Property-Based Testing Configuration
-- Library: Hypothesis for Python property-based testing
+- Library: automojo.testbase.properties (built-in testbase property testing engine)
 - Minimum 100 iterations per property test
 - Each test tagged: `Feature: developer-experience, Property N: title`
 - Each correctness property implemented by a single property-based test
-- Hypothesis strategies generate random scaffold templates, scaffold results, doc entries, example codes, type check configurations, API surface reports, dev ex configurations, naming convention inputs, and REPL results
+- testbase property strategies generate random scaffold templates, scaffold results, doc entries, example codes, type check configurations, API surface reports, dev ex configurations, naming convention inputs, and REPL results
 
 ### Unit Test Focus Areas
 - Structural checks (abstract method enforcement on ScaffoldCommand, ReplCommand, ReplFormatter)

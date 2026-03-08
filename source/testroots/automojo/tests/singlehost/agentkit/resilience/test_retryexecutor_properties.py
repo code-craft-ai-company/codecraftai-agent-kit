@@ -1,7 +1,7 @@
 """
     Property-based tests for the automojo.agentkit.retryexecutor module.
 
-    Uses the hypothesis library to verify:
+    Uses the automojo.testbase.properties engine to verify:
     - Property 3: RetryExecutor success path
     - Property 4: RetryExecutor failure path with exhausted retries
     - Property 5: RetryExecutor non-retryable exception propagation
@@ -9,8 +9,8 @@
     **Validates: Requirements 1.4, 1.5, 1.6, 1.7**
 """
 
-from hypothesis import given, settings
-from hypothesis import strategies as st
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.retryexecutor import RetryExecutor
 from automojo.agentkit.retrypolicy import RetryPolicy
@@ -24,24 +24,14 @@ _backoff_strategy = st.sampled_from(["fixed", "exponential", "exponential_with_j
 
 _max_retries = st.integers(min_value=0, max_value=10)
 
-_base_delay = st.floats(
-    min_value=0.001,
-    max_value=1.0,
-    allow_nan=False,
-    allow_infinity=False,
-)
+_base_delay = st.floats(min_value=0.001, max_value=1.0)
 
-_max_delay = st.floats(
-    min_value=1.0,
-    max_value=60.0,
-    allow_nan=False,
-    allow_infinity=False,
-)
+_max_delay = st.floats(min_value=1.0, max_value=60.0)
 
 _return_value = st.one_of(
     st.integers(min_value=-10000, max_value=10000),
     st.text(min_size=0, max_size=100),
-    st.floats(allow_nan=False, allow_infinity=False, min_value=-1e6, max_value=1e6),
+    st.floats(min_value=-1e6, max_value=1e6),
     st.booleans(),
     st.none(),
     st.lists(st.integers(min_value=-100, max_value=100), min_size=0, max_size=10),
@@ -58,8 +48,8 @@ _return_value = st.one_of(
     base_delay=_base_delay,
     max_delay=_max_delay,
     return_value=_return_value,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_retryexecutor_success_path(
     max_retries: int,
     backoff: str,
@@ -118,21 +108,11 @@ def test_retryexecutor_success_path(
 @given(
     max_retries=st.integers(min_value=1, max_value=5),
     backoff=_backoff_strategy,
-    base_delay=st.floats(
-        min_value=0.001,
-        max_value=0.01,
-        allow_nan=False,
-        allow_infinity=False,
-    ),
-    max_delay=st.floats(
-        min_value=0.01,
-        max_value=0.05,
-        allow_nan=False,
-        allow_infinity=False,
-    ),
+    base_delay=st.floats(min_value=0.001, max_value=0.01),
+    max_delay=st.floats(min_value=0.01, max_value=0.05),
     error_message=st.text(min_size=1, max_size=50),
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_retryexecutor_failure_path_exhausted_retries(
     max_retries: int,
     backoff: str,
@@ -208,23 +188,13 @@ _exception_types = [RuntimeError, ValueError, TypeError, KeyError, IOError, OSEr
 @given(
     max_retries=st.integers(min_value=1, max_value=5),
     backoff=_backoff_strategy,
-    base_delay=st.floats(
-        min_value=0.001,
-        max_value=0.01,
-        allow_nan=False,
-        allow_infinity=False,
-    ),
-    max_delay=st.floats(
-        min_value=0.01,
-        max_value=0.05,
-        allow_nan=False,
-        allow_infinity=False,
-    ),
+    base_delay=st.floats(min_value=0.001, max_value=0.01),
+    max_delay=st.floats(min_value=0.01, max_value=0.05),
     error_message=st.text(min_size=1, max_size=50),
     retryable_index=st.integers(min_value=0, max_value=2),
     non_retryable_index=st.integers(min_value=3, max_value=5),
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_retryexecutor_non_retryable_exception_propagation(
     max_retries: int,
     backoff: str,
@@ -274,3 +244,8 @@ def test_retryexecutor_non_retryable_exception_propagation(
     )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

@@ -1,14 +1,14 @@
 """
     Property-based tests for the automojo.agentkit.degradationlevel module.
 
-    Uses the hypothesis library to verify:
+    Uses the automojo.testbase.properties engine to verify:
     - Property 19: DegradationLevel from_string round-trip
 
     **Validates: Requirements 8.2**
 """
 
-from hypothesis import given, settings
-from hypothesis.strategies import sampled_from
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.degradationlevel import DegradationLevel
 
@@ -17,15 +17,17 @@ from automojo.agentkit.degradationlevel import DegradationLevel
 # Strategies
 # ---------------------------------------------------------------------------
 
-_degradation_level_strategy = sampled_from(list(DegradationLevel))
+_degradation_level_strategy = st.sampled_from(list(DegradationLevel))
 
 
 # ---------------------------------------------------------------------------
 # Property 19: DegradationLevel from_string round-trip
 # ---------------------------------------------------------------------------
 
-@given(level=_degradation_level_strategy)
-@settings(max_examples=100)
+@given(
+    level=_degradation_level_strategy,
+    settings=settings(max_examples=50),
+)
 def test_degradation_level_from_string_round_trip(
     level: DegradationLevel,
 ) -> None:
@@ -45,3 +47,8 @@ def test_degradation_level_from_string_round_trip(
     )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

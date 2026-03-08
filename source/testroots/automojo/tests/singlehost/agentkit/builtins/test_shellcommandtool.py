@@ -1,24 +1,23 @@
 """
     Property-based tests for the ShellCommandTool metacharacter rejection.
 
-    Contains a property-based test (using Hypothesis) that validates
+    Contains a property-based test (using automojo.testbase.properties) that validates
     the ShellCommandTool raises ToolExecutionError when a command
     string contains shell metacharacters and safe_mode is True.
 
     Feature: tool-capability-system
 """
 
-from hypothesis import given
-from hypothesis import HealthCheck
-from hypothesis import settings
-from hypothesis import strategies as st
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
+from automojo.testbase.properties.strategies import composite
 
 from automojo.agentkit.builtins.shellcommandtool import ShellCommandTool
 from automojo.agentkit.toolerrors import ToolExecutionError
 
 
 # ---------------------------------------------------------------------------
-# Hypothesis strategies for generating commands with metacharacters
+# Strategies for generating commands with metacharacters
 # ---------------------------------------------------------------------------
 
 SHELL_METACHARACTERS = list(ShellCommandTool.SHELL_METACHARACTERS)
@@ -29,16 +28,15 @@ metachar_strategy = st.sampled_from(SHELL_METACHARACTERS)
 # Strategy for generating a command prefix (safe text before the metacharacter)
 safe_text_strategy = st.text(
     alphabet=st.characters(
-        whitelist_categories=("L", "N", "Z"),
-        blacklist_characters="".join(SHELL_METACHARACTERS),
-    ),
+        categories=("L", "N", "Z"),
+    ).filter(lambda c: c not in SHELL_METACHARACTERS),
     min_size=0,
     max_size=30,
 )
 
 
 # Strategy for generating a command string that contains at least one metacharacter
-@st.composite
+@composite
 def command_with_metachar_strategy(draw):
     """
         Generates a command string that contains at least one shell
@@ -61,19 +59,16 @@ def command_with_metachar_strategy(draw):
 # **Validates: Requirements 11.5**
 # ---------------------------------------------------------------------------
 
-@settings(
-    max_examples=100,
-    suppress_health_check=[HealthCheck.too_slow, HealthCheck.large_base_example],
-)
 @given(
     command=command_with_metachar_strategy(),
+    settings=settings(max_examples=100),
 )
 def test_property_25_shell_rejects_metacharacters_in_safe_mode(command):
     """
         Property 25: ShellCommandTool rejects metacharacters in safe mode.
 
         For any command string containing at least one shell metacharacter
-        from the set {;|&$`\\!#~} when safe_mode is True, the
+        from the set {;|&<>$`\\!#~} when safe_mode is True, the
         ShellCommandTool shall raise ToolExecutionError.
 
         **Validates: Requirements 11.5**
@@ -297,3 +292,8 @@ def test_shellcommandtool_safe_mode_false_allows_metacharacters():
         os.rmdir(temp_dir)
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

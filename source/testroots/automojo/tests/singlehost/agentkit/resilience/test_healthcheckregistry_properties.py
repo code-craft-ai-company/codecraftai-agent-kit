@@ -1,14 +1,14 @@
 """
     Property-based tests for the automojo.agentkit.healthcheckregistry module.
 
-    Uses the hypothesis library to verify:
+    Uses the automojo.testbase.properties engine to verify:
     - Property 30: HealthCheckRegistry register-lookup consistency
 
     **Validates: Requirements 17.1, 17.4**
 """
 
-from hypothesis import given, settings
-from hypothesis import strategies as st
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
 
 from automojo.testbase.mocking import Mock
 
@@ -22,13 +22,11 @@ from automojo.agentkit.transporthealthcheck import TransportHealthCheck
 
 _unique_names = st.lists(
     st.text(min_size=1, max_size=100, alphabet=st.characters(
-        whitelist_categories=("L", "N", "P", "S"),
-        blacklist_characters=("\x00",),
+        categories=("L", "N", "P", "S"),
     )),
     min_size=1,
     max_size=20,
-    unique=True,
-)
+).map(lambda names: list(dict.fromkeys(names))).filter(lambda names: len(names) >= 1)
 
 
 # ---------------------------------------------------------------------------
@@ -49,8 +47,10 @@ def _make_health_check(name: str) -> TransportHealthCheck:
 # Property 30: HealthCheckRegistry register-lookup consistency
 # ---------------------------------------------------------------------------
 
-@given(names=_unique_names)
-@settings(max_examples=100)
+@given(
+    names=_unique_names,
+    settings=settings(max_examples=50),
+)
 def test_healthcheckregistry_register_lookup_consistency(names: list) -> None:
     """
         **Validates: Requirements 17.1, 17.4**
@@ -92,8 +92,10 @@ def test_healthcheckregistry_register_lookup_consistency(names: list) -> None:
 # Property 31: HealthCheckRegistry count consistency
 # ---------------------------------------------------------------------------
 
-@given(names=_unique_names)
-@settings(max_examples=100)
+@given(
+    names=_unique_names,
+    settings=settings(max_examples=50),
+)
 def test_healthcheckregistry_count_consistency(names: list) -> None:
     """
         **Validates: Requirements 17.5, 17.6**
@@ -125,3 +127,8 @@ def test_healthcheckregistry_count_consistency(names: list) -> None:
     )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

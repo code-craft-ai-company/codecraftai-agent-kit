@@ -482,7 +482,7 @@ Incremental implementation of the LLM Integration feature for the `automojo-agen
 - Property tests validate universal correctness properties (41 total across Properties 1–41)
 - Unit tests validate specific examples, edge cases, and integration with external packages
 - All mocking uses `automojo.testbase.mocking.Mock` per project conventions
-- Property-based tests use the Hypothesis library with minimum 100 iterations per property
+- Property-based tests use automojo.testbase.properties (built-in testbase property testing engine) with minimum 100 iterations per property
 - Tests reside under `source/testroots/automojo/tests/singlehost/agentkit/` mirroring the source hierarchy
 - Class filenames are all lowercase with no underscores per project naming conventions
 - The LLM system integrates with Core Agent Framework, Tool & Capability System, automojo-extension, and automojo-credentials

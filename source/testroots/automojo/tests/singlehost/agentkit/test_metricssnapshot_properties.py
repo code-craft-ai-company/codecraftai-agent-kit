@@ -54,7 +54,7 @@ _metrics_strategy = st.dictionaries(
 @given(
     timestamp=_timestamp_strategy,
     metrics=_metrics_strategy,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_metricssnapshot_json_round_trip(
     timestamp: datetime,

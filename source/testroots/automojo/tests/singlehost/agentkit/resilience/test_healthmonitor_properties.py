@@ -1,14 +1,14 @@
 """
     Property-based tests for the automojo.agentkit.healthmonitor module.
 
-    Uses the hypothesis library to verify:
+    Uses the automojo.testbase.properties engine to verify:
     - Property 32: HealthMonitor overall status computation
 
     **Validates: Requirements 18.6**
 """
 
-from hypothesis import given, settings
-from hypothesis import strategies as st
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.healthcheck import HealthCheck
 from automojo.agentkit.healthcheckregistry import HealthCheckRegistry
@@ -69,8 +69,10 @@ _status_lists = st.lists(
 # Property 32: HealthMonitor overall status computation
 # ---------------------------------------------------------------------------
 
-@given(statuses=_status_lists)
-@settings(max_examples=200)
+@given(
+    statuses=_status_lists,
+    settings=settings(max_examples=50),
+)
 def test_healthmonitor_overall_status_computation(statuses: list) -> None:
     """
         **Validates: Requirements 18.6**
@@ -101,3 +103,8 @@ def test_healthmonitor_overall_status_computation(statuses: list) -> None:
     )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

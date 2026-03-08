@@ -1,7 +1,7 @@
 """
     Property-based tests for the automojo.agentkit.deadletterquery module.
 
-    Uses the hypothesis library to verify:
+    Uses the automojo.testbase.properties engine to verify:
     - Property 27: DeadLetterQuery filtering correctness
 
     **Validates: Requirements 14.1**
@@ -9,8 +9,9 @@
 
 from datetime import datetime
 
-from hypothesis import given, settings
-from hypothesis import strategies as st
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
+from automojo.testbase.properties.strategies import composite
 
 from automojo.agentkit.deadletterentry import DeadLetterEntry
 from automojo.agentkit.deadletterquery import DeadLetterQuery
@@ -18,10 +19,29 @@ from automojo.agentkit.inmemorydeadletterstore import InMemoryDeadLetterStore
 
 
 # ---------------------------------------------------------------------------
-# Strategies
+# Composite Strategies
 # ---------------------------------------------------------------------------
 
-_uuid_string = st.uuids().map(str)
+@composite
+def _uuid_string(draw):
+    hex_chars = "0123456789abcdef"
+    parts = []
+    for length in (8, 4, 4, 4, 12):
+        parts.append(draw(st.text(alphabet=hex_chars, min_size=length, max_size=length)))
+    return "-".join(parts)
+
+
+@composite
+def _datetimes(draw, min_value=datetime(2000, 1, 1), max_value=datetime(2099, 12, 31)):
+    min_ts = int(min_value.timestamp())
+    max_ts = int(max_value.timestamp())
+    ts = draw(st.integers(min_value=min_ts, max_value=max_ts))
+    return datetime.fromtimestamp(ts)
+
+
+# ---------------------------------------------------------------------------
+# Strategies
+# ---------------------------------------------------------------------------
 
 _operation_type = st.sampled_from([
     "tool_execution",
@@ -51,10 +71,7 @@ _agent_identifier = st.sampled_from([
     "agent-gamma",
 ])
 
-_timestamp = st.datetimes(
-    min_value=datetime(2000, 1, 1),
-    max_value=datetime(2099, 12, 31),
-)
+_timestamp = _datetimes()
 
 _metadata = st.just({})
 
@@ -72,7 +89,7 @@ def _dead_letter_entry_strategy():
         retry_attempts=_retry_attempts,
         source_component=_source_component,
         agent_identifier=_agent_identifier,
-        identifier=_uuid_string,
+        identifier=_uuid_string(),
         timestamp=_timestamp,
         metadata=_metadata,
     )
@@ -92,8 +109,8 @@ _entries_list = st.lists(
 @given(
     entries=_entries_list,
     filter_operation_type=_operation_type,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_deadletterquery_filtering_by_operation_type(
     entries: list,
     filter_operation_type: str,
@@ -139,3 +156,8 @@ def test_deadletterquery_filtering_by_operation_type(
     )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

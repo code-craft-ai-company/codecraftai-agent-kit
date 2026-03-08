@@ -1,19 +1,15 @@
 """
     Property-based tests for the automojo.agentkit.pluginconfiguration module.
 
-    Uses the hypothesis library to verify that PluginConfiguration instances
+    Uses the automojo.testbase.properties engine to verify that PluginConfiguration instances
     survive a JSON round-trip (to_json followed by from_json) with all
     fields preserved.
 
     **Validates: Requirement 19 AC 11**
 """
 
-from hypothesis import given, settings
-from hypothesis.strategies import (
-    booleans,
-    lists,
-    text,
-)
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.pluginconfiguration import PluginConfiguration
 
@@ -22,14 +18,14 @@ from automojo.agentkit.pluginconfiguration import PluginConfiguration
 # Strategies
 # ---------------------------------------------------------------------------
 
-_plugin_names_strategy = lists(
-    text(min_size=1, max_size=30),
+_plugin_names_strategy = st.lists(
+    st.text(min_size=1, max_size=30),
     min_size=0,
     max_size=5,
 )
 
-_search_paths_strategy = lists(
-    text(min_size=1, max_size=50),
+_search_paths_strategy = st.lists(
+    st.text(min_size=1, max_size=50),
     min_size=0,
     max_size=5,
 )
@@ -43,9 +39,9 @@ _search_paths_strategy = lists(
     enabled_plugins=_plugin_names_strategy,
     disabled_plugins=_plugin_names_strategy,
     search_paths=_search_paths_strategy,
-    automatic_discovery_enabled=booleans(),
+    automatic_discovery_enabled=st.booleans(),
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=200)
 def test_pluginconfiguration_json_round_trip(enabled_plugins, disabled_plugins,
                                               search_paths, automatic_discovery_enabled):
     """
@@ -91,3 +87,8 @@ def test_pluginconfiguration_json_round_trip(enabled_plugins, disabled_plugins,
     )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

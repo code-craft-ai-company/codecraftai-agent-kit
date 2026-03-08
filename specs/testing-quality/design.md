@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Testing & Quality feature provides a comprehensive testing infrastructure for the `automojo-agent-kit` SDK. It enables developers to write agent behavior tests with mock dependencies, record and replay agent execution traces for deterministic debugging, verify agent invariants through property-based testing with Hypothesis, and integration test platform adapters against simulated cloud environments.
+The Testing & Quality feature provides a comprehensive testing infrastructure for the `automojo-agent-kit` SDK. It enables developers to write agent behavior tests with mock dependencies, record and replay agent execution traces for deterministic debugging, verify agent invariants through property-based testing with automojo.testbase.properties, and integration test platform adapters against simulated cloud environments.
 
 All classes live under `source/packages/automojo/agentkit/testing/` with filenames in all-lowercase (no underscores), following the project naming conventions. The testing module is organized into four sub-packages:
 
@@ -142,7 +142,7 @@ graph TD
 1. AgentTestFixture implemented as a `testbase` resource factory function (not a class) that yields an AgentTestContext, following testbase conventions for resource lifecycle management.
 2. All mock providers are standalone classes that implement the corresponding subsystem interfaces, rather than using `automojo.testbase.mocking.Mock` directly. This provides type-safe, purpose-built mocks with recording and assertion capabilities.
 3. ExecutionTrace and ExecutionTraceEvent are immutable data objects with serialization round-trip support (as_dict, to_json, from_dict, from_json), following the naming conventions for conversion and encoding methods.
-4. The invariant system uses Hypothesis as the property-based testing library, with InvariantStrategy providing reusable Hypothesis strategies for generating agent-related data.
+4. The invariant system uses automojo.testbase.properties as the property-based testing library, with InvariantStrategy providing reusable testbase property strategies for generating agent-related data.
 5. Platform test harnesses use an abstract base class pattern with concrete implementations for AWS, Azure, GCP, and local environments, each providing simulated compute, storage, and messaging services.
 6. TestingError hierarchy inherits from AgentKitError, with ReplayMismatchError and InvariantViolationError as specialized subclasses.
 7. Structured logging uses the Python standard logging module under the `automojo.agentkit.testing` logger hierarchy.
@@ -181,8 +181,8 @@ graph TD
 | testing/invariants/agentinvariant.py | AgentInvariant | Abstract base class for invariant definitions |
 | testing/invariants/statemachineinvariant.py | StateMachineTransitionInvariant | State machine transition invariant |
 | testing/invariants/roundtripinvariants.py | ConfigurationRoundTripInvariant, IdentityRoundTripInvariant, ToolSchemaRoundTripInvariant, MemoryEntryRoundTripInvariant, MessageRoundTripInvariant | Serialization round-trip invariants |
-| testing/invariants/invariantstrategy.py | InvariantStrategy | Hypothesis strategies for agent data generation |
-| testing/invariants/invarianttestrunner.py | InvariantTestRunner | Executes invariants via Hypothesis |
+| testing/invariants/invariantstrategy.py | InvariantStrategy | automojo.testbase.properties strategies for agent data generation |
+| testing/invariants/invarianttestrunner.py | InvariantTestRunner | Executes invariants via automojo.testbase.properties |
 | testing/invariants/invariantresult.py | InvariantResult | Immutable invariant test result |
 | testing/platform/__init__.py | — | Platform package init |
 | testing/platform/platformtestharness.py | PlatformTestHarness | Abstract base for platform harnesses |
@@ -956,9 +956,9 @@ class AgentInvariant(abc.ABC):
     @abc.abstractmethod
     def strategy(self):
         """
-            Returns a Hypothesis strategy for generating test inputs.
+            Returns a Strategy from automojo.testbase.properties.strategies for generating test inputs.
 
-            :returns: A Hypothesis SearchStrategy.
+            :returns: A Strategy from automojo.testbase.properties.strategies.
         """
         ...
 
@@ -1028,7 +1028,7 @@ class MessageRoundTripInvariant(AgentInvariant):
 ```python
 class InvariantStrategy:
     """
-        Provides Hypothesis strategies for generating random agent-related data
+        Provides testbase property strategies for generating random agent-related data
         including configurations, identities, lifecycle state sequences, tool schemas,
         LLM messages, memory entries, and messages.
 
@@ -1039,7 +1039,7 @@ class InvariantStrategy:
     @staticmethod
     def agent_configurations() -> "SearchStrategy":
         """
-            Hypothesis strategy for valid AgentConfiguration dictionaries.
+            automojo.testbase.properties strategy for valid AgentConfiguration dictionaries.
 
             :returns: A SearchStrategy yielding dict objects.
         """
@@ -1048,7 +1048,7 @@ class InvariantStrategy:
     @staticmethod
     def agent_identities() -> "SearchStrategy":
         """
-            Hypothesis strategy for valid AgentIdentity instances.
+            automojo.testbase.properties strategy for valid AgentIdentity instances.
 
             :returns: A SearchStrategy yielding AgentIdentity objects.
         """
@@ -1057,7 +1057,7 @@ class InvariantStrategy:
     @staticmethod
     def lifecycle_state_sequences() -> "SearchStrategy":
         """
-            Hypothesis strategy for valid LifecycleState transition sequences
+            automojo.testbase.properties strategy for valid LifecycleState transition sequences
             that follow AgentStateMachine transition rules.
 
             :returns: A SearchStrategy yielding lists of LifecycleState.
@@ -1067,7 +1067,7 @@ class InvariantStrategy:
     @staticmethod
     def tool_schemas() -> "SearchStrategy":
         """
-            Hypothesis strategy for valid ToolSchema definitions.
+            automojo.testbase.properties strategy for valid ToolSchema definitions.
 
             :returns: A SearchStrategy yielding ToolSchema objects.
         """
@@ -1076,7 +1076,7 @@ class InvariantStrategy:
     @staticmethod
     def llm_messages() -> "SearchStrategy":
         """
-            Hypothesis strategy for valid LlmMessage instances.
+            automojo.testbase.properties strategy for valid LlmMessage instances.
 
             :returns: A SearchStrategy yielding LlmMessage objects.
         """
@@ -1085,7 +1085,7 @@ class InvariantStrategy:
     @staticmethod
     def llm_conversations() -> "SearchStrategy":
         """
-            Hypothesis strategy for valid LlmConversation instances.
+            automojo.testbase.properties strategy for valid LlmConversation instances.
 
             :returns: A SearchStrategy yielding LlmConversation objects.
         """
@@ -1094,7 +1094,7 @@ class InvariantStrategy:
     @staticmethod
     def memory_entries() -> "SearchStrategy":
         """
-            Hypothesis strategy for valid MemoryEntry instances.
+            automojo.testbase.properties strategy for valid MemoryEntry instances.
 
             :returns: A SearchStrategy yielding MemoryEntry objects.
         """
@@ -1103,7 +1103,7 @@ class InvariantStrategy:
     @staticmethod
     def messages() -> "SearchStrategy":
         """
-            Hypothesis strategy for valid Message instances.
+            automojo.testbase.properties strategy for valid Message instances.
 
             :returns: A SearchStrategy yielding Message objects.
         """
@@ -1115,7 +1115,7 @@ class InvariantStrategy:
 ```python
 class InvariantTestRunner:
     """
-        Executes AgentInvariant definitions using the Hypothesis library,
+        Executes AgentInvariant definitions using the automojo.testbase.properties engine,
         generating random inputs and verifying invariants hold for all cases.
     """
 
@@ -1654,7 +1654,7 @@ class InvariantViolationError(TestingError):
 |---|---|---|---|---|
 | default_mock_latency | float | No | 0.0 | Default latency for mock providers in seconds |
 | default_replay_strict_ordering | bool | No | True | Default strict ordering for replay |
-| default_invariant_max_examples | int | No | 100 | Default Hypothesis max_examples per invariant |
+| default_invariant_max_examples | int | No | 100 | Default testbase max_examples per invariant |
 | default_platform_harness_type | str | No | "local" | Default platform harness type |
 
 ### TestConfigurationBuilder Defaults
@@ -1805,14 +1805,14 @@ Tests use `testbase` and reside under `source/testroots/automojo/tests/singlehos
 
 ### Dual Testing Approach
 - Unit tests: specific examples, edge cases, error conditions, integration with external packages (using `automojo.testbase.mocking.Mock`)
-- Property-based tests: universal properties across randomly generated inputs using Hypothesis
+- Property-based tests: universal properties across randomly generated inputs using automojo.testbase.properties
 
 ### Property-Based Testing Configuration
-- Library: Hypothesis for Python property-based testing
+- Library: automojo.testbase.properties (built-in testbase property testing engine)
 - Minimum 100 iterations per property test
 - Each test tagged: `Feature: testing-quality, Property N: title`
 - Each correctness property implemented by a single property-based test
-- Hypothesis strategies from InvariantStrategy generate random agent-related data
+- testbase property strategies from InvariantStrategy generate random agent-related data
 
 ### Unit Test Focus Areas
 - AgentTestFixture: verify Agent is in INITIALIZED state after yield, verify cleanup stops Agent, verify mock providers are registered, verify AppContext uses temporary directory

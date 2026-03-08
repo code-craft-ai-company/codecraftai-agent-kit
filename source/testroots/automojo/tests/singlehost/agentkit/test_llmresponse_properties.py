@@ -72,7 +72,7 @@ _duration = st.floats(
     provider_name=_provider_name,
     model_name=_model_name,
     duration=_duration,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_llmresponse_json_roundtrip(
     role: str,

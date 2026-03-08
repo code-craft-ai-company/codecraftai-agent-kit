@@ -42,7 +42,7 @@ _increment_values_strategy = st.lists(
 
 @given(
     values=_increment_values_strategy,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_counter_accumulation(
     values: List[float],

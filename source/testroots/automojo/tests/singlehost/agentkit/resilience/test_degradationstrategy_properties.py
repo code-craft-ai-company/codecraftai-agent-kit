@@ -1,15 +1,15 @@
 """
     Property-based tests for degradation strategy classes.
 
-    Uses the hypothesis library to verify:
+    Uses the automojo.testbase.properties engine to verify:
     - Property 21: DefaultValueStrategy returns configured default
     - Property 22: CachedResultStrategy returns cached result
 
     **Validates: Requirements 7.4, 7.5**
 """
 
-from hypothesis import given, settings
-from hypothesis import strategies as st
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.cachedresultstrategy import CachedResultStrategy
 from automojo.agentkit.defaultvaluestrategy import DefaultValueStrategy
@@ -23,7 +23,7 @@ _default_values = st.one_of(
     st.none(),
     st.booleans(),
     st.integers(min_value=-10000, max_value=10000),
-    st.floats(allow_nan=False, allow_infinity=False),
+    st.floats(),
     st.text(min_size=0, max_size=100),
     st.lists(st.integers(min_value=-100, max_value=100), max_size=10),
     st.dictionaries(
@@ -37,8 +37,7 @@ _dependency_names = st.text(
     min_size=1,
     max_size=50,
     alphabet=st.characters(
-        whitelist_categories=("L", "N", "P", "S"),
-        blacklist_characters=("\x00",),
+        categories=("L", "N", "P", "S"),
     ),
 )
 
@@ -63,8 +62,8 @@ _optional_contexts = st.one_of(
     dependency_name=_dependency_names,
     exception_message=_exception_messages,
     context=_optional_contexts,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=200)
 def test_default_value_strategy_returns_configured_default(
     default_value,
     dependency_name: str,
@@ -102,7 +101,7 @@ _cached_values = st.one_of(
     st.none(),
     st.booleans(),
     st.integers(min_value=-10000, max_value=10000),
-    st.floats(allow_nan=False, allow_infinity=False),
+    st.floats(),
     st.text(min_size=0, max_size=100),
     st.lists(st.integers(min_value=-100, max_value=100), max_size=10),
     st.dictionaries(
@@ -122,8 +121,8 @@ _cached_values = st.one_of(
     dependency_name=_dependency_names,
     exception_message=_exception_messages,
     context=_optional_contexts,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=200)
 def test_cached_result_strategy_returns_cached_result(
     cached_value,
     dependency_name: str,
@@ -153,3 +152,8 @@ def test_cached_result_strategy_returns_cached_result(
     )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

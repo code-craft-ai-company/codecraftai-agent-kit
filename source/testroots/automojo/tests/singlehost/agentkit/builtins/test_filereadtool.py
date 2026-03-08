@@ -1,7 +1,7 @@
 """
     Property-based tests for the File I/O round-trip property.
 
-    Contains a property-based test (using Hypothesis) that validates
+    Contains a property-based test (using automojo.testbase.properties) that validates
     writing content with FileWriteTool and reading it back with
     FileReadTool produces the original content string.
 
@@ -12,10 +12,8 @@ import os
 import shutil
 import tempfile
 
-from hypothesis import given
-from hypothesis import HealthCheck
-from hypothesis import settings
-from hypothesis import strategies as st
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.builtins.filereadtool import FileReadTool
 from automojo.agentkit.builtins.filewritetool import FileWriteTool
@@ -27,19 +25,15 @@ from automojo.agentkit.builtins.filewritetool import FileWriteTool
 # **Validates: Requirements 9.2, 9.6**
 # ---------------------------------------------------------------------------
 
-@settings(
-    max_examples=100,
-    suppress_health_check=[HealthCheck.too_slow, HealthCheck.large_base_example],
-)
 @given(
     content=st.text(
         alphabet=st.characters(
-            whitelist_categories=("L", "N", "P", "Z"),
-            blacklist_characters="\x00",
-        ),
+            categories=("L", "N", "P", "Z"),
+        ).filter(lambda c: c != "\x00"),
         min_size=0,
         max_size=500,
     ),
+    settings=settings(max_examples=100),
 )
 def test_property_24_file_io_round_trip(content):
     """
@@ -219,3 +213,8 @@ def test_filereadtool_permission_error_raises_tool_execution_error():
         shutil.rmtree(temp_dir, ignore_errors=True)
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

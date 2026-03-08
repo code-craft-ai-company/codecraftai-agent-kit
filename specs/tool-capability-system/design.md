@@ -1173,11 +1173,11 @@ Both are complementary and necessary for comprehensive coverage. Unit tests catc
 
 ### Property-Based Testing Configuration
 
-- **Library**: Hypothesis for Python property-based testing
+- **Library**: automojo.testbase.properties (built-in testbase property testing engine)
 - **Minimum 100 iterations** per property test (due to randomization)
 - Each test tagged with a comment: **Feature: tool-capability-system, Property N: title**
 - Each correctness property implemented by a **single** property-based test
-- Hypothesis strategies generate random:
+- testbase property strategies generate random:
   - Schema parameter definitions (names, types, required/optional, defaults)
   - ToolSchema instances with varying parameter counts and types
   - ToolDescriptor instances with random names, descriptions, versions, schemas, tags

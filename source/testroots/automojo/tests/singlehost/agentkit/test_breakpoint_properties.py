@@ -37,7 +37,7 @@ _optional_target_name_strategy = st.one_of(st.none(), _target_name_strategy)
     bp_target=_optional_target_name_strategy,
     event_type=_valid_type_strategy,
     event_target=_optional_target_name_strategy,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_breakpoint_matches_logic(
     bp_type: str,

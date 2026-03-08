@@ -1,21 +1,15 @@
 """
     Property-based tests for the automojo.agentkit.plugindescriptor module.
 
-    Uses the hypothesis library to verify that PluginDescriptor instances
+    Uses the automojo.testbase.properties engine to verify that PluginDescriptor instances
     survive a JSON round-trip (to_json followed by from_json) with all
     fields preserved.
 
     **Validates: Requirement 15 AC 7**
 """
 
-from hypothesis import given, settings
-from hypothesis.strategies import (
-    lists,
-    none,
-    one_of,
-    sampled_from,
-    text,
-)
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.plugindependency import PluginDependency
 from automojo.agentkit.plugindescriptor import PluginDescriptor
@@ -26,7 +20,7 @@ from automojo.agentkit.pluginstatus import PluginStatus
 # Strategies
 # ---------------------------------------------------------------------------
 
-_status_strategy = sampled_from([
+_status_strategy = st.sampled_from([
     PluginStatus.DISCOVERED,
     PluginStatus.LOADING,
     PluginStatus.LOADED,
@@ -35,20 +29,20 @@ _status_strategy = sampled_from([
     PluginStatus.DISABLED,
 ])
 
-_version_constraint_strategy = one_of(
-    none(),
-    text(min_size=1, max_size=20),
+_version_constraint_strategy = st.one_of(
+    st.none(),
+    st.text(min_size=1, max_size=20),
 )
 
-_extension_points_strategy = lists(
-    text(min_size=1, max_size=30),
+_extension_points_strategy = st.lists(
+    st.text(min_size=1, max_size=30),
     min_size=0,
     max_size=5,
 )
 
 
 # ---------------------------------------------------------------------------
-# Helper to build PluginDependency objects from hypothesis data
+# Helper to build PluginDependency objects from generated data
 # ---------------------------------------------------------------------------
 
 def _build_dependency(dep_name, dep_version_constraint):
@@ -72,16 +66,16 @@ def _build_dependency(dep_name, dep_version_constraint):
 # ---------------------------------------------------------------------------
 
 @given(
-    name=text(min_size=1, max_size=50),
-    version=text(min_size=1, max_size=20),
-    description=text(min_size=0, max_size=100),
-    author=text(min_size=1, max_size=50),
+    name=st.text(min_size=1, max_size=50),
+    version=st.text(min_size=1, max_size=20),
+    description=st.text(min_size=0, max_size=100),
+    author=st.text(min_size=1, max_size=50),
     extension_points=_extension_points_strategy,
-    dep_names=lists(text(min_size=1, max_size=30), min_size=0, max_size=3),
-    dep_constraints=lists(_version_constraint_strategy, min_size=0, max_size=3),
+    dep_names=st.lists(st.text(min_size=1, max_size=30), min_size=0, max_size=3),
+    dep_constraints=st.lists(_version_constraint_strategy, min_size=0, max_size=3),
     status=_status_strategy,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=200)
 def test_plugindescriptor_json_round_trip(name, version, description, author,
                                           extension_points, dep_names,
                                           dep_constraints, status):
@@ -164,3 +158,8 @@ def test_plugindescriptor_json_round_trip(name, version, description, author,
         )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

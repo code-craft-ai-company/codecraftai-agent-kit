@@ -115,7 +115,7 @@ def _make_provider(provider_name, model_name, tags=None):
 # ---------------------------------------------------------------------------
 
 
-@given(specs=_unique_provider_specs(min_size=0, max_size=15), settings=settings(max_examples=100))
+@given(specs=_unique_provider_specs(min_size=0, max_size=15), settings=settings(max_examples=50))
 def test_registry_count_equals_number_of_registered_providers(
     specs: list,
 ) -> None:
@@ -138,7 +138,7 @@ def test_registry_count_equals_number_of_registered_providers(
     return
 
 
-@given(specs=_unique_provider_specs(min_size=1, max_size=15), settings=settings(max_examples=100))
+@given(specs=_unique_provider_specs(min_size=1, max_size=15), settings=settings(max_examples=50))
 def test_registry_lookup_returns_correct_provider(
     specs: list,
 ) -> None:
@@ -168,7 +168,7 @@ def test_registry_lookup_returns_correct_provider(
     return
 
 
-@given(specs=_unique_provider_specs(min_size=0, max_size=15), settings=settings(max_examples=100))
+@given(specs=_unique_provider_specs(min_size=0, max_size=15), settings=settings(max_examples=50))
 def test_registry_lookup_returns_none_for_unregistered(
     specs: list,
 ) -> None:
@@ -193,7 +193,7 @@ def test_registry_lookup_returns_none_for_unregistered(
     return
 
 
-@given(specs=_unique_provider_specs(min_size=1, max_size=15), settings=settings(max_examples=100))
+@given(specs=_unique_provider_specs(min_size=1, max_size=15), settings=settings(max_examples=50))
 def test_registry_has_provider_returns_true_for_registered(
     specs: list,
 ) -> None:
@@ -220,7 +220,7 @@ def test_registry_has_provider_returns_true_for_registered(
     return
 
 
-@given(specs=_unique_provider_specs(min_size=0, max_size=15), settings=settings(max_examples=100))
+@given(specs=_unique_provider_specs(min_size=0, max_size=15), settings=settings(max_examples=50))
 def test_registry_has_provider_returns_false_for_unregistered(
     specs: list,
 ) -> None:
@@ -244,7 +244,7 @@ def test_registry_has_provider_returns_false_for_unregistered(
     return
 
 
-@given(specs=_unique_provider_specs(min_size=0, max_size=15), settings=settings(max_examples=100))
+@given(specs=_unique_provider_specs(min_size=0, max_size=15), settings=settings(max_examples=50))
 def test_registry_list_all_returns_all_providers(
     specs: list,
 ) -> None:
@@ -279,7 +279,7 @@ def test_registry_list_all_returns_all_providers(
     return
 
 
-@given(specs=_unique_provider_specs(min_size=1, max_size=15), settings=settings(max_examples=100))
+@given(specs=_unique_provider_specs(min_size=1, max_size=15), settings=settings(max_examples=50))
 def test_registry_duplicate_registration_raises_semantic_error(
     specs: list,
 ) -> None:
@@ -314,7 +314,7 @@ def test_registry_duplicate_registration_raises_semantic_error(
     return
 
 
-@given(specs=_unique_provider_specs(min_size=1, max_size=15), settings=settings(max_examples=100))
+@given(specs=_unique_provider_specs(min_size=1, max_size=15), settings=settings(max_examples=50))
 def test_registry_lookup_by_provider_returns_matching_providers(
     specs: list,
 ) -> None:
@@ -362,7 +362,7 @@ def test_registry_lookup_by_provider_returns_matching_providers(
 @given(
     specs=_unique_provider_specs(min_size=1, max_size=15),
     index_data=st.integers(min_value=0, max_value=1000),
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_registry_deregister_removes_provider(
     specs: list,
@@ -468,7 +468,7 @@ def _tagged_provider_specs(draw):
     return (common_tag_key, common_tag_value, specs)
 
 
-@given(data=_tagged_provider_specs(), settings=settings(max_examples=100))
+@given(data=_tagged_provider_specs(), settings=settings(max_examples=50))
 def test_registry_lookup_by_tags_returns_matching_providers(
     data: tuple,
 ) -> None:

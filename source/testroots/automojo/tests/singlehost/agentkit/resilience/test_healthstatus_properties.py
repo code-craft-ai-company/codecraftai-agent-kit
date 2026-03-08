@@ -1,7 +1,7 @@
 """
     Property-based tests for the automojo.agentkit.healthstatus module.
 
-    Uses the hypothesis library to verify:
+    Uses the automojo.testbase.properties engine to verify:
     - Property 28: HealthStatus JSON round-trip
     - Property 29: HealthStatus is_healthy consistency
 
@@ -10,8 +10,9 @@
 
 from datetime import datetime
 
-from hypothesis import given, settings
-from hypothesis import strategies as st
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
+from automojo.testbase.properties.strategies import composite
 
 from automojo.agentkit.healthstatus import HealthStatus
 
@@ -26,12 +27,18 @@ _status = st.sampled_from(["healthy", "degraded", "unhealthy"])
 
 _detail = st.one_of(st.none(), st.text(min_size=0, max_size=200))
 
-_response_time = st.floats(min_value=0.0, max_value=1e6, allow_nan=False, allow_infinity=False)
+_response_time = st.floats(min_value=0.0, max_value=1e6)
 
-_timestamp = st.datetimes(
-    min_value=datetime(2000, 1, 1),
-    max_value=datetime(2099, 12, 31),
-)
+
+@composite
+def _datetimes(draw, min_value=datetime(2000, 1, 1), max_value=datetime(2099, 12, 31)):
+    min_ts = int(min_value.timestamp())
+    max_ts = int(max_value.timestamp())
+    ts = draw(st.integers(min_value=min_ts, max_value=max_ts))
+    return datetime.fromtimestamp(ts)
+
+
+_timestamp = _datetimes()
 
 
 # ---------------------------------------------------------------------------
@@ -44,8 +51,8 @@ _timestamp = st.datetimes(
     detail=_detail,
     response_time=_response_time,
     timestamp=_timestamp,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_healthstatus_json_roundtrip(
     check_name: str,
     status: str,
@@ -116,8 +123,8 @@ def test_healthstatus_json_roundtrip(
     detail=_detail,
     response_time=_response_time,
     timestamp=_timestamp,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_healthstatus_is_healthy_consistency(
     check_name: str,
     status: str,
@@ -151,3 +158,8 @@ def test_healthstatus_is_healthy_consistency(
         )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

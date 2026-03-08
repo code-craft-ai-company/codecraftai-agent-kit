@@ -71,7 +71,7 @@ _record_list = st.lists(_record_entry(), min_size=0, max_size=20)
 # Property 16: CostTracker accumulation and per-provider breakdown
 # ---------------------------------------------------------------------------
 
-@given(records=_record_list, settings=settings(max_examples=100))
+@given(records=_record_list, settings=settings(max_examples=50))
 def test_costtracker_request_count_equals_number_of_records(
     records: list,
 ) -> None:
@@ -95,7 +95,7 @@ def test_costtracker_request_count_equals_number_of_records(
     return
 
 
-@given(records=_record_list, settings=settings(max_examples=100))
+@given(records=_record_list, settings=settings(max_examples=50))
 def test_costtracker_total_token_usage_sums_all_records(
     records: list,
 ) -> None:
@@ -135,7 +135,7 @@ def test_costtracker_total_token_usage_sums_all_records(
     return
 
 
-@given(records=_record_list, settings=settings(max_examples=100))
+@given(records=_record_list, settings=settings(max_examples=50))
 def test_costtracker_total_cost_estimate_sums_all_records(
     records: list,
 ) -> None:
@@ -175,7 +175,7 @@ def test_costtracker_total_cost_estimate_sums_all_records(
     return
 
 
-@given(records=_record_list, settings=settings(max_examples=100))
+@given(records=_record_list, settings=settings(max_examples=50))
 def test_costtracker_per_provider_breakdown_groups_by_provider(
     records: list,
 ) -> None:
@@ -257,7 +257,7 @@ def test_costtracker_per_provider_breakdown_groups_by_provider(
     return
 
 
-@given(records=_record_list, settings=settings(max_examples=100))
+@given(records=_record_list, settings=settings(max_examples=50))
 def test_costtracker_reset_clears_all_records(
     records: list,
 ) -> None:

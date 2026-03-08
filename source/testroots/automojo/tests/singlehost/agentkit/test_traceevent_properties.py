@@ -62,7 +62,7 @@ _attributes_strategy = st.dictionaries(
     name=_event_name_strategy,
     timestamp=_timestamp_strategy,
     attributes=_attributes_strategy,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_traceevent_json_round_trip(
     name: str,

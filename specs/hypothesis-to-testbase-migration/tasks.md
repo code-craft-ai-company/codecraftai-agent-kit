@@ -64,7 +64,7 @@ All code is Python. The implementation language is Python throughout.
   - Ensure all tests pass by running: `testbase testing run --root source/testroots/automojo --includes=automojo.tests.singlehost.agentkit --output=./.output`
   - Ask the user if questions arise.
 
-- [ ] 3. Migrate LLM Integration test files (property + mixed)
+- [x] 3. Migrate LLM Integration test files (property + mixed)
   - [x] 3.1 Migrate imports, decorators, strategy params, docstrings, and entrypoint blocks in LLM property test files
     - Apply the 7-stage transformation pipeline to each file:
       - `test_llmconversation_properties.py`
@@ -90,12 +90,12 @@ All code is Python. The implementation language is Python throughout.
     - Preserve all non-Hypothesis imports without modification
     - _Requirements: 2.1–2.3, 3.1–3.5, 4.1–4.9, 5.1–5.6, 6.1–6.4, 8.1–8.4, 9.1–9.3, 13.1–13.4_
 
-  - [-] 3.3 Write property tests verifying no Hypothesis imports remain in LLM test files
+  - [x] 3.3 Write property tests verifying no Hypothesis imports remain in LLM test files
     - **Property 1: No Hypothesis imports remain in any test file (LLM subset)**
     - **Validates: Requirements 1.8, 2.2**
 
-- [ ] 4. Migrate Configuration & Extensibility test files
-  - [ ] 4.1 Migrate imports, decorators, strategy params, docstrings, and entrypoint blocks in configuration property test files
+- [x] 4. Migrate Configuration & Extensibility test files
+  - [x] 4.1 Migrate imports, decorators, strategy params, docstrings, and entrypoint blocks in configuration property test files
     - Apply the 7-stage transformation pipeline to each file:
       - `test_configurationchangeevent_properties.py`
       - `test_configurationlayer_properties.py`
@@ -112,15 +112,15 @@ All code is Python. The implementation language is Python throughout.
     - Same transformation rules as task 1.1
     - _Requirements: 1.1–1.8, 3.1–3.5, 4.1–4.9, 5.1–5.6, 6.1–6.4, 8.1–8.4, 9.1–9.3, 13.1–13.4_
 
-  - [ ] 4.2 Write property tests verifying no Hypothesis imports remain in configuration test files
+  - [x] 4.2 Write property tests verifying no Hypothesis imports remain in configuration test files
     - **Property 1: No Hypothesis imports remain in any test file (configuration subset)**
     - **Validates: Requirements 1.8, 2.2**
 
-- [ ] 5. Checkpoint - Run tests for LLM and Configuration areas
+- [x] 5. Checkpoint - Run tests for LLM and Configuration areas
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 6. Migrate Builtins test files
-  - [ ] 6.1 Migrate imports, decorators, strategy params, docstrings, and entrypoint blocks in builtins test files
+- [x] 6. Migrate Builtins test files
+  - [x] 6.1 Migrate imports, decorators, strategy params, docstrings, and entrypoint blocks in builtins test files
     - Apply the 7-stage transformation pipeline to each file:
       - `builtins/test_filereadtool.py`
       - `builtins/test_filewritetool.py`
@@ -129,8 +129,8 @@ All code is Python. The implementation language is Python throughout.
     - Same transformation rules as task 1.1
     - _Requirements: 1.1–1.8, 2.1–2.3, 3.1–3.5, 4.1–4.9, 5.1–5.6, 8.1–8.4, 9.1–9.3, 13.1–13.4_
 
-- [ ] 7. Migrate Resilience test files (property + mixed)
-  - [ ] 7.1 Migrate imports, decorators, strategy params, docstrings, and entrypoint blocks in resilience property test files
+- [x] 7. Migrate Resilience test files (property + mixed)
+  - [x] 7.1 Migrate imports, decorators, strategy params, docstrings, and entrypoint blocks in resilience property test files
     - Apply the 7-stage transformation pipeline to each file:
       - `resilience/test_circuitbreaker_properties.py`
       - `resilience/test_circuitbreakerconfiguration_properties.py`
@@ -156,21 +156,21 @@ All code is Python. The implementation language is Python throughout.
     - Same transformation rules as task 1.1
     - _Requirements: 1.1–1.8, 3.1–3.5, 4.1–4.9, 5.1–5.6, 6.1–6.4, 8.1–8.4, 9.1–9.3, 13.1–13.4_
 
-  - [ ] 7.2 Migrate imports, decorators, strategy params, docstrings, and entrypoint blocks in resilience mixed test files
+  - [x] 7.2 Migrate imports, decorators, strategy params, docstrings, and entrypoint blocks in resilience mixed test files
     - Apply the 7-stage transformation pipeline to any resilience test files without `_properties.py` suffix that contain `@given`-decorated tests
     - Same transformation rules as task 1.1
     - Preserve all non-Hypothesis imports without modification
     - _Requirements: 2.1–2.3, 3.1–3.5, 4.1–4.9, 5.1–5.6, 6.1–6.4, 8.1–8.4, 9.1–9.3, 13.1–13.4_
 
-  - [ ] 7.3 Write property tests verifying no Hypothesis imports remain in resilience test files
+  - [x] 7.3 Write property tests verifying no Hypothesis imports remain in resilience test files
     - **Property 1: No Hypothesis imports remain in any test file (resilience subset)**
     - **Validates: Requirements 1.8, 2.2**
 
-- [ ] 8. Checkpoint - Run tests for builtins and resilience areas
+- [x] 8. Checkpoint - Run tests for builtins and resilience areas
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 9. Update specification design documents
-  - [ ] 9.1 Replace Hypothesis references in all `specs/` design documents
+- [x] 9. Update specification design documents
+  - [x] 9.1 Replace Hypothesis references in all `specs/` design documents
     - Apply text replacements across all design.md files in:
       - `specs/core-agent-framework/design.md`
       - `specs/tool-capability-system/design.md`
@@ -198,7 +198,7 @@ All code is Python. The implementation language is Python throughout.
     - Replace all other Hypothesis references per Component 7 mapping in design document
     - _Requirements: 10.1–10.6_
 
-  - [ ] 9.2 Replace Hypothesis references in all `.kiro/specs/` design documents
+  - [x] 9.2 Replace Hypothesis references in all `.kiro/specs/` design documents
     - Apply the same text replacements to design.md files under `.kiro/specs/` directories:
       - `.kiro/specs/core-agent-framework/tasks.md` (if design.md exists)
       - `.kiro/specs/tool-capability-system/` (if design.md exists)
@@ -210,8 +210,8 @@ All code is Python. The implementation language is Python throughout.
     - Same replacement rules as 9.1
     - _Requirements: 10.1–10.6_
 
-- [ ] 10. Update specification task documents
-  - [ ] 10.1 Replace Hypothesis references in all `specs/` task documents
+- [x] 10. Update specification task documents
+  - [x] 10.1 Replace Hypothesis references in all `specs/` task documents
     - Apply text replacements across all tasks.md files in `specs/` subdirectories
     - Replace "Use Hypothesis to generate" → "Use automojo.testbase.properties to generate"
     - Replace "Property-based tests use the Hypothesis library" → "Property-based tests use automojo.testbase.properties (built-in testbase property testing engine)"
@@ -222,43 +222,43 @@ All code is Python. The implementation language is Python throughout.
     - Replace "the Hypothesis library" → "the automojo.testbase.properties engine"
     - _Requirements: 11.1–11.4_
 
-  - [ ] 10.2 Replace Hypothesis references in all `.kiro/specs/` task documents
+  - [x] 10.2 Replace Hypothesis references in all `.kiro/specs/` task documents
     - Apply the same text replacements to tasks.md files under `.kiro/specs/` directories
     - Same replacement rules as 10.1
     - _Requirements: 11.1–11.4_
 
-- [ ] 11. Update specification requirements documents
-  - [ ] 11.1 Replace Hypothesis references in all `specs/` requirements documents
+- [x] 11. Update specification requirements documents
+  - [x] 11.1 Replace Hypothesis references in all `specs/` requirements documents
     - Apply text replacements across all requirements.md files in `specs/` subdirectories
     - Replace "Hypothesis library" → "automojo.testbase.properties engine"
     - Replace "Hypothesis" in InvariantTestRunner/InvariantStrategy/property-based testing context → "automojo.testbase.properties"
     - _Requirements: 12.1–12.3_
 
-  - [ ] 11.2 Replace Hypothesis references in all `.kiro/specs/` requirements documents
+  - [x] 11.2 Replace Hypothesis references in all `.kiro/specs/` requirements documents
     - Apply the same text replacements to requirements.md files under `.kiro/specs/` directories
     - Same replacement rules as 11.1
     - _Requirements: 12.1–12.3_
 
-- [ ] 12. Checkpoint - Verify no Hypothesis references remain in spec documents
+- [x] 12. Checkpoint - Verify no Hypothesis references remain in spec documents
   - Ensure all tests pass, ask the user if questions arise.
   - Grep all `specs/` and `.kiro/specs/` markdown files (excluding `hypothesis-to-testbase-migration` spec itself) for "Hypothesis" — expect zero matches.
 
-- [ ] 13. Remove Hypothesis dependency and clean up project files
-  - [ ] 13.1 Remove `hypothesis` from dependency declaration files
+- [x] 13. Remove Hypothesis dependency and clean up project files
+  - [x] 13.1 Remove `hypothesis` from dependency declaration files
     - Search for and remove `hypothesis` entries from any `pyproject.toml`, `requirements.txt`, `setup.py`, `setup.cfg`, or similar dependency files
     - If no explicit dependency file lists `hypothesis`, verify this and document it
     - _Requirements: 14.1, 14.2_
 
-  - [ ] 13.2 Remove `.hypothesis/` from `.gitignore`
+  - [x] 13.2 Remove `.hypothesis/` from `.gitignore`
     - Remove the `.hypothesis/` entry from `.gitignore` since the directory is no longer generated
     - _Requirements: 14.1_
 
-  - [ ] 13.3 Final verification scan — no Hypothesis imports in any Python file under `source/`
+  - [x] 13.3 Final verification scan — no Hypothesis imports in any Python file under `source/`
     - Grep all Python files under `source/` for `from hypothesis` or `import hypothesis` — expect zero matches
     - Grep all Python files under `source/` for `whitelist_categories`, `blacklist_characters`, `allow_nan`, `allow_infinity`, `suppress_health_check` — expect zero matches
     - _Requirements: 14.3, 4.8, 4.9, 3.2_
 
-- [ ] 14. Final checkpoint - Full test suite verification
+- [x] 14. Final checkpoint - Full test suite verification
   - Run the complete test suite: `testbase testing run --root source/testroots/automojo --includes=automojo.tests.singlehost --output=./.output`
   - Verify all tests pass with zero failures and zero errors
   - Ensure all tests pass, ask the user if questions arise.

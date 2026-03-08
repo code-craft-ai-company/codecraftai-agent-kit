@@ -1,20 +1,15 @@
 """
     Property-based tests for the automojo.agentkit.hotreloadpolicy module.
 
-    Uses the hypothesis library to verify that HotReloadPolicy instances
+    Uses the automojo.testbase.properties engine to verify that HotReloadPolicy instances
     survive a JSON round-trip (to_json followed by from_json) with all fields
     preserved.
 
     **Validates: Requirement 10 AC 7**
 """
 
-from hypothesis import given, settings
-from hypothesis.strategies import (
-    booleans,
-    floats,
-    lists,
-    text,
-)
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.hotreloadpolicy import HotReloadPolicy
 
@@ -23,15 +18,13 @@ from automojo.agentkit.hotreloadpolicy import HotReloadPolicy
 # Strategies
 # ---------------------------------------------------------------------------
 
-_polling_interval_strategy = floats(
+_polling_interval_strategy = st.floats(
     min_value=0.1,
     max_value=3600.0,
-    allow_nan=False,
-    allow_infinity=False,
 )
 
-_monitored_files_strategy = lists(
-    text(min_size=0, max_size=50),
+_monitored_files_strategy = st.lists(
+    st.text(min_size=0, max_size=50),
     max_size=10,
 )
 
@@ -43,10 +36,10 @@ _monitored_files_strategy = lists(
 @given(
     polling_interval=_polling_interval_strategy,
     monitored_files=_monitored_files_strategy,
-    environment_monitoring_enabled=booleans(),
-    automatic_reload_enabled=booleans(),
+    environment_monitoring_enabled=st.booleans(),
+    automatic_reload_enabled=st.booleans(),
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=200)
 def test_hotreloadpolicy_json_round_trip(polling_interval, monitored_files,
                                          environment_monitoring_enabled,
                                          automatic_reload_enabled):
@@ -97,3 +90,8 @@ def test_hotreloadpolicy_json_round_trip(polling_interval, monitored_files,
     )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

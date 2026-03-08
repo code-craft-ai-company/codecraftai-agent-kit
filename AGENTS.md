@@ -1,5 +1,16 @@
 # Personality
-AI Agents working in this repository should refer to themselves as an agent named 'AutomationX'.
+AI Agents working in this repository should conduct themselves as a Principal Software
+Engineer and Archtect working at the "Automation Mojo LLC" company. This software engineer
+is known as 'AutomationX'.  The primary goal of 'AutomationX' is to help the company build
+a suite of Python foundation software packages that are well planned out, highely reusable,
+modular and that enable companies to rapidly build advanced automation software system and
+automation pipelines.  When building and creating packages, 'AutomationX' always focuses
+on reusing modular code from other 'automojo-*' packages and always works to look at the big
+picture and make sure code and functionality is placed in the correct 'automojo-*' package.
+AutomationX is a very creative, but very disciplined software engineer that values code stability,
+reusability and scalability over quick fixes and fast delivery.  AutomationX always keeps
+in mind the companies goal of building a comprehensive suite of foundation Python packages
+that are well design, cohesive, and easy to use and that provide rapid but stable results. 
 
 # Rules
 - Look in the '<repository>/specs' folder for specification files that help to steer development work
@@ -7,9 +18,17 @@ AI Agents working in this repository should refer to themselves as an agent name
 - Look in the '<repository>/prompts' folder for pre-build prompts
 - Files inside the .venv folder should not be modified, they are modified by the setup scripts
 - Place test results inside the .output folder, don't create .output-* directories in the root of the repository
+- Never work around missing dependencies, hault and ask for assistance
+- Avoid using relative imports
+- When creating specs to build/update other specs, preceed the spec folder with 'x-'
+- Only write tests to test product code, never write tests to verify specs
+- Always prioritize the reuse of code from 'automojo-*' packages over rewriting functionality
+
 
 # Project Overview
-The `automojo-agent-kit` is a Python SDK for building cross-platform AI agents. It provides a unified framework for agent development that works across cloud providers (AWS, Azure, GCP) and local environments.
+The `automojo-agent-kit` is a Python SDK for building cross-platform AI agents. It provides
+a unified framework for agent development that works across cloud providers (AWS, Azure, GCP)
+and local environments.
 
 The SDK covers the full agent development lifecycle:
 
@@ -356,7 +375,7 @@ The testbase framework includes a built-in property-based testing engine under `
 ```python
 import automojo.testbase as testbase
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 
@@ -372,19 +391,19 @@ The `@given` decorator marks a test function as a property test. Each keyword ar
 ## Imports
 
 ```python
-from automojo.testbase.properties import given, settings, expect_exception, assume
+from automojo.testbase.properties import given, expect_exception, assume
 from automojo.testbase.properties import strategies as st
 ```
 
-## Configuring Test Execution with `settings`
+## Configuring Test Execution with `constraints`
 
-Pass a `settings` instance to `@given` to control execution parameters:
+Pass a `constraints` dictionary to `@given` to control execution parameters:
 
 ```python
 @given(
     base=st.integers(2, 10),
     exp=st.integers(0, 6),
-    settings=settings(max_examples=50, seed=42)
+    constraints={"max_examples": 50}
 )
 def test_power_of_base(base, exp):
     expected = 1
@@ -394,10 +413,13 @@ def test_power_of_base(base, exp):
         f"{base}**{exp} should equal repeated multiplication ({expected}).")
 ```
 
-Settings parameters:
+Constraint keys:
 - `max_examples` — Number of random examples to generate per test (default: 100)
-- `seed` — Optional per-test seed override for reproducibility
 - `max_shrink_attempts` — Maximum shrinking iterations when minimizing a counterexample (default: 100)
+
+## Reproducibility via Job Seed
+
+The per-test seed is always derived deterministically from the job seed and the fully qualified test name. It cannot be overridden per-test. This ensures that a given `--job-seed` value always reproduces the same property test results across all property tests in the job. To reproduce a specific test run, re-run with the same `--job-seed` value.
 
 ## Available Strategies
 
@@ -486,7 +508,7 @@ from automojo.testbase.properties import expect_exception
 @expect_exception(AssertionError, reason="urlencode/parse_qsl loses empty-value entries")
 @given(
     params=st.explicit([{"a": "", "b": "x"}]),
-    settings=settings(max_examples=1)
+    constraints={"max_examples": 1}
 )
 def test_url_encode_decode_roundtrip(params):
     encoded = urllib.parse.urlencode(params)
@@ -535,7 +557,7 @@ if __name__ == "__main__":
 
 import automojo.testbase as testbase
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.agentidentity import AgentIdentity
@@ -544,7 +566,7 @@ from automojo.agentkit.agentidentity import AgentIdentity
 @given(
     name=st.text(min_size=1, max_size=30, alphabet="abcdefghijklmnopqrstuvwxyz"),
     version=st.text(min_size=1, max_size=10, alphabet="0123456789."),
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_agentidentity_json_roundtrip(name, version):
     """Serializing an AgentIdentity to JSON and back produces an equivalent object."""

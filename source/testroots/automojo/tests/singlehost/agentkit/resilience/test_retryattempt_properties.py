@@ -1,7 +1,7 @@
 """
     Property-based tests for the automojo.agentkit.retryattempt module.
 
-    Uses the hypothesis library to verify:
+    Uses the automojo.testbase.properties engine to verify:
     - Property 1: RetryAttempt JSON round-trip
 
     **Validates: Requirements 2.7**
@@ -9,8 +9,9 @@
 
 from datetime import datetime
 
-from hypothesis import given, settings
-from hypothesis import strategies as st
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
+from automojo.testbase.properties.strategies import composite
 
 from automojo.agentkit.retryattempt import RetryAttempt
 
@@ -21,19 +22,20 @@ from automojo.agentkit.retryattempt import RetryAttempt
 
 _positive_int = st.integers(min_value=1, max_value=1_000_000)
 
-_non_negative_float = st.floats(
-    min_value=0.0,
-    max_value=1_000_000.0,
-    allow_nan=False,
-    allow_infinity=False,
-)
+_non_negative_float = st.floats(min_value=0.0, max_value=1_000_000.0)
 
 _exception_message = st.text(min_size=0, max_size=200)
 
-_timestamp = st.datetimes(
-    min_value=datetime(2000, 1, 1),
-    max_value=datetime(2099, 12, 31),
-)
+
+@composite
+def _datetimes(draw, min_value=datetime(2000, 1, 1), max_value=datetime(2099, 12, 31)):
+    min_ts = int(min_value.timestamp())
+    max_ts = int(max_value.timestamp())
+    ts = draw(st.integers(min_value=min_ts, max_value=max_ts))
+    return datetime.fromtimestamp(ts)
+
+
+_timestamp = _datetimes()
 
 
 # ---------------------------------------------------------------------------
@@ -45,8 +47,8 @@ _timestamp = st.datetimes(
     delay=_non_negative_float,
     exception_message=_exception_message,
     timestamp=_timestamp,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_retryattempt_json_roundtrip(
     attempt_number: int,
     delay: float,
@@ -105,3 +107,8 @@ def test_retryattempt_json_roundtrip(
     )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

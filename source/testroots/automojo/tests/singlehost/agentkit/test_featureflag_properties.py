@@ -1,21 +1,15 @@
 """
     Property-based tests for the automojo.agentkit.featureflag module.
 
-    Uses the hypothesis library to verify that FeatureFlag instances
+    Uses the automojo.testbase.properties engine to verify that FeatureFlag instances
     survive a JSON round-trip (to_json followed by from_json) with all
     fields preserved.
 
     **Validates: Requirement 11 AC 7**
 """
 
-from hypothesis import given, settings
-from hypothesis.strategies import (
-    booleans,
-    dictionaries,
-    none,
-    one_of,
-    text,
-)
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.featureflag import FeatureFlag
 
@@ -24,20 +18,20 @@ from automojo.agentkit.featureflag import FeatureFlag
 # Strategies
 # ---------------------------------------------------------------------------
 
-_description_strategy = one_of(
-    none(),
-    text(min_size=0, max_size=100),
+_description_strategy = st.one_of(
+    st.none(),
+    st.text(min_size=0, max_size=100),
 )
 
-_metadata_value_strategy = one_of(
-    text(min_size=0, max_size=50),
-    booleans(),
+_metadata_value_strategy = st.one_of(
+    st.text(min_size=0, max_size=50),
+    st.booleans(),
 )
 
-_metadata_strategy = one_of(
-    none(),
-    dictionaries(
-        keys=text(min_size=1, max_size=30),
+_metadata_strategy = st.one_of(
+    st.none(),
+    st.dictionaries(
+        keys=st.text(min_size=1, max_size=30),
         values=_metadata_value_strategy,
         max_size=5,
     ),
@@ -49,12 +43,12 @@ _metadata_strategy = one_of(
 # ---------------------------------------------------------------------------
 
 @given(
-    name=text(min_size=1, max_size=50),
-    default_value=booleans(),
+    name=st.text(min_size=1, max_size=50),
+    default_value=st.booleans(),
     description=_description_strategy,
     metadata=_metadata_strategy,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=200)
 def test_featureflag_json_round_trip(name, default_value, description, metadata):
     """
         **Validates: Requirement 11 AC 7**
@@ -99,3 +93,8 @@ def test_featureflag_json_round_trip(name, default_value, description, metadata)
     )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

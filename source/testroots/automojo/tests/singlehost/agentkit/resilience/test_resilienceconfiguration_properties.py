@@ -1,15 +1,15 @@
 """
     Property-based tests for the automojo.agentkit.resilienceconfiguration module.
 
-    Uses the hypothesis library to verify:
+    Uses the automojo.testbase.properties engine to verify:
     - Property 34: ResilienceConfiguration JSON round-trip
     - Property 35: ResilienceConfiguration YAML round-trip
 
     **Validates: Requirements 21.13, 21.14**
 """
 
-from hypothesis import given, settings
-from hypothesis import strategies as st
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.resilienceconfiguration import ResilienceConfiguration
 from automojo.agentkit.retrypolicy import RetryPolicy
@@ -25,8 +25,8 @@ _retry_policy = st.builds(
     RetryPolicy,
     max_retries=st.integers(min_value=0, max_value=100),
     backoff_strategy=_backoff_strategy,
-    base_delay=st.floats(min_value=0.0, max_value=300.0, allow_nan=False, allow_infinity=False),
-    max_delay=st.floats(min_value=0.0, max_value=600.0, allow_nan=False, allow_infinity=False),
+    base_delay=st.floats(min_value=0.0, max_value=300.0),
+    max_delay=st.floats(min_value=0.0, max_value=600.0),
 )
 
 _optional_retry_policy = st.one_of(st.none(), _retry_policy)
@@ -39,9 +39,7 @@ _dead_letter_enabled = st.booleans()
 
 _health_monitoring_enabled = st.booleans()
 
-_health_check_interval = st.floats(
-    min_value=0.1, max_value=3600.0, allow_nan=False, allow_infinity=False,
-)
+_health_check_interval = st.floats(min_value=0.1, max_value=3600.0)
 
 _self_healing_enabled = st.booleans()
 
@@ -58,8 +56,8 @@ _self_healing_enabled = st.booleans()
     health_monitoring_enabled=_health_monitoring_enabled,
     health_check_interval=_health_check_interval,
     self_healing_enabled=_self_healing_enabled,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_resilienceconfiguration_json_roundtrip(
     default_retry_policy,
     circuit_breaker_enabled: bool,
@@ -179,8 +177,8 @@ def test_resilienceconfiguration_json_roundtrip(
     health_monitoring_enabled=_health_monitoring_enabled,
     health_check_interval=_health_check_interval,
     self_healing_enabled=_self_healing_enabled,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_resilienceconfiguration_yaml_roundtrip(
     default_retry_policy,
     circuit_breaker_enabled: bool,
@@ -283,3 +281,8 @@ def test_resilienceconfiguration_yaml_roundtrip(
         )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

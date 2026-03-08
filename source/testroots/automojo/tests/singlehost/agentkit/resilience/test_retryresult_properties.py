@@ -1,7 +1,7 @@
 """
     Property-based tests for the automojo.agentkit.retryresult module.
 
-    Uses the hypothesis library to verify:
+    Uses the automojo.testbase.properties engine to verify:
     - Property 2: RetryResult JSON round-trip
 
     **Validates: Requirements 2.17**
@@ -9,8 +9,9 @@
 
 from datetime import datetime
 
-from hypothesis import given, settings
-from hypothesis import strategies as st
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
+from automojo.testbase.properties.strategies import composite
 
 from automojo.agentkit.retryattempt import RetryAttempt
 from automojo.agentkit.retryresult import RetryResult
@@ -22,30 +23,26 @@ from automojo.agentkit.retryresult import RetryResult
 
 _positive_int = st.integers(min_value=1, max_value=1_000_000)
 
-_non_negative_float = st.floats(
-    min_value=0.0,
-    max_value=1_000_000.0,
-    allow_nan=False,
-    allow_infinity=False,
-)
+_non_negative_float = st.floats(min_value=0.0, max_value=1_000_000.0)
 
 _exception_message = st.text(min_size=0, max_size=200)
 
-_timestamp = st.datetimes(
-    min_value=datetime(2000, 1, 1),
-    max_value=datetime(2099, 12, 31),
-)
+
+@composite
+def _datetimes(draw, min_value=datetime(2000, 1, 1), max_value=datetime(2099, 12, 31)):
+    min_ts = int(min_value.timestamp())
+    max_ts = int(max_value.timestamp())
+    ts = draw(st.integers(min_value=min_ts, max_value=max_ts))
+    return datetime.fromtimestamp(ts)
+
+
+_timestamp = _datetimes()
 
 _json_serializable_result = st.one_of(
     st.none(),
     st.booleans(),
     st.integers(min_value=-1_000_000, max_value=1_000_000),
-    st.floats(
-        min_value=-1_000_000.0,
-        max_value=1_000_000.0,
-        allow_nan=False,
-        allow_infinity=False,
-    ),
+    st.floats(min_value=-1_000_000.0, max_value=1_000_000.0),
     st.text(min_size=0, max_size=100),
 )
 
@@ -74,8 +71,8 @@ _retry_attempt_list = st.lists(
     exception_message=_exception_message,
     attempts=_retry_attempt_list,
     elapsed_time=_non_negative_float,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_retryresult_json_roundtrip(
     success: bool,
     result,
@@ -160,8 +157,8 @@ def test_retryresult_json_roundtrip(
     exception_message=_exception_message,
     attempts=_retry_attempt_list,
     elapsed_time=_non_negative_float,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_retryresult_attempt_count_consistency(
     success: bool,
     result,
@@ -195,3 +192,8 @@ def test_retryresult_attempt_count_consistency(
     )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

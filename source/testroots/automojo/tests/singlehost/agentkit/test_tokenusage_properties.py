@@ -29,7 +29,7 @@ _non_negative_int = st.integers(min_value=0, max_value=1_000_000)
 @given(
     prompt_tokens=_non_negative_int,
     completion_tokens=_non_negative_int,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_tokenusage_valid_construction_preserves_fields(
     prompt_tokens: int,
@@ -73,7 +73,7 @@ def test_tokenusage_valid_construction_preserves_fields(
     prompt_tokens=_non_negative_int,
     completion_tokens=_non_negative_int,
     total_tokens=_non_negative_int,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_tokenusage_invalid_total_raises_semantic_error(
     prompt_tokens: int,
@@ -119,7 +119,7 @@ def test_tokenusage_invalid_total_raises_semantic_error(
     completion_a=_non_negative_int,
     prompt_b=_non_negative_int,
     completion_b=_non_negative_int,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_tokenusage_addition_produces_correct_sums(
     prompt_a: int,

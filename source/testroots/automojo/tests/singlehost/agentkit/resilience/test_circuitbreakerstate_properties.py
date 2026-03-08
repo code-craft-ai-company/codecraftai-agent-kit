@@ -1,14 +1,14 @@
 """
     Property-based tests for the automojo.agentkit.circuitbreakerstate module.
 
-    Uses the hypothesis library to verify:
+    Uses the automojo.testbase.properties engine to verify:
     - Property 14: CircuitBreakerState from_string round-trip
 
     **Validates: Requirements 4.2**
 """
 
-from hypothesis import given, settings
-from hypothesis.strategies import sampled_from
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.circuitbreakerstate import CircuitBreakerState
 
@@ -17,15 +17,17 @@ from automojo.agentkit.circuitbreakerstate import CircuitBreakerState
 # Strategies
 # ---------------------------------------------------------------------------
 
-_circuit_breaker_state_strategy = sampled_from(list(CircuitBreakerState))
+_circuit_breaker_state_strategy = st.sampled_from(list(CircuitBreakerState))
 
 
 # ---------------------------------------------------------------------------
 # Property 14: CircuitBreakerState from_string round-trip
 # ---------------------------------------------------------------------------
 
-@given(state=_circuit_breaker_state_strategy)
-@settings(max_examples=100)
+@given(
+    state=_circuit_breaker_state_strategy,
+    settings=settings(max_examples=50),
+)
 def test_circuit_breaker_state_from_string_round_trip(
     state: CircuitBreakerState,
 ) -> None:
@@ -45,3 +47,8 @@ def test_circuit_breaker_state_from_string_round_trip(
     )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

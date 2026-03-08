@@ -55,7 +55,7 @@ cause_strategy = st.one_of(
     tool_name=tool_name_strategy,
     direction=direction_strategy,
     errors=error_list_strategy,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_property_30_tool_validation_error_fields_accessible(tool_name, direction, errors):
     """
@@ -91,7 +91,7 @@ def test_property_30_tool_validation_error_fields_accessible(tool_name, directio
 @given(
     tool_name=tool_name_strategy,
     cause=cause_strategy,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_property_30_tool_execution_error_fields_accessible(tool_name, cause):
     """

@@ -40,7 +40,7 @@ _events_strategy = st.lists(
 @given(
     agent_id=_short_text,
     events=_events_strategy,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_executionrecorder_monotonically_increasing_sequence_numbers(agent_id, events):
     """

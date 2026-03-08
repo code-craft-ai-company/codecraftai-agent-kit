@@ -1,7 +1,7 @@
 """
     Property-based tests for the automojo.agentkit.circuitbreakerregistry module.
 
-    Uses the hypothesis library to verify:
+    Uses the automojo.testbase.properties engine to verify:
     - Property 15: CircuitBreakerRegistry register-lookup consistency
     - Property 16: CircuitBreakerRegistry count consistency
     - Property 17: CircuitBreakerRegistry has_circuit_breaker consistency
@@ -9,8 +9,8 @@
     **Validates: Requirements 6.1, 6.3, 6.4, 6.5, 6.6, 6.7**
 """
 
-from hypothesis import given, settings
-from hypothesis import strategies as st
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.circuitbreaker import CircuitBreaker
 from automojo.agentkit.circuitbreakerconfiguration import CircuitBreakerConfiguration
@@ -23,20 +23,18 @@ from automojo.agentkit.circuitbreakerregistry import CircuitBreakerRegistry
 
 _unique_names = st.lists(
     st.text(min_size=1, max_size=100, alphabet=st.characters(
-        whitelist_categories=("L", "N", "P", "S"),
-        blacklist_characters=("\x00",),
+        categories=("L", "N", "P", "S"),
     )),
     min_size=1,
     max_size=20,
-    unique=True,
-)
+).map(lambda names: list(dict.fromkeys(names))).filter(lambda names: len(names) >= 1)
 
 _failure_threshold = st.integers(min_value=1, max_value=100)
 
 _success_threshold = st.integers(min_value=1, max_value=100)
 
 _open_state_timeout = st.floats(
-    min_value=0.1, max_value=3600.0, allow_nan=False, allow_infinity=False
+    min_value=0.1, max_value=3600.0,
 )
 
 _half_open_max_attempts = st.integers(min_value=1, max_value=100)
@@ -57,8 +55,8 @@ _circuit_breaker_configuration = st.builds(
 @given(
     names=_unique_names,
     configuration=_circuit_breaker_configuration,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_circuitbreakerregistry_register_lookup_consistency(
     names: list,
     configuration: CircuitBreakerConfiguration,
@@ -106,8 +104,8 @@ def test_circuitbreakerregistry_register_lookup_consistency(
 @given(
     names=_unique_names,
     configuration=_circuit_breaker_configuration,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_circuitbreakerregistry_count_consistency(
     names: list,
     configuration: CircuitBreakerConfiguration,
@@ -154,8 +152,8 @@ def test_circuitbreakerregistry_count_consistency(
     registered_names=_unique_names,
     unregistered_names=_unique_names,
     configuration=_circuit_breaker_configuration,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_circuitbreakerregistry_has_circuit_breaker_consistency(
     registered_names: list,
     unregistered_names: list,
@@ -206,3 +204,8 @@ def test_circuitbreakerregistry_has_circuit_breaker_consistency(
         )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

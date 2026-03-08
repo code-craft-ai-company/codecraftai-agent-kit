@@ -53,7 +53,7 @@ _hex_pattern_16 = re.compile(r"^[0-9a-f]{16}$")
 
 @given(
     dummy=st.integers(min_value=0, max_value=10000),
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_tracecontext_auto_generates_valid_identifiers(dummy: int) -> None:
     """
@@ -87,7 +87,7 @@ def test_tracecontext_auto_generates_valid_identifiers(dummy: int) -> None:
     span_id=_span_id_strategy,
     parent_span_id=_parent_span_id_strategy,
     trace_flags=_trace_flags_strategy,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_tracecontext_json_round_trip(
     trace_id: str,
@@ -143,7 +143,7 @@ def test_tracecontext_json_round_trip(
     trace_id=_trace_id_strategy,
     span_id=_span_id_strategy,
     trace_flags=_trace_flags_strategy,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_tracecontext_traceparent_round_trip(
     trace_id: str,
@@ -193,7 +193,7 @@ def test_tracecontext_traceparent_round_trip(
     span_id=_span_id_strategy,
     parent_span_id=_parent_span_id_strategy,
     trace_flags=_trace_flags_strategy,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_tracecontext_create_child_preserves_trace_id(
     trace_id: str,

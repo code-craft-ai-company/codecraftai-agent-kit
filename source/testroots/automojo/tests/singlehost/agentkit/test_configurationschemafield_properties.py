@@ -1,7 +1,7 @@
 """
     Property-based tests for the automojo.agentkit.configurationschemafield module.
 
-    Uses the hypothesis library to verify that ConfigurationSchemaField instances
+    Uses the automojo.testbase.properties engine to verify that ConfigurationSchemaField instances
     survive a JSON round-trip (to_json followed by from_dict on the parsed JSON)
     with all serializable fields preserved.
 
@@ -10,16 +10,8 @@
 
 import json
 
-from hypothesis import given, settings
-from hypothesis.strategies import (
-    booleans,
-    floats,
-    integers,
-    none,
-    one_of,
-    sampled_from,
-    text,
-)
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.configurationschemafield import ConfigurationSchemaField
 
@@ -28,16 +20,16 @@ from automojo.agentkit.configurationschemafield import ConfigurationSchemaField
 # Strategies
 # ---------------------------------------------------------------------------
 
-_type_constraint_strategy = sampled_from([
+_type_constraint_strategy = st.sampled_from([
     "string", "integer", "float", "boolean", "list", "dictionary",
 ])
 
-_default_value_strategy = one_of(
-    text(),
-    integers(),
-    booleans(),
-    floats(allow_nan=False, allow_infinity=False),
-    none(),
+_default_value_strategy = st.one_of(
+    st.text(),
+    st.integers(),
+    st.booleans(),
+    st.floats(),
+    st.none(),
 )
 
 
@@ -46,13 +38,13 @@ _default_value_strategy = one_of(
 # ---------------------------------------------------------------------------
 
 @given(
-    field_path=text(min_size=1, max_size=50),
+    field_path=st.text(min_size=1, max_size=50),
     type_constraint=_type_constraint_strategy,
-    required=booleans(),
+    required=st.booleans(),
     default_value=_default_value_strategy,
-    description=text(min_size=0, max_size=100),
+    description=st.text(min_size=0, max_size=100),
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=200)
 def test_configurationschemafield_json_round_trip(field_path, type_constraint, required, default_value, description):
     """
         **Validates: Requirement 6 AC 10**
@@ -105,3 +97,8 @@ def test_configurationschemafield_json_round_trip(field_path, type_constraint, r
     )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

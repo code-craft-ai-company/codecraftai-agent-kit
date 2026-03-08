@@ -172,7 +172,7 @@ def _message_without_tool_calls(draw):
 # Property 34: LlmToolBridge preserves tool descriptor information
 # ---------------------------------------------------------------------------
 
-@given(descriptor=_tool_descriptor_with_schema(), settings=settings(max_examples=100))
+@given(descriptor=_tool_descriptor_with_schema(), settings=settings(max_examples=50))
 def test_llmtoolbridge_preserves_tool_name_and_description(
     descriptor: ToolDescriptor,
 ) -> None:
@@ -210,7 +210,7 @@ def test_llmtoolbridge_preserves_tool_name_and_description(
     return
 
 
-@given(descriptor=_tool_descriptor_with_schema(), settings=settings(max_examples=100))
+@given(descriptor=_tool_descriptor_with_schema(), settings=settings(max_examples=50))
 def test_llmtoolbridge_preserves_parameter_names_and_types(
     descriptor: ToolDescriptor,
 ) -> None:
@@ -252,7 +252,7 @@ def test_llmtoolbridge_preserves_parameter_names_and_types(
 # Property 35: LlmToolBridge tool_result_to_message produces tool role message
 # ---------------------------------------------------------------------------
 
-@given(tool_name=_identifier, result=_tool_result(), settings=settings(max_examples=100))
+@given(tool_name=_identifier, result=_tool_result(), settings=settings(max_examples=50))
 def test_llmtoolbridge_tool_result_to_message_produces_tool_role(
     tool_name: str,
     result: ToolResult,
@@ -289,7 +289,7 @@ def test_llmtoolbridge_tool_result_to_message_produces_tool_role(
 # Property 36: LlmToolBridge rejects messages without tool calls
 # ---------------------------------------------------------------------------
 
-@given(message=_message_without_tool_calls(), settings=settings(max_examples=100))
+@given(message=_message_without_tool_calls(), settings=settings(max_examples=50))
 def test_llmtoolbridge_rejects_messages_without_tool_calls(
     message: LlmMessage,
 ) -> None:

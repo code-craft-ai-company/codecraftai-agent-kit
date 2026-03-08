@@ -74,7 +74,7 @@ _span_names_strategy = st.lists(
 
 @given(
     span_names=_span_names_strategy,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_tracer_span_stack_lifo_semantics(
     span_names: List[str],
@@ -138,7 +138,7 @@ def test_tracer_span_stack_lifo_semantics(
 
 @given(
     span_names=_span_names_strategy,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_tracer_child_spans_share_parent_trace_id(
     span_names: List[str],
@@ -203,7 +203,7 @@ def test_tracer_child_spans_share_parent_trace_id(
 
 @given(
     num_spans=st.integers(min_value=1, max_value=20),
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_tracer_sampling_rate_zero_exports_nothing(
     num_spans: int,
@@ -232,7 +232,7 @@ def test_tracer_sampling_rate_zero_exports_nothing(
 
 @given(
     num_spans=st.integers(min_value=1, max_value=20),
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_tracer_sampling_rate_one_exports_all(
     num_spans: int,

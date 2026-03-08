@@ -404,6 +404,6 @@ Incremental implementation of the Memory & Context Management feature for the `a
 - Unit tests validate specific examples, edge cases, and error conditions
 - All test files use the testbase framework (not pytest or unittest)
 - All mocking uses testbase mocking (not unittest.mock)
-- Property-based tests use the Hypothesis library
+- Property-based tests use automojo.testbase.properties (built-in testbase property testing engine)
 - Class filenames are all lowercase with no underscores per project conventions
 - Test file hierarchy mirrors source hierarchy under `source/testroots/automojo/tests/singlehost/agentkit/`

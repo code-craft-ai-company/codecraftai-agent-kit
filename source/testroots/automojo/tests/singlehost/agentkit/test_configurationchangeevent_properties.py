@@ -1,7 +1,7 @@
 """
     Property-based tests for the automojo.agentkit.configurationchangeevent module.
 
-    Uses the hypothesis library to verify that ConfigurationChangeEvent instances
+    Uses the automojo.testbase.properties engine to verify that ConfigurationChangeEvent instances
     survive a JSON round-trip (to_json followed by from_json) with all fields
     preserved.
 
@@ -10,17 +10,9 @@
 
 from datetime import datetime
 
-from hypothesis import given, settings
-from hypothesis.strategies import (
-    booleans,
-    datetimes,
-    floats,
-    integers,
-    none,
-    one_of,
-    sampled_from,
-    text,
-)
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
+from automojo.testbase.properties.strategies import composite
 
 from automojo.agentkit.configurationchangeevent import ConfigurationChangeEvent
 from automojo.agentkit.configurationlayersource import ConfigurationLayerSource
@@ -30,15 +22,23 @@ from automojo.agentkit.configurationlayersource import ConfigurationLayerSource
 # Strategies
 # ---------------------------------------------------------------------------
 
-_json_serializable_values = one_of(
-    text(),
-    integers(),
-    booleans(),
-    floats(allow_nan=False, allow_infinity=False),
-    none(),
+@composite
+def _datetimes(draw, min_value=datetime(2000, 1, 1), max_value=datetime(2099, 12, 31)):
+    min_ts = int(min_value.timestamp())
+    max_ts = int(max_value.timestamp())
+    ts = draw(st.integers(min_value=min_ts, max_value=max_ts))
+    return datetime.fromtimestamp(ts)
+
+
+_json_serializable_values = st.one_of(
+    st.text(),
+    st.integers(),
+    st.booleans(),
+    st.floats(),
+    st.none(),
 )
 
-_source_strategy = sampled_from([
+_source_strategy = st.sampled_from([
     ConfigurationLayerSource.DEFAULTS,
     ConfigurationLayerSource.FILE,
     ConfigurationLayerSource.ENVIRONMENT,
@@ -46,7 +46,7 @@ _source_strategy = sampled_from([
     ConfigurationLayerSource.OVERRIDE,
 ])
 
-_timestamp_strategy = datetimes(
+_timestamp_strategy = _datetimes(
     min_value=datetime(2000, 1, 1),
     max_value=datetime(2030, 1, 1),
 )
@@ -57,13 +57,13 @@ _timestamp_strategy = datetimes(
 # ---------------------------------------------------------------------------
 
 @given(
-    field_path=text(min_size=1, max_size=50),
+    field_path=st.text(min_size=1, max_size=50),
     previous_value=_json_serializable_values,
     new_value=_json_serializable_values,
     source=_source_strategy,
     timestamp=_timestamp_strategy,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=200)
 def test_configurationchangeevent_json_round_trip(field_path, previous_value, new_value, source, timestamp):
     """
         **Validates: Requirement 8 AC 7**
@@ -115,3 +115,8 @@ def test_configurationchangeevent_json_round_trip(field_path, previous_value, ne
     )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

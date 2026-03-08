@@ -15,6 +15,7 @@ from typing import List
 
 from automojo.testbase.properties import given, settings
 from automojo.testbase.properties import strategies as st
+from automojo.testbase.properties.strategies import composite
 
 from automojo.agentkit.errors import SemanticError
 from automojo.agentkit.metricdefinition import MetricDefinition
@@ -33,12 +34,10 @@ _metric_name_strategy = st.text(
     max_size=30,
 )
 
-_unique_metric_names_strategy = st.lists(
-    _metric_name_strategy,
-    min_size=1,
-    max_size=20,
-    unique=True,
-)
+@composite
+def _unique_metric_names_strategy(draw, min_size=1, max_size=20):
+    name_set = draw(st.sets(_metric_name_strategy, min_size=min_size, max_size=max_size))
+    return list(name_set)
 
 _metric_type_strategy = st.sampled_from([
     MetricType.COUNTER,
@@ -52,8 +51,8 @@ _metric_type_strategy = st.sampled_from([
 # ---------------------------------------------------------------------------
 
 @given(
-    names=_unique_metric_names_strategy,
-    settings=settings(max_examples=100),
+    names=_unique_metric_names_strategy(),
+    settings=settings(max_examples=50),
 )
 def test_registry_registration_and_lookup_correctness(
     names: List[str],

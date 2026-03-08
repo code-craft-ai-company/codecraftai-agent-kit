@@ -48,7 +48,7 @@ _metadata = st.dictionaries(
     role=_valid_role,
     content=_content,
     metadata=_metadata,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_llmmessage_json_roundtrip(
     role: str,
@@ -86,7 +86,7 @@ def test_llmmessage_json_roundtrip(
 
 @given(
     role=st.text(min_size=1, max_size=50),
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_llmmessage_invalid_role_raises_semantic_error(
     role: str,

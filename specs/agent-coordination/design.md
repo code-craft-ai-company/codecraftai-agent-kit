@@ -2724,15 +2724,15 @@ Tests use `testbase` and reside under `source/testroots/automojo/tests/singlehos
 ### Dual Testing Approach
 
 - **Unit tests**: Specific examples, edge cases, error conditions, integration with external packages (using `automojo.testbase.mocking.Mock`)
-- **Property-based tests**: Universal properties across randomly generated inputs using Hypothesis
+- **Property-based tests**: Universal properties across randomly generated inputs using automojo.testbase.properties
 
 ### Property-Based Testing Configuration
 
-- Library: Hypothesis for Python property-based testing
+- Library: automojo.testbase.properties (built-in testbase property testing engine)
 - Minimum 100 iterations per property test
 - Each test tagged: `Feature: agent-coordination, Property N: title`
 - Each correctness property implemented by a single property-based test
-- Hypothesis strategies generate random task types, parameters, priorities, deadlines, agent identifiers, capability names, task type sets, and configuration values
+- testbase property strategies generate random task types, parameters, priorities, deadlines, agent identifiers, capability names, task type sets, and configuration values
 
 ### Unit Test Focus Areas
 

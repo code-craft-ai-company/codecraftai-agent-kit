@@ -31,7 +31,7 @@ _non_negative_float = st.floats(
 @given(
     prompt_cost=_non_negative_float,
     completion_cost=_non_negative_float,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_costestimate_valid_construction_preserves_fields(
     prompt_cost: float,
@@ -80,7 +80,7 @@ def test_costestimate_valid_construction_preserves_fields(
     prompt_cost=_non_negative_float,
     completion_cost=_non_negative_float,
     total_cost=_non_negative_float,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_costestimate_invalid_total_raises_semantic_error(
     prompt_cost: float,

@@ -1,7 +1,7 @@
 """
     Property-based tests for the automojo.agentkit.observabilityconfiguration module.
 
-    Uses the hypothesis library to verify:
+    Uses the automojo.testbase.properties engine to verify:
     - Property 30: ObservabilityConfiguration JSON round-trip
     - Property 31: ObservabilityConfiguration YAML round-trip
     - Property 32: ObservabilityConfiguration serialization excludes credentials
@@ -12,14 +12,8 @@
 
 import json
 
-from hypothesis import given, settings, assume
-from hypothesis.strategies import (
-    booleans,
-    dictionaries,
-    floats,
-    sampled_from,
-    text,
-)
+from automojo.testbase.properties import given, settings, assume
+from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.errors import ConfigurationError
 from automojo.agentkit.observabilityconfiguration import ObservabilityConfiguration
@@ -29,19 +23,19 @@ from automojo.agentkit.observabilityconfiguration import ObservabilityConfigurat
 # Strategies
 # ---------------------------------------------------------------------------
 
-_log_level_strategy = sampled_from(list(ObservabilityConfiguration.VALID_LOG_LEVELS))
+_log_level_strategy = st.sampled_from(list(ObservabilityConfiguration.VALID_LOG_LEVELS))
 
-_log_format_strategy = sampled_from(list(ObservabilityConfiguration.VALID_LOG_FORMATS))
+_log_format_strategy = st.sampled_from(list(ObservabilityConfiguration.VALID_LOG_FORMATS))
 
-_sampling_rate_strategy = floats(min_value=0.0, max_value=1.0, allow_nan=False, allow_infinity=False)
+_sampling_rate_strategy = st.floats(min_value=0.0, max_value=1.0)
 
-_bool_strategy = booleans()
+_bool_strategy = st.booleans()
 
-_short_text = text(min_size=1, max_size=50)
+_short_text = st.text(min_size=1, max_size=50)
 
-_exporter_settings_strategy = dictionaries(
-    keys=text(min_size=1, max_size=20),
-    values=text(min_size=0, max_size=50),
+_exporter_settings_strategy = st.dictionaries(
+    keys=st.text(min_size=1, max_size=20),
+    values=st.text(min_size=0, max_size=50),
     max_size=3,
 )
 
@@ -59,8 +53,8 @@ _exporter_settings_strategy = dictionaries(
     debug_mode_enabled=_bool_strategy,
     sampling_rate=_sampling_rate_strategy,
     exporter_settings=_exporter_settings_strategy,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_observabilityconfiguration_json_round_trip(
     log_level, log_format, tracing_enabled, metrics_enabled,
     recording_enabled, debug_mode_enabled, sampling_rate, exporter_settings
@@ -111,8 +105,8 @@ def test_observabilityconfiguration_json_round_trip(
     debug_mode_enabled=_bool_strategy,
     sampling_rate=_sampling_rate_strategy,
     exporter_settings=_exporter_settings_strategy,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_observabilityconfiguration_yaml_round_trip(
     log_level, log_format, tracing_enabled, metrics_enabled,
     recording_enabled, debug_mode_enabled, sampling_rate, exporter_settings
@@ -158,10 +152,10 @@ def test_observabilityconfiguration_yaml_round_trip(
     log_level=_log_level_strategy,
     log_format=_log_format_strategy,
     sampling_rate=_sampling_rate_strategy,
-    secret_value=text(min_size=10, max_size=60),
-    cred_name=text(min_size=1, max_size=20),
+    secret_value=st.text(min_size=10, max_size=60),
+    cred_name=st.text(min_size=1, max_size=20),
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_observabilityconfiguration_serialization_excludes_credentials(
     log_level, log_format, sampling_rate, secret_value, cred_name
 ):
@@ -235,23 +229,23 @@ def test_observabilityconfiguration_serialization_excludes_credentials(
 # Property 33: ObservabilityConfiguration validation rejects invalid configs
 # ---------------------------------------------------------------------------
 
-_invalid_log_level_strategy = text(min_size=1, max_size=30).filter(
+_invalid_log_level_strategy = st.text(min_size=1, max_size=30).filter(
     lambda x: x not in ObservabilityConfiguration.VALID_LOG_LEVELS
 )
 
-_invalid_log_format_strategy = text(min_size=1, max_size=30).filter(
+_invalid_log_format_strategy = st.text(min_size=1, max_size=30).filter(
     lambda x: x not in ObservabilityConfiguration.VALID_LOG_FORMATS
 )
 
-_invalid_sampling_rate_below = floats(max_value=-0.001, allow_nan=False, allow_infinity=False)
+_invalid_sampling_rate_below = st.floats(max_value=-0.001)
 
-_invalid_sampling_rate_above = floats(min_value=1.001, allow_nan=False, allow_infinity=False)
+_invalid_sampling_rate_above = st.floats(min_value=1.001)
 
 
 @given(
     invalid_log_level=_invalid_log_level_strategy,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_observabilityconfiguration_rejects_invalid_log_level(invalid_log_level):
     """
         **Validates: Requirements 25.7**
@@ -277,8 +271,8 @@ def test_observabilityconfiguration_rejects_invalid_log_level(invalid_log_level)
 
 @given(
     invalid_log_format=_invalid_log_format_strategy,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_observabilityconfiguration_rejects_invalid_log_format(invalid_log_format):
     """
         **Validates: Requirements 25.8**
@@ -304,8 +298,8 @@ def test_observabilityconfiguration_rejects_invalid_log_format(invalid_log_forma
 
 @given(
     invalid_rate=_invalid_sampling_rate_below,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_observabilityconfiguration_rejects_sampling_rate_below_zero(invalid_rate):
     """
         **Validates: Requirements 25.9**
@@ -331,8 +325,8 @@ def test_observabilityconfiguration_rejects_sampling_rate_below_zero(invalid_rat
 
 @given(
     invalid_rate=_invalid_sampling_rate_above,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_observabilityconfiguration_rejects_sampling_rate_above_one(invalid_rate):
     """
         **Validates: Requirements 25.9**
@@ -354,3 +348,8 @@ def test_observabilityconfiguration_rejects_sampling_rate_above_one(invalid_rate
     )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

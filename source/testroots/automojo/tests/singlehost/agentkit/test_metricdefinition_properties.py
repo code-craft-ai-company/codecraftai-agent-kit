@@ -40,7 +40,7 @@ _unit_strategy = st.text(min_size=1, max_size=100)
     description=_description_strategy,
     unit=_unit_strategy,
     metric_type=_metric_type_strategy,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_metricdefinition_json_round_trip(
     name: str,

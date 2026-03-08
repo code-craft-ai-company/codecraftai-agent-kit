@@ -47,19 +47,19 @@ Incremental implementation of the core agent framework for the `automojo-agent-k
     - **Property 8: State machine accepts valid transitions and updates state**
     - **Validates: Requirements 4.2, 4.3**
     - Create `source/testroots/automojo/tests/singlehost/agentkit/test_agentstatemachine.py`
-    - Use Hypothesis to generate random valid transition sequences from the transition table
+    - Use automojo.testbase.properties to generate random valid transition sequences from the transition table
     - Assert current_state equals the last target after each valid transition
 
   - [x] 2.3 Write property test: State machine rejects invalid transitions (Property 9)
     - **Property 9: State machine rejects invalid transitions**
     - **Validates: Requirements 4.4**
-    - Use Hypothesis to generate (state, invalid_target) pairs not in VALID_TRANSITIONS
+    - Use automojo.testbase.properties to generate (state, invalid_target) pairs not in VALID_TRANSITIONS
     - Assert SemanticError is raised with message containing current state, target, and valid transitions
 
   - [x] 2.4 Write property test: State machine records transition history (Property 10)
     - **Property 10: State machine records transition history**
     - **Validates: Requirements 4.5**
-    - Use Hypothesis to generate valid transition sequences
+    - Use automojo.testbase.properties to generate valid transition sequences
     - Assert transition_history length matches number of transitions, each record has correct previous/new state and valid timestamp
 
   - [x] 2.5 Write property test: get_valid_transitions matches transition table (Property 11)
@@ -88,7 +88,7 @@ Incremental implementation of the core agent framework for the `automojo-agent-k
     - **Property 1: AgentIdentity JSON round-trip**
     - **Validates: Requirements 2.6, 12.7**
     - Create `source/testroots/automojo/tests/singlehost/agentkit/test_agentidentity.py`
-    - Use Hypothesis to generate random name, version, tags, optional identifier
+    - Use automojo.testbase.properties to generate random name, version, tags, optional identifier
     - Assert to_json() then from_json() produces equivalent identity
 
   - [x] 4.3 Write property test: AgentIdentity serialization completeness (Property 2)
@@ -100,7 +100,7 @@ Incremental implementation of the core agent framework for the `automojo-agent-k
   - [x] 4.4 Write property test: AgentIdentity auto-generates UUID (Property 3)
     - **Property 3: AgentIdentity auto-generates UUID**
     - **Validates: Requirements 2.2**
-    - Use Hypothesis to generate identities without explicit identifier
+    - Use automojo.testbase.properties to generate identities without explicit identifier
     - Assert identifier is parseable by uuid.UUID
 
   - [x] 4.5 Write unit tests for AgentIdentity edge cases
@@ -128,31 +128,31 @@ Incremental implementation of the core agent framework for the `automojo-agent-k
     - **Property 4: AgentConfiguration JSON round-trip**
     - **Validates: Requirements 3.12, 12.8**
     - Create `source/testroots/automojo/tests/singlehost/agentkit/test_agentconfiguration.py`
-    - Use Hypothesis to generate valid config dicts (without credential references)
+    - Use automojo.testbase.properties to generate valid config dicts (without credential references)
     - Assert to_json() then from_json() produces equivalent as_dict() output
 
   - [x] 5.3 Write property test: AgentConfiguration YAML round-trip (Property 5)
     - **Property 5: AgentConfiguration YAML round-trip**
     - **Validates: Requirements 3.13, 12.9**
-    - Use Hypothesis to generate valid config dicts (without credential references)
+    - Use automojo.testbase.properties to generate valid config dicts (without credential references)
     - Assert to_yaml() then from_yaml() produces equivalent as_dict() output
 
   - [x] 5.4 Write property test: AgentConfiguration validation rejects invalid configs (Property 6)
     - **Property 6: AgentConfiguration validation rejects invalid configs**
     - **Validates: Requirements 3.5, 3.8**
-    - Use Hypothesis to generate dicts missing required fields or with invalid types
+    - Use automojo.testbase.properties to generate dicts missing required fields or with invalid types
     - Assert ConfigurationError is raised
 
   - [x] 5.5 Write property test: AgentConfiguration serialization excludes credentials (Property 7)
     - **Property 7: AgentConfiguration serialization excludes credentials**
     - **Validates: Requirements 9.3, 3.9, 3.10, 3.11**
-    - Use Hypothesis to generate configs with CredentialReference entries
+    - Use automojo.testbase.properties to generate configs with CredentialReference entries
     - Assert as_dict(), to_json(), to_yaml() do not contain resolved secret values
 
   - [x] 5.6 Write property test: AgentConfiguration from_dict produces valid configuration (Property 21)
     - **Property 21: AgentConfiguration from_dict produces valid configuration**
     - **Validates: Requirements 3.1**
-    - Use Hypothesis to generate valid config dicts with all required fields
+    - Use automojo.testbase.properties to generate valid config dicts with all required fields
     - Assert from_dict() produces config whose as_dict() contains same identity, settings, and reference names
 
   - [x] 5.7 Write unit tests for AgentConfiguration edge cases
@@ -185,7 +185,7 @@ Incremental implementation of the core agent framework for the `automojo-agent-k
     - **Property 15: Registry registration and lookup correctness**
     - **Validates: Requirements 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.9**
     - Create `source/testroots/automojo/tests/singlehost/agentkit/test_agentregistry.py`
-    - Use Hypothesis to generate sets of agents with unique identifiers
+    - Use automojo.testbase.properties to generate sets of agents with unique identifiers
     - Assert count, lookup_by_id, lookup_by_name, lookup_by_tags, list_all correctness
     - Assert duplicate identifier raises SemanticError
 
@@ -221,13 +221,13 @@ Incremental implementation of the core agent framework for the `automojo-agent-k
     - **Property 12: Hooks invoked in registration order with correct arguments**
     - **Validates: Requirements 5.1, 5.2, 5.3**
     - Create `source/testroots/automojo/tests/singlehost/agentkit/test_agent.py`
-    - Use Hypothesis to generate lists of N hooks for a transition point
+    - Use automojo.testbase.properties to generate lists of N hooks for a transition point
     - Assert all N hooks invoked in order, each receiving Agent and TransitionRecord
 
   - [x] 8.3 Write property test: Hook exception does not prevent remaining hooks (Property 13)
     - **Property 13: Hook exception does not prevent remaining hooks**
     - **Validates: Requirements 5.4**
-    - Use Hypothesis to generate hook lists where hook K raises an exception
+    - Use automojo.testbase.properties to generate hook lists where hook K raises an exception
     - Assert hooks K+1 through N-1 are still invoked
 
   - [x] 8.4 Write property test: Hook deregistration removes hook (Property 14)
@@ -257,7 +257,7 @@ Incremental implementation of the core agent framework for the `automojo-agent-k
   - [x] 8.8 Write property test: Cycle detection prevents circular relationships (Property 20)
     - **Property 20: Cycle detection prevents circular parent-child relationships**
     - **Validates: Requirements 7.9, 7.10**
-    - Use Hypothesis to generate agent hierarchies
+    - Use automojo.testbase.properties to generate agent hierarchies
     - Assert adding ancestor as sub-agent of descendant (or self) raises SemanticError
 
   - [x] 8.9 Write unit tests for Agent base class edge cases

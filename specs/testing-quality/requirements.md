@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The Testing & Quality feature extends the `automojo-agent-kit` SDK with a comprehensive testing infrastructure and quality assurance toolkit for verifying agent behavior, mocking subsystem dependencies, recording and replaying agent execution deterministically, testing agent invariants with property-based techniques, and integration testing platform adapters against simulated environments. It defines an agent behavior testing framework with test fixtures, assertion helpers, and test utilities specific to agent lifecycle, tool execution, LLM interactions, and workflow execution; mock provider implementations for all major subsystem interfaces (LlmProvider, ToolExecutor, Transport, MemoryStore) that integrate with the `testbase` testing framework and its mocking module; a deterministic replay system for recording agent execution traces and replaying them for debugging and regression testing; property-based testing support for defining and verifying agent invariants (state machine transitions, configuration validation, serialization round-trips) using the Hypothesis library; and integration test harnesses that provide simulated platform environments (AWS, Azure, GCP, local) for testing platform-specific adapters. The system integrates with the Agent base class so test fixtures can create, configure, and exercise agents in isolation, with the Tool & Capability System so tool execution can be mocked and asserted, with the LLM Integration system so LLM completion requests can be mocked with deterministic responses, with the Memory & Context Management system so memory backends can be mocked, with the Communication & Messaging system so transports can be mocked, with the Workflow & Orchestration system so workflow execution can be tested step-by-step, with the Observability & Debugging system so execution recordings feed into replay testing, with the Error Handling & Resilience system so retry and circuit breaker behavior can be tested deterministically, with `automojo-extension` so test plugins and custom test harnesses can be discovered and loaded, with `automojo-credentials` for mock credential injection, with `automojo-dataprofiles` for mock data profile injection, and with `automojo-this-app` for test environment configuration.
+The Testing & Quality feature extends the `automojo-agent-kit` SDK with a comprehensive testing infrastructure and quality assurance toolkit for verifying agent behavior, mocking subsystem dependencies, recording and replaying agent execution deterministically, testing agent invariants with property-based techniques, and integration testing platform adapters against simulated environments. It defines an agent behavior testing framework with test fixtures, assertion helpers, and test utilities specific to agent lifecycle, tool execution, LLM interactions, and workflow execution; mock provider implementations for all major subsystem interfaces (LlmProvider, ToolExecutor, Transport, MemoryStore) that integrate with the `testbase` testing framework and its mocking module; a deterministic replay system for recording agent execution traces and replaying them for debugging and regression testing; property-based testing support for defining and verifying agent invariants (state machine transitions, configuration validation, serialization round-trips) using the automojo.testbase.properties engine; and integration test harnesses that provide simulated platform environments (AWS, Azure, GCP, local) for testing platform-specific adapters. The system integrates with the Agent base class so test fixtures can create, configure, and exercise agents in isolation, with the Tool & Capability System so tool execution can be mocked and asserted, with the LLM Integration system so LLM completion requests can be mocked with deterministic responses, with the Memory & Context Management system so memory backends can be mocked, with the Communication & Messaging system so transports can be mocked, with the Workflow & Orchestration system so workflow execution can be tested step-by-step, with the Observability & Debugging system so execution recordings feed into replay testing, with the Error Handling & Resilience system so retry and circuit breaker behavior can be tested deterministically, with `automojo-extension` so test plugins and custom test harnesses can be discovered and loaded, with `automojo-credentials` for mock credential injection, with `automojo-dataprofiles` for mock data profile injection, and with `automojo-this-app` for test environment configuration.
 
 ## Glossary
 
@@ -22,8 +22,8 @@ The Testing & Quality feature extends the `automojo-agent-kit` SDK with a compre
 - **ExecutionTraceReplayer**: A component that reads an ExecutionTrace and replays the recorded events against an Agent instance, feeding recorded LLM responses and tool results back into the agent to reproduce the exact execution path. The replayer supports step-by-step replay with inspection at each event.
 - **ReplayConfiguration**: A configuration object that defines replay behavior, including whether to enforce strict event ordering, whether to fail on unexpected events, and the tolerance for timing differences.
 - **AgentInvariant**: An abstract base class representing a property-based invariant that must hold for an Agent across random inputs. Concrete implementations define specific invariants such as state machine transition validity, configuration round-trip fidelity, and serialization consistency.
-- **InvariantTestRunner**: A component that executes AgentInvariant definitions using the Hypothesis library, generating random inputs according to defined strategies and verifying that the invariant holds for all generated cases.
-- **InvariantStrategy**: A component that provides Hypothesis strategies for generating random agent-related data including AgentConfiguration dictionaries, AgentIdentity fields, LifecycleState sequences, ToolSchema definitions, LlmMessage sequences, MemoryEntry objects, and WorkflowDefinition graphs.
+- **InvariantTestRunner**: A component that executes AgentInvariant definitions using the automojo.testbase.properties engine, generating random inputs according to defined strategies and verifying that the invariant holds for all generated cases.
+- **InvariantStrategy**: A component that provides automojo.testbase.properties strategies for generating random agent-related data including AgentConfiguration dictionaries, AgentIdentity fields, LifecycleState sequences, ToolSchema definitions, LlmMessage sequences, MemoryEntry objects, and WorkflowDefinition graphs.
 - **InvariantResult**: An immutable object encapsulating the outcome of an invariant test run, containing the invariant name, a pass/fail flag, the number of test cases executed, an optional counterexample dictionary when the invariant fails, and the execution duration.
 - **PlatformTestHarness**: An abstract base class representing a simulated platform environment for integration testing of platform-specific adapters. Concrete implementations provide simulated AWS, Azure, GCP, and local environments with mock service endpoints.
 - **SimulatedPlatformService**: An abstract base class representing a simulated cloud service within a PlatformTestHarness, providing mock endpoints for compute, storage, and messaging services that platform adapters interact with.
@@ -325,11 +325,11 @@ The Testing & Quality feature extends the `automojo-agent-kit` SDK with a compre
 
 ### Requirement 15: Agent Invariant Definition
 
-**User Story:** As a developer, I want to define property-based invariants for agent behavior, so that I can verify that agent properties hold across random inputs using the Hypothesis library.
+**User Story:** As a developer, I want to define property-based invariants for agent behavior, so that I can verify that agent properties hold across random inputs using the automojo.testbase.properties engine.
 
 #### Acceptance Criteria
 
-1. THE AgentInvariant base class SHALL define an abstract interface that includes a name property, a description property, a strategy method that returns a Hypothesis strategy for generating test inputs, and a verify method that accepts generated inputs and raises an InvariantViolationError when the invariant does not hold.
+1. THE AgentInvariant base class SHALL define an abstract interface that includes a name property, a description property, a strategy method that returns an automojo.testbase.properties strategy for generating test inputs, and a verify method that accepts generated inputs and raises an InvariantViolationError when the invariant does not hold.
 2. THE AgentInvariant base class SHALL require all subclasses to provide an implementation for the strategy and verify methods.
 3. THE framework SHALL provide a StateMachineTransitionInvariant that verifies all valid state transitions in the AgentStateMachine produce the expected target state, and all invalid transitions raise a SemanticError.
 4. THE framework SHALL provide a ConfigurationRoundTripInvariant that verifies FOR ALL valid AgentConfiguration dictionaries, converting to JSON and then parsing back produces an equivalent AgentConfiguration object.
@@ -342,29 +342,29 @@ The Testing & Quality feature extends the `automojo-agent-kit` SDK with a compre
 
 ### Requirement 16: Invariant Strategy Generators
 
-**User Story:** As a developer, I want Hypothesis strategies for generating random agent-related data, so that I can use property-based testing to verify agent invariants across diverse inputs.
+**User Story:** As a developer, I want automojo.testbase.properties strategies for generating random agent-related data, so that I can use property-based testing to verify agent invariants across diverse inputs.
 
 #### Acceptance Criteria
 
-1. THE InvariantStrategy SHALL provide a Hypothesis strategy for generating valid AgentConfiguration dictionaries with random identity fields, behavior settings, and optional credential and data profile references.
-2. THE InvariantStrategy SHALL provide a Hypothesis strategy for generating valid AgentIdentity instances with random identifier strings, name strings, version strings, and tag dictionaries.
-3. THE InvariantStrategy SHALL provide a Hypothesis strategy for generating valid LifecycleState transition sequences that follow the AgentStateMachine transition rules.
-4. THE InvariantStrategy SHALL provide a Hypothesis strategy for generating valid ToolSchema definitions with random parameter names, types, required flags, and default values.
-5. THE InvariantStrategy SHALL provide a Hypothesis strategy for generating valid LlmMessage instances with random role values, content strings, and metadata dictionaries.
-6. THE InvariantStrategy SHALL provide a Hypothesis strategy for generating valid LlmConversation instances with random sequences of LlmMessage objects.
-7. THE InvariantStrategy SHALL provide a Hypothesis strategy for generating valid MemoryEntry instances with random content, tags, metadata, scope, and timestamps.
-8. THE InvariantStrategy SHALL provide a Hypothesis strategy for generating valid Message instances with random sender, recipient, payload, headers, and message pattern values.
+1. THE InvariantStrategy SHALL provide an automojo.testbase.properties strategy for generating valid AgentConfiguration dictionaries with random identity fields, behavior settings, and optional credential and data profile references.
+2. THE InvariantStrategy SHALL provide an automojo.testbase.properties strategy for generating valid AgentIdentity instances with random identifier strings, name strings, version strings, and tag dictionaries.
+3. THE InvariantStrategy SHALL provide an automojo.testbase.properties strategy for generating valid LifecycleState transition sequences that follow the AgentStateMachine transition rules.
+4. THE InvariantStrategy SHALL provide an automojo.testbase.properties strategy for generating valid ToolSchema definitions with random parameter names, types, required flags, and default values.
+5. THE InvariantStrategy SHALL provide an automojo.testbase.properties strategy for generating valid LlmMessage instances with random role values, content strings, and metadata dictionaries.
+6. THE InvariantStrategy SHALL provide an automojo.testbase.properties strategy for generating valid LlmConversation instances with random sequences of LlmMessage objects.
+7. THE InvariantStrategy SHALL provide an automojo.testbase.properties strategy for generating valid MemoryEntry instances with random content, tags, metadata, scope, and timestamps.
+8. THE InvariantStrategy SHALL provide an automojo.testbase.properties strategy for generating valid Message instances with random sender, recipient, payload, headers, and message pattern values.
 9. ALL strategies SHALL constrain generated values to valid ranges and formats as defined by the corresponding class constructors, avoiding generation of values that would be rejected at construction time.
 
 ### Requirement 17: Invariant Test Runner
 
-**User Story:** As a developer, I want a test runner that executes agent invariants using the Hypothesis library and reports results, so that I can integrate property-based testing into the `testbase` test suite.
+**User Story:** As a developer, I want a test runner that executes agent invariants using the automojo.testbase.properties engine and reports results, so that I can integrate property-based testing into the `testbase` test suite.
 
 #### Acceptance Criteria
 
 1. THE InvariantTestRunner SHALL accept a list of AgentInvariant instances at construction time.
-2. THE InvariantTestRunner SHALL provide a run method that executes all configured invariants using the Hypothesis library and returns a list of InvariantResult objects.
-3. THE InvariantTestRunner SHALL accept an optional max_examples integer parameter that controls the number of test cases Hypothesis generates per invariant, defaulting to 100.
+2. THE InvariantTestRunner SHALL provide a run method that executes all configured invariants using the automojo.testbase.properties engine and returns a list of InvariantResult objects.
+3. THE InvariantTestRunner SHALL accept an optional max_examples integer parameter that controls the number of test cases automojo.testbase.properties generates per invariant, defaulting to 100.
 4. WHEN an invariant holds for all generated test cases, THE InvariantTestRunner SHALL return an InvariantResult with a pass flag of True and the count of test cases executed.
 5. WHEN an invariant fails for a generated test case, THE InvariantTestRunner SHALL return an InvariantResult with a pass flag of False, the counterexample dictionary, and the count of test cases executed before failure.
 6. THE InvariantTestRunner SHALL provide a run_single method that accepts an AgentInvariant instance and returns a single InvariantResult.

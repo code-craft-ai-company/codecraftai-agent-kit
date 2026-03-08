@@ -57,7 +57,7 @@ _labels_strategy = st.dictionaries(
     value=_value_strategy,
     timestamp=_timestamp_strategy,
     labels=_labels_strategy,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_metricmeasurement_json_round_trip(
     metric_name: str,

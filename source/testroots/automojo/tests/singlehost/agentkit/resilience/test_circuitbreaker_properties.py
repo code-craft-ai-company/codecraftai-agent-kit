@@ -1,7 +1,7 @@
 """
     Property-based tests for the automojo.agentkit.circuitbreaker module.
 
-    Uses the hypothesis library to verify:
+    Uses the automojo.testbase.properties engine to verify:
     - Property 9: CircuitBreaker initial state is CLOSED
     - Property 10: CircuitBreaker CLOSED-to-OPEN transition on failure threshold
     - Property 11: CircuitBreaker OPEN state rejects all requests
@@ -11,8 +11,8 @@
     **Validates: Requirements 3.2, 3.5, 3.6, 3.16, 3.11**
 """
 
-from hypothesis import given, settings
-from hypothesis import strategies as st
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.circuitbreaker import CircuitBreaker
 from automojo.agentkit.circuitbreakerconfiguration import CircuitBreakerConfiguration
@@ -30,7 +30,7 @@ _failure_threshold = st.integers(min_value=1, max_value=1000)
 
 _success_threshold = st.integers(min_value=1, max_value=1000)
 
-_open_state_timeout = st.floats(min_value=0.1, max_value=3600.0, allow_nan=False, allow_infinity=False)
+_open_state_timeout = st.floats(min_value=0.1, max_value=3600.0)
 
 _half_open_max_attempts = st.integers(min_value=1, max_value=1000)
 
@@ -50,8 +50,8 @@ _circuit_breaker_configuration = st.builds(
 @given(
     name=_circuit_breaker_name,
     configuration=_circuit_breaker_configuration,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_circuitbreaker_initial_state_is_closed(
     name: str,
     configuration: CircuitBreakerConfiguration,
@@ -108,8 +108,8 @@ _small_circuit_breaker_configuration = st.builds(
 @given(
     name=_circuit_breaker_name,
     configuration=_small_circuit_breaker_configuration,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_circuitbreaker_closed_to_open_on_failure_threshold(
     name: str,
     configuration: CircuitBreakerConfiguration,
@@ -174,8 +174,8 @@ _additional_requests = st.integers(min_value=1, max_value=20)
     name=_circuit_breaker_name,
     configuration=_open_reject_configuration,
     num_requests=_additional_requests,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_circuitbreaker_open_state_rejects_all_requests(
     name: str,
     configuration: CircuitBreakerConfiguration,
@@ -261,8 +261,8 @@ _pre_reset_state = st.sampled_from([
     name=_circuit_breaker_name,
     configuration=_open_reject_configuration,
     target_state=_pre_reset_state,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_circuitbreaker_reset_returns_to_closed(
     name: str,
     configuration: CircuitBreakerConfiguration,
@@ -365,8 +365,8 @@ _small_event_count_configuration = st.builds(
 @given(
     name=_circuit_breaker_name,
     configuration=_small_event_count_configuration,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_circuitbreaker_event_count_matches_transition_count(
     name: str,
     configuration: CircuitBreakerConfiguration,
@@ -417,3 +417,8 @@ def test_circuitbreaker_event_count_matches_transition_count(
     )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

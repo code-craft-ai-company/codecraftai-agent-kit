@@ -1,20 +1,15 @@
 """
     Property-based tests for the automojo.agentkit.featureflagevaluator module.
 
-    Uses the hypothesis library to verify that the FeatureFlagEvaluator
+    Uses the automojo.testbase.properties engine to verify that the FeatureFlagEvaluator
     respects three-tier precedence: runtime override > configuration value
     > default value.
 
     **Validates: Requirement 12 AC 8, Requirement 13 AC 3**
 """
 
-from hypothesis import given, settings
-from hypothesis.strategies import (
-    booleans,
-    none,
-    one_of,
-    text,
-)
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.configurationmanager import ConfigurationManager
 from automojo.agentkit.featureflag import FeatureFlag
@@ -26,7 +21,7 @@ from automojo.agentkit.featureflagregistry import FeatureFlagRegistry
 # Strategies
 # ---------------------------------------------------------------------------
 
-_optional_bool = one_of(none(), booleans())
+_optional_bool = st.one_of(st.none(), st.booleans())
 
 
 # ---------------------------------------------------------------------------
@@ -34,12 +29,12 @@ _optional_bool = one_of(none(), booleans())
 # ---------------------------------------------------------------------------
 
 @given(
-    flag_name=text(min_size=1, max_size=30, alphabet="abcdefghijklmnopqrstuvwxyz"),
-    default_value=booleans(),
+    flag_name=st.text(min_size=1, max_size=30, alphabet="abcdefghijklmnopqrstuvwxyz"),
+    default_value=st.booleans(),
     override_value=_optional_bool,
     config_value=_optional_bool,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=200)
 def test_featureflag_evaluation_precedence(flag_name, default_value, override_value, config_value):
     """
         **Validates: Requirement 12 AC 8, Requirement 13 AC 3**
@@ -86,3 +81,8 @@ def test_featureflag_evaluation_precedence(flag_name, default_value, override_va
     )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

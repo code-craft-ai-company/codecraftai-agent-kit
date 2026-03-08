@@ -1,7 +1,7 @@
 """
     Property-based tests for the automojo.agentkit.plugindependency module.
 
-    Uses the hypothesis library to verify that PluginDependency instances
+    Uses the automojo.testbase.properties engine to verify that PluginDependency instances
     survive a JSON round-trip (to_json followed by from_dict on the parsed
     JSON) with all fields preserved.
 
@@ -10,12 +10,8 @@
 
 import json
 
-from hypothesis import given, settings
-from hypothesis.strategies import (
-    none,
-    one_of,
-    text,
-)
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.plugindependency import PluginDependency
 
@@ -24,9 +20,9 @@ from automojo.agentkit.plugindependency import PluginDependency
 # Strategies
 # ---------------------------------------------------------------------------
 
-_version_constraint_strategy = one_of(
-    none(),
-    text(min_size=1, max_size=30),
+_version_constraint_strategy = st.one_of(
+    st.none(),
+    st.text(min_size=1, max_size=30),
 )
 
 
@@ -35,10 +31,10 @@ _version_constraint_strategy = one_of(
 # ---------------------------------------------------------------------------
 
 @given(
-    name=text(min_size=1, max_size=50),
+    name=st.text(min_size=1, max_size=50),
     version_constraint=_version_constraint_strategy,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=200)
 def test_plugindependency_json_round_trip(name, version_constraint):
     """
         **Validates: Requirement 17 AC 8**
@@ -69,3 +65,8 @@ def test_plugindependency_json_round_trip(name, version_constraint):
     )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

@@ -310,7 +310,7 @@ Implement the Testing & Quality feature for the `automojo-agent-kit` SDK. The im
 
   - [ ] 11.2 Create `testing/invariants/agentinvariant.py` with AgentInvariant abstract base class
     - Abstract properties: name, description
-    - Abstract methods: strategy (returns Hypothesis SearchStrategy), verify (accepts generated input, raises InvariantViolationError)
+    - Abstract methods: strategy (returns Strategy from automojo.testbase.properties.strategies), verify (accepts generated input, raises InvariantViolationError)
     - Implement __repr__ and __str__ methods
     - _Requirements: 15.1, 15.2, 15.9, 15.10_
 
@@ -321,7 +321,7 @@ Implement the Testing & Quality feature for the `automojo-agent-kit` SDK. The im
     - _Requirements: 18.1, 18.2, 18.3, 18.4, 18.5, 18.6, 18.7, 18.8, 18.9, 27.10_
 
   - [ ] 11.4 Create `testing/invariants/invariantstrategy.py` with InvariantStrategy class
-    - Static methods providing Hypothesis strategies: agent_configurations, agent_identities, lifecycle_state_sequences
+    - Static methods providing testbase property strategies: agent_configurations, agent_identities, lifecycle_state_sequences
     - Static methods: tool_schemas, llm_messages, llm_conversations, memory_entries, messages
     - All strategies constrain generated values to valid ranges and formats
     - _Requirements: 16.1, 16.2, 16.3, 16.4, 16.5, 16.6, 16.7, 16.8, 16.9_
@@ -341,7 +341,7 @@ Implement the Testing & Quality feature for the `automojo-agent-kit` SDK. The im
 
   - [ ] 11.7 Create `testing/invariants/invarianttestrunner.py` with InvariantTestRunner class
     - Accept list of AgentInvariant instances and optional max_examples (default 100)
-    - Implement run method executing all invariants via Hypothesis, returning list of InvariantResult
+    - Implement run method executing all invariants via automojo.testbase.properties, returning list of InvariantResult
     - Implement run_single method for individual invariant execution
     - Discover additional invariants from "automojo.agentkit.testing.invariants" ExtensionPoint
     - Log invariant execution at INFO level, failures at WARNING level

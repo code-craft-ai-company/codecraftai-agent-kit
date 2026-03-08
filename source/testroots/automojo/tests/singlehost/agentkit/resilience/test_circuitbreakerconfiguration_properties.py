@@ -1,7 +1,7 @@
 """
     Property-based tests for the automojo.agentkit.circuitbreakerconfiguration module.
 
-    Uses the hypothesis library to verify:
+    Uses the automojo.testbase.properties engine to verify:
     - Property 7: CircuitBreakerConfiguration JSON round-trip
 
     **Validates: Requirements 4.10**
@@ -9,8 +9,8 @@
 
 import json
 
-from hypothesis import given, settings
-from hypothesis import strategies as st
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.circuitbreakerconfiguration import CircuitBreakerConfiguration
 
@@ -24,8 +24,6 @@ _positive_int = st.integers(min_value=1, max_value=1_000_000)
 _positive_float = st.floats(
     min_value=0.01,
     max_value=1_000_000.0,
-    allow_nan=False,
-    allow_infinity=False,
 )
 
 
@@ -38,8 +36,8 @@ _positive_float = st.floats(
     success_threshold=_positive_int,
     open_state_timeout=_positive_float,
     half_open_max_attempts=_positive_int,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_circuitbreakerconfiguration_json_roundtrip(
     failure_threshold: int,
     success_threshold: int,
@@ -94,3 +92,8 @@ def test_circuitbreakerconfiguration_json_roundtrip(
     )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

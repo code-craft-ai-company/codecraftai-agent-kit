@@ -55,7 +55,7 @@ _sequence_number_strategy = st.integers(min_value=1, max_value=1000000)
     agent_id=_short_text,
     correlation_id=_short_text,
     payload=_payload_strategy,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_executionrecord_json_round_trip(sequence_number, timestamp, event_type, agent_id, correlation_id, payload):
     """

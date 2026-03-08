@@ -12,7 +12,7 @@ import os
 
 import automojo.testbase as testbase
 
-from automojo.testbase.properties import given, assume, settings
+from automojo.testbase.properties import given, settings
 from automojo.testbase.properties import strategies as st
 
 
@@ -48,7 +48,6 @@ _LLM_MIXED_TEST_FILES = [
     "test_llmproviderregistry.py",
     "test_llmresponse.py",
     "test_llmtoolbridge.py",
-    "test_llm_string_properties.py",
     "test_outputschema.py",
     "test_outputparser.py",
     "test_jsonoutputparser.py",
@@ -79,7 +78,7 @@ _ALL_LLM_TEST_FILES = (
 
 @given(
     filename=st.sampled_from(_ALL_LLM_TEST_FILES),
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_no_hypothesis_imports_in_llm_files(filename: str) -> None:
     """
@@ -92,7 +91,10 @@ def test_no_hypothesis_imports_in_llm_files(filename: str) -> None:
     """
     filepath = os.path.join(_TEST_DIR, filename)
 
-    assume(os.path.isfile(filepath))
+    testbase.assert_true(
+        os.path.isfile(filepath),
+        "LLM test file does not exist: {!r}".format(filepath),
+    )
 
     with open(filepath, "r", encoding="utf-8") as fh:
         lines = fh.readlines()

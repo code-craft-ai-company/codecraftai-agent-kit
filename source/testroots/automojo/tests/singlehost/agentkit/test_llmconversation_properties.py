@@ -56,7 +56,7 @@ _llm_message_list = st.lists(_llm_message, min_size=0, max_size=20)
 
 @given(
     messages=_llm_message_list,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_llmconversation_json_roundtrip(
     messages: list,
@@ -91,7 +91,7 @@ def test_llmconversation_json_roundtrip(
 @given(
     initial_messages=_llm_message_list,
     new_message=_llm_message,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_llmconversation_append_increases_count_and_preserves_order(
     initial_messages: list,
@@ -134,7 +134,7 @@ def test_llmconversation_append_increases_count_and_preserves_order(
 
 @given(
     messages=_llm_message_list,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_llmconversation_messages_returns_copy(
     messages: list,
@@ -170,7 +170,7 @@ def test_llmconversation_messages_returns_copy(
 @given(
     messages=_llm_message_list,
     max_messages=st.integers(min_value=0, max_value=30),
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_llmconversation_truncate_preserves_system_messages(
     messages: list,

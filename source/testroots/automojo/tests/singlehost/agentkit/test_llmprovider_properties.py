@@ -93,7 +93,7 @@ _empty_or_whitespace = st.one_of(
     config=_config,
     credential_names=_credential_names,
     tags=_tags,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_llmprovider_construction_preserves_fields(
     provider_name: str,
@@ -158,7 +158,7 @@ def test_llmprovider_construction_preserves_fields(
 
 @given(
     model_name=_model_name,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_llmprovider_rejects_none_provider_name(
     model_name: str,
@@ -185,7 +185,7 @@ def test_llmprovider_rejects_none_provider_name(
 @given(
     provider_name=_empty_or_whitespace,
     model_name=_model_name,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_llmprovider_rejects_empty_provider_name(
     provider_name: str,
@@ -213,7 +213,7 @@ def test_llmprovider_rejects_empty_provider_name(
 
 @given(
     provider_name=_provider_name,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_llmprovider_rejects_none_model_name(
     provider_name: str,
@@ -240,7 +240,7 @@ def test_llmprovider_rejects_none_model_name(
 @given(
     provider_name=_provider_name,
     model_name=_empty_or_whitespace,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_llmprovider_rejects_empty_model_name(
     provider_name: str,

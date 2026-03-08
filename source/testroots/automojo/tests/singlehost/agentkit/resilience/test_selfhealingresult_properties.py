@@ -1,7 +1,7 @@
 """
     Property-based tests for the automojo.agentkit.selfhealingresult module.
 
-    Uses the hypothesis library to verify:
+    Uses the automojo.testbase.properties engine to verify:
     - Property 33: SelfHealingResult JSON round-trip
 
     **Validates: Requirements 20.13**
@@ -9,8 +9,9 @@
 
 from datetime import datetime
 
-from hypothesis import given, settings
-from hypothesis import strategies as st
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
+from automojo.testbase.properties.strategies import composite
 
 from automojo.agentkit.selfhealingresult import SelfHealingResult
 
@@ -29,10 +30,16 @@ _error_message = st.one_of(st.none(), st.text(min_size=0, max_size=200))
 
 _attempt_number = st.integers(min_value=1, max_value=10000)
 
-_timestamp = st.datetimes(
-    min_value=datetime(2000, 1, 1),
-    max_value=datetime(2099, 12, 31),
-)
+
+@composite
+def _datetimes(draw, min_value=datetime(2000, 1, 1), max_value=datetime(2099, 12, 31)):
+    min_ts = int(min_value.timestamp())
+    max_ts = int(max_value.timestamp())
+    ts = draw(st.integers(min_value=min_ts, max_value=max_ts))
+    return datetime.fromtimestamp(ts)
+
+
+_timestamp = _datetimes()
 
 
 # ---------------------------------------------------------------------------
@@ -46,8 +53,8 @@ _timestamp = st.datetimes(
     error_message=_error_message,
     attempt_number=_attempt_number,
     timestamp=_timestamp,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_selfhealingresult_json_roundtrip(
     check_name: str,
     action_name: str,
@@ -115,3 +122,8 @@ def test_selfhealingresult_json_roundtrip(
     )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

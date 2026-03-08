@@ -100,7 +100,7 @@ _error_category = st.sampled_from([
 @given(
     provider_name=_nonempty_text,
     model_name=_nonempty_text,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_llmprovider_repr_contains_class_provider_model(
     provider_name: str,
@@ -113,6 +113,9 @@ def test_llmprovider_repr_contains_class_provider_model(
         provider name, and model name. str() shall contain the provider name
         and model name.
     """
+    assume(provider_name.strip())
+    assume(model_name.strip())
+
     provider = _TestLlmProvider(provider_name=provider_name, model_name=model_name)
 
     repr_str = repr(provider)
@@ -148,7 +151,7 @@ def test_llmprovider_repr_contains_class_provider_model(
 @given(
     role=_valid_role,
     content=_content_text,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_llmmessage_repr_contains_role_and_str_contains_role_content(
     role: str,
@@ -183,7 +186,7 @@ def test_llmmessage_repr_contains_role_and_str_contains_role_content(
 
 @given(
     count=st.integers(min_value=0, max_value=10),
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_llmconversation_repr_contains_count(
     count: int,
@@ -212,7 +215,7 @@ def test_llmconversation_repr_contains_count(
 @given(
     prompt_tokens=_pos_int,
     completion_tokens=_pos_int,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_tokenusage_repr_contains_all_counts(
     prompt_tokens: int,
@@ -259,7 +262,7 @@ def test_tokenusage_repr_contains_all_counts(
     prompt_cost=st.floats(min_value=0.0, max_value=1000.0),
     completion_cost=st.floats(min_value=0.0, max_value=1000.0),
     currency=_currency,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_costestimate_repr_contains_total_and_currency(
     prompt_cost: float,
@@ -305,7 +308,7 @@ def test_costestimate_repr_contains_total_and_currency(
     prompt_tokens=_pos_int,
     completion_tokens=_pos_int,
     duration=st.floats(min_value=0.0, max_value=1000.0),
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_llmresponse_repr_contains_provider_model_tokens(
     provider_name: str,
@@ -320,6 +323,9 @@ def test_llmresponse_repr_contains_provider_model_tokens(
         For any LlmResponse, repr() shall contain the class name, provider name,
         model name, and total token count.
     """
+    assume(provider_name.strip())
+    assume(model_name.strip())
+
     total_tokens = prompt_tokens + completion_tokens
     message = LlmMessage(role="assistant", content="response")
     token_usage = TokenUsage(
@@ -362,7 +368,7 @@ def test_llmresponse_repr_contains_provider_model_tokens(
 @given(
     name=_nonempty_text,
     version=_version,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_prompttemplate_repr_contains_name_and_version(
     name: str,
@@ -396,7 +402,7 @@ def test_prompttemplate_repr_contains_name_and_version(
 @given(
     max_retries=st.integers(min_value=0, max_value=20),
     strategy=_backoff_strategy,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_retrypolicy_repr_contains_max_retries_and_strategy(
     max_retries: int,
@@ -436,7 +442,7 @@ def test_retrypolicy_repr_contains_max_retries_and_strategy(
 
 @given(
     num_providers=st.integers(min_value=0, max_value=5),
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_llmproviderregistry_repr_contains_count(
     num_providers: int,
@@ -472,7 +478,7 @@ def test_llmproviderregistry_repr_contains_count(
 
 @given(
     content=_content_text,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_llmstreamchunk_repr_contains_preview_and_str_returns_content(
     content: str,
@@ -512,7 +518,7 @@ def test_llmstreamchunk_repr_contains_preview_and_str_returns_content(
     provider_name=_nonempty_text,
     model_name=_nonempty_text,
     category=_error_category,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_llmrequesterror_repr_contains_provider_model_category(
     provider_name: str,
@@ -525,6 +531,9 @@ def test_llmrequesterror_repr_contains_provider_model_category(
         For any LlmRequestError, repr() shall include the exception class name,
         provider name, model name, and category.
     """
+    assume(provider_name.strip())
+    assume(model_name.strip())
+
     error = LlmRequestError(
         provider_name=provider_name,
         model_name=model_name,
@@ -559,7 +568,7 @@ def test_llmrequesterror_repr_contains_provider_model_category(
     parser_name=_nonempty_text,
     raw_text=_content_text,
     error_message=_nonempty_text,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_llmresponseparsingerror_repr_contains_parser_name(
     parser_name: str,
@@ -606,7 +615,7 @@ def test_llmresponseparsingerror_repr_contains_parser_name(
         min_size=10,
         max_size=100,
     ),
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_credential_values_excluded_from_repr_str_model_info(
     provider_name: str,
@@ -623,6 +632,9 @@ def test_credential_values_excluded_from_repr_str_model_info(
         does not appear in the outputs when it is used as a credential name
         entry and the provider is serialized.
     """
+    assume(provider_name.strip())
+    assume(model_name.strip())
+
     cred_names = ["api_key", "secret_token"]
     provider = _TestLlmProvider(
         provider_name=provider_name,

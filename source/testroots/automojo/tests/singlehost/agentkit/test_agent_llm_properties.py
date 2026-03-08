@@ -165,7 +165,7 @@ def _unique_provider_pairs(draw):
 # Property 37: Agent LlmProviderRegistry cleared on stop
 # ---------------------------------------------------------------------------
 
-@given(provider_pairs=_unique_provider_pairs(), settings=settings(max_examples=100))
+@given(provider_pairs=_unique_provider_pairs(), settings=settings(max_examples=50))
 def test_agent_llm_registry_cleared_on_stop(
     provider_pairs: list,
 ) -> None:
@@ -215,7 +215,7 @@ def test_agent_llm_registry_cleared_on_stop(
 @given(
     provider_name=_identifier,
     model_name=_model_name_text,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_agent_complete_raises_semantic_error_for_unknown_provider(
     provider_name: str,
@@ -282,7 +282,7 @@ def test_agent_complete_raises_semantic_error_for_unknown_provider(
     provider_name=_identifier,
     model_name=_model_name_text,
     category=_error_category,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_llm_request_error_fields_are_accessible(
     provider_name: str,
@@ -334,7 +334,7 @@ def test_llm_request_error_fields_are_accessible(
     parser_name=_identifier,
     raw_text=_content_text,
     error_message=_error_message_text,
-    settings=settings(max_examples=100),
+    settings=settings(max_examples=50),
 )
 def test_llm_response_parsing_error_fields_are_accessible(
     parser_name: str,

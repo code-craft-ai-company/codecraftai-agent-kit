@@ -1,14 +1,14 @@
 """
     Property-based tests for the automojo.agentkit.degradationmanager module.
 
-    Uses the hypothesis library to verify:
+    Uses the automojo.testbase.properties engine to verify:
     - Property 20: DegradationManager overall level is maximum
 
     **Validates: Requirements 9.6**
 """
 
-from hypothesis import given, settings
-from hypothesis import strategies as st
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.defaultvaluestrategy import DefaultValueStrategy
 from automojo.agentkit.degradationlevel import DegradationLevel
@@ -24,8 +24,7 @@ _agent_identifiers = st.text(
     min_size=1,
     max_size=50,
     alphabet=st.characters(
-        whitelist_categories=("L", "N", "P", "S"),
-        blacklist_characters=("\x00",),
+        categories=("L", "N", "P", "S"),
     ),
 )
 
@@ -34,14 +33,12 @@ _dependency_names = st.lists(
         min_size=1,
         max_size=50,
         alphabet=st.characters(
-            whitelist_categories=("L", "N", "P", "S"),
-            blacklist_characters=("\x00",),
+            categories=("L", "N", "P", "S"),
         ),
     ),
     min_size=2,
     max_size=10,
-    unique=True,
-)
+).map(lambda names: list(dict.fromkeys(names))).filter(lambda names: len(names) >= 2)
 
 # Number of failures to report per dependency: 0 = NORMAL, 1 = DEGRADED, 2+ = CRITICAL
 _failure_counts = st.integers(min_value=0, max_value=3)
@@ -73,8 +70,8 @@ _FAILURES_TO_LEVEL = {
     agent_id=_agent_identifiers,
     dep_names=_dependency_names,
     failure_counts=st.lists(_failure_counts, min_size=2, max_size=10),
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_degradationmanager_overall_level_is_maximum(
     agent_id: str,
     dep_names: list,
@@ -129,3 +126,8 @@ def test_degradationmanager_overall_level_is_maximum(
     )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

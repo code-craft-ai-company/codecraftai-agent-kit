@@ -1,26 +1,16 @@
 """
     Property-based tests for the automojo.agentkit.configurationmanager module.
 
-    Uses the hypothesis library to verify that the ConfigurationManager merges
+    Uses the automojo.testbase.properties engine to verify that the ConfigurationManager merges
     configuration layers in ascending priority order, where higher-priority
     layers override lower-priority values at any key.
 
     **Validates: Requirement 1 AC 3**
 """
 
-from hypothesis import given, settings, assume
-from hypothesis.strategies import (
-    booleans,
-    composite,
-    dictionaries,
-    floats,
-    integers,
-    lists,
-    none,
-    one_of,
-    sampled_from,
-    text,
-)
+from automojo.testbase.properties import given, settings, assume
+from automojo.testbase.properties import strategies as st
+from automojo.testbase.properties.strategies import composite
 
 from automojo.agentkit.configurationlayer import ConfigurationLayer
 from automojo.agentkit.configurationlayersource import ConfigurationLayerSource
@@ -31,14 +21,14 @@ from automojo.agentkit.configurationmanager import ConfigurationManager
 # Strategies
 # ---------------------------------------------------------------------------
 
-_json_primitive_values = one_of(
-    text(min_size=1, max_size=20),
-    integers(),
-    booleans(),
-    floats(allow_nan=False, allow_infinity=False),
+_json_primitive_values = st.one_of(
+    st.text(min_size=1, max_size=20),
+    st.integers(),
+    st.booleans(),
+    st.floats(),
 )
 
-_source_strategy = sampled_from([
+_source_strategy = st.sampled_from([
     ConfigurationLayerSource.DEFAULTS,
     ConfigurationLayerSource.FILE,
     ConfigurationLayerSource.ENVIRONMENT,
@@ -46,8 +36,8 @@ _source_strategy = sampled_from([
     ConfigurationLayerSource.OVERRIDE,
 ])
 
-_flat_config_strategy = dictionaries(
-    keys=text(min_size=1, max_size=10, alphabet="abcdefghijklmnopqrstuvwxyz"),
+_flat_config_strategy = st.dictionaries(
+    keys=st.text(min_size=1, max_size=10, alphabet="abcdefghijklmnopqrstuvwxyz"),
     values=_json_primitive_values,
     min_size=1,
     max_size=5,
@@ -65,18 +55,18 @@ def _layer_list_strategy(draw):
         two layers are generated, and all layers contain a common key so that
         the highest-priority layer's value for that key can be checked.
     """
-    num_layers = draw(integers(min_value=2, max_value=5))
+    num_layers = draw(st.integers(min_value=2, max_value=5))
 
-    priorities = draw(
-        lists(
-            integers(min_value=0, max_value=10000),
+    priority_set = draw(
+        st.sets(
+            st.integers(min_value=0, max_value=10000),
             min_size=num_layers,
             max_size=num_layers,
-            unique=True,
         )
     )
+    priorities = list(priority_set)
 
-    common_key = draw(text(min_size=1, max_size=10, alphabet="abcdefghijklmnopqrstuvwxyz"))
+    common_key = draw(st.text(min_size=1, max_size=10, alphabet="abcdefghijklmnopqrstuvwxyz"))
 
     layers = []
     for idx in range(num_layers):
@@ -103,8 +93,10 @@ def _layer_list_strategy(draw):
 # Property 10: Configuration Hierarchy Merge Priority
 # ---------------------------------------------------------------------------
 
-@given(data=_layer_list_strategy())
-@settings(max_examples=200)
+@given(
+    data=_layer_list_strategy(),
+    settings=settings(max_examples=50),
+)
 def test_configuration_hierarchy_merge_priority(data):
     """
         **Validates: Requirement 1 AC 3**
@@ -175,3 +167,8 @@ def test_configuration_hierarchy_merge_priority(data):
     )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

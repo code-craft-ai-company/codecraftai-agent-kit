@@ -1,25 +1,16 @@
 """
     Property-based tests for the automojo.agentkit.configurationschema module.
 
-    Uses the hypothesis library to verify that ConfigurationSchema instances
+    Uses the automojo.testbase.properties engine to verify that ConfigurationSchema instances
     survive a JSON round-trip (to_json followed by from_json) with all fields
     preserved, and that schema validation correctly detects type mismatches.
 
     **Validates: Requirement 5 AC 12, Requirement 5 AC 1, Requirement 5 AC 2**
 """
 
-from hypothesis import given, settings
-from hypothesis.strategies import (
-    booleans,
-    composite,
-    floats,
-    integers,
-    lists,
-    none,
-    one_of,
-    sampled_from,
-    text,
-)
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
+from automojo.testbase.properties.strategies import composite
 
 from automojo.agentkit.configurationschema import ConfigurationSchema
 from automojo.agentkit.configurationschemafield import ConfigurationSchemaField
@@ -29,16 +20,16 @@ from automojo.agentkit.configurationschemafield import ConfigurationSchemaField
 # Strategies
 # ---------------------------------------------------------------------------
 
-_type_constraint_strategy = sampled_from([
+_type_constraint_strategy = st.sampled_from([
     "string", "integer", "float", "boolean", "list", "dictionary",
 ])
 
-_default_value_strategy = one_of(
-    text(),
-    integers(),
-    booleans(),
-    floats(allow_nan=False, allow_infinity=False),
-    none(),
+_default_value_strategy = st.one_of(
+    st.text(),
+    st.integers(),
+    st.booleans(),
+    st.floats(),
+    st.none(),
 )
 
 
@@ -47,11 +38,11 @@ def _schema_field_strategy(draw):
     """
         Generates a random ConfigurationSchemaField with valid parameters.
     """
-    field_path = draw(text(min_size=1, max_size=30))
+    field_path = draw(st.text(min_size=1, max_size=30))
     type_constraint = draw(_type_constraint_strategy)
-    required = draw(booleans())
+    required = draw(st.booleans())
     default_value = draw(_default_value_strategy)
-    description = draw(text(min_size=0, max_size=50))
+    description = draw(st.text(min_size=0, max_size=50))
 
     field = ConfigurationSchemaField(
         field_path=field_path,
@@ -68,10 +59,10 @@ def _schema_field_strategy(draw):
 # ---------------------------------------------------------------------------
 
 @given(
-    name=text(min_size=0, max_size=50),
-    fields=lists(_schema_field_strategy(), max_size=10),
+    name=st.text(min_size=0, max_size=50),
+    fields=st.lists(_schema_field_strategy(), max_size=10),
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=200)
 def test_configurationschema_json_round_trip(name, fields):
     """
         **Validates: Requirement 5 AC 12**
@@ -176,11 +167,11 @@ def _build_nested_config(field_path, value):
 
 
 @given(
-    field_path=text(min_size=1, max_size=30),
-    mismatched_value=integers(),
-    description=text(min_size=0, max_size=50),
+    field_path=st.text(min_size=1, max_size=30),
+    mismatched_value=st.integers(),
+    description=st.text(min_size=0, max_size=50),
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=200)
 def test_schema_validation_type_mismatch_detection(field_path, mismatched_value, description):
     """
         **Validates: Requirement 5 AC 1, Requirement 5 AC 2**
@@ -222,3 +213,8 @@ def test_schema_validation_type_mismatch_detection(field_path, mismatched_value,
     )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

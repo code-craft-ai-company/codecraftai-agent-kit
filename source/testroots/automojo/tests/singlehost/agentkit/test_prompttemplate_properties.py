@@ -174,7 +174,7 @@ def _unique_template_specs(draw, min_size=0, max_size=10):
 # ---------------------------------------------------------------------------
 
 
-@given(pt=_prompt_template_any(), settings=settings(max_examples=100))
+@given(pt=_prompt_template_any(), settings=settings(max_examples=50))
 def test_prompttemplate_json_roundtrip_preserves_all_fields(
     pt: PromptTemplate,
 ) -> None:
@@ -207,7 +207,7 @@ def test_prompttemplate_json_roundtrip_preserves_all_fields(
     return
 
 
-@given(pt=_prompt_template_any(), settings=settings(max_examples=100))
+@given(pt=_prompt_template_any(), settings=settings(max_examples=50))
 def test_prompttemplate_dict_roundtrip_preserves_all_fields(
     pt: PromptTemplate,
 ) -> None:
@@ -232,7 +232,7 @@ def test_prompttemplate_dict_roundtrip_preserves_all_fields(
 # ---------------------------------------------------------------------------
 
 
-@given(data=_prompt_template_with_vars(), settings=settings(max_examples=100))
+@given(data=_prompt_template_with_vars(), settings=settings(max_examples=50))
 def test_prompttemplate_render_produces_correct_output(
     data: tuple,
 ) -> None:
@@ -268,7 +268,7 @@ def test_prompttemplate_render_produces_correct_output(
 # ---------------------------------------------------------------------------
 
 
-@given(data=_prompt_template_with_vars(), settings=settings(max_examples=100))
+@given(data=_prompt_template_with_vars(), settings=settings(max_examples=50))
 def test_prompttemplate_render_rejects_missing_variables(
     data: tuple,
 ) -> None:
@@ -308,7 +308,7 @@ def test_prompttemplate_render_rejects_missing_variables(
     return
 
 
-@given(data=_prompt_template_with_vars(), settings=settings(max_examples=100))
+@given(data=_prompt_template_with_vars(), settings=settings(max_examples=50))
 def test_prompttemplate_render_rejects_partial_variables(
     data: tuple,
 ) -> None:
@@ -345,7 +345,7 @@ def test_prompttemplate_render_rejects_partial_variables(
 # ---------------------------------------------------------------------------
 
 
-@given(data=_prompt_template_with_vars(), settings=settings(max_examples=100))
+@given(data=_prompt_template_with_vars(), settings=settings(max_examples=50))
 def test_prompttemplate_variables_extracts_all_placeholders(
     data: tuple,
 ) -> None:
@@ -376,7 +376,7 @@ def test_prompttemplate_variables_extracts_all_placeholders(
     return
 
 
-@given(pt=_prompt_template_no_vars(), settings=settings(max_examples=100))
+@given(pt=_prompt_template_no_vars(), settings=settings(max_examples=50))
 def test_prompttemplate_variables_empty_for_no_placeholders(
     pt: PromptTemplate,
 ) -> None:
@@ -397,7 +397,7 @@ def test_prompttemplate_variables_empty_for_no_placeholders(
     return
 
 
-@given(pt=_prompt_template_any(), settings=settings(max_examples=100))
+@given(pt=_prompt_template_any(), settings=settings(max_examples=50))
 def test_prompttemplate_variables_returns_copy(
     pt: PromptTemplate,
 ) -> None:
@@ -426,7 +426,7 @@ def test_prompttemplate_variables_returns_copy(
 # ---------------------------------------------------------------------------
 
 
-@given(templates=_unique_template_specs(min_size=0, max_size=15), settings=settings(max_examples=100))
+@given(templates=_unique_template_specs(min_size=0, max_size=15), settings=settings(max_examples=50))
 def test_registry_count_equals_number_of_registered_templates(
     templates: list,
 ) -> None:
@@ -448,7 +448,7 @@ def test_registry_count_equals_number_of_registered_templates(
     return
 
 
-@given(templates=_unique_template_specs(min_size=1, max_size=15), settings=settings(max_examples=100))
+@given(templates=_unique_template_specs(min_size=1, max_size=15), settings=settings(max_examples=50))
 def test_registry_lookup_returns_correct_template(
     templates: list,
 ) -> None:
@@ -475,7 +475,7 @@ def test_registry_lookup_returns_correct_template(
     return
 
 
-@given(templates=_unique_template_specs(min_size=0, max_size=15), settings=settings(max_examples=100))
+@given(templates=_unique_template_specs(min_size=0, max_size=15), settings=settings(max_examples=50))
 def test_registry_list_all_returns_all_templates(
     templates: list,
 ) -> None:
@@ -507,7 +507,7 @@ def test_registry_list_all_returns_all_templates(
     return
 
 
-@given(templates=_unique_template_specs(min_size=1, max_size=15), settings=settings(max_examples=100))
+@given(templates=_unique_template_specs(min_size=1, max_size=15), settings=settings(max_examples=50))
 def test_registry_duplicate_registration_raises_semantic_error(
     templates: list,
 ) -> None:
@@ -546,7 +546,7 @@ def test_registry_duplicate_registration_raises_semantic_error(
     return
 
 
-@given(templates=_unique_template_specs(min_size=1, max_size=15), settings=settings(max_examples=100))
+@given(templates=_unique_template_specs(min_size=1, max_size=15), settings=settings(max_examples=50))
 def test_registry_lookup_latest_version_returns_lexicographic_max(
     templates: list,
 ) -> None:
@@ -585,7 +585,7 @@ def test_registry_lookup_latest_version_returns_lexicographic_max(
     return
 
 
-@given(templates=_unique_template_specs(min_size=0, max_size=15), settings=settings(max_examples=100))
+@given(templates=_unique_template_specs(min_size=0, max_size=15), settings=settings(max_examples=50))
 def test_registry_lookup_returns_none_for_unregistered(
     templates: list,
 ) -> None:

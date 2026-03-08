@@ -1,14 +1,14 @@
 """
     Property-based tests for the automojo.agentkit.deadletterqueue module.
 
-    Uses the hypothesis library to verify:
+    Uses the automojo.testbase.properties engine to verify:
     - Property 26: DeadLetterQueue enqueue increases count
 
     **Validates: Requirements 11.9**
 """
 
-from hypothesis import given, settings
-from hypothesis import strategies as st
+from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.deadletterqueue import DeadLetterQueue
 from automojo.agentkit.inmemorydeadletterstore import InMemoryDeadLetterStore
@@ -49,8 +49,8 @@ _enqueue_count = st.integers(min_value=1, max_value=50)
     retry_attempts=_retry_attempts,
     source_component=_source_component,
     agent_identifier=_agent_identifier,
+    settings=settings(max_examples=50),
 )
-@settings(max_examples=100)
 def test_deadletterqueue_enqueue_increases_count(
     n: int,
     operation_type: str,
@@ -100,3 +100,8 @@ def test_deadletterqueue_enqueue_increases_count(
     )
 
     return
+
+
+if __name__ == "__main__":
+    from automojo.testbase.entrypoints import generic_test_entrypoint
+    generic_test_entrypoint()

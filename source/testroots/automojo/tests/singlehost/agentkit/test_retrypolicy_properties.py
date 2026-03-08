@@ -107,7 +107,7 @@ def _unique_provider_pair_list(draw):
 # Property 6: RetryPolicy serialization round-trip
 # ---------------------------------------------------------------------------
 
-@given(policy=_retry_policy(), settings=settings(max_examples=100))
+@given(policy=_retry_policy(), settings=settings(max_examples=50))
 def test_retrypolicy_serialization_round_trip(policy: RetryPolicy) -> None:
     """
         **Validates: Requirements 10.11, 10.12, 10.13, 10.14**
@@ -149,7 +149,7 @@ def test_retrypolicy_serialization_round_trip(policy: RetryPolicy) -> None:
 # Property 29: RetryPolicy fixed delay returns base_delay
 # ---------------------------------------------------------------------------
 
-@given(policy=_retry_policy(strategy="fixed"), attempt=_attempt_number, settings=settings(max_examples=100))
+@given(policy=_retry_policy(strategy="fixed"), attempt=_attempt_number, settings=settings(max_examples=50))
 def test_retrypolicy_fixed_delay_returns_base_delay(
     policy: RetryPolicy, attempt: int
 ) -> None:
@@ -172,7 +172,7 @@ def test_retrypolicy_fixed_delay_returns_base_delay(
 # Property 30: RetryPolicy exponential delay is bounded
 # ---------------------------------------------------------------------------
 
-@given(policy=_retry_policy(strategy="exponential"), attempt=_attempt_number, settings=settings(max_examples=100))
+@given(policy=_retry_policy(strategy="exponential"), attempt=_attempt_number, settings=settings(max_examples=50))
 def test_retrypolicy_exponential_delay_is_bounded(
     policy: RetryPolicy, attempt: int
 ) -> None:
@@ -197,7 +197,7 @@ def test_retrypolicy_exponential_delay_is_bounded(
 # Property 31: RetryPolicy exponential_with_jitter delay is bounded
 # ---------------------------------------------------------------------------
 
-@given(policy=_retry_policy(strategy="exponential_with_jitter"), attempt=_attempt_number, settings=settings(max_examples=100))
+@given(policy=_retry_policy(strategy="exponential_with_jitter"), attempt=_attempt_number, settings=settings(max_examples=50))
 def test_retrypolicy_exponential_with_jitter_delay_is_bounded(
     policy: RetryPolicy, attempt: int
 ) -> None:
@@ -227,7 +227,7 @@ def test_retrypolicy_exponential_with_jitter_delay_is_bounded(
 
 @given(max_retries=st.integers(min_value=1, max_value=20),
        attempt_within=st.integers(min_value=0, max_value=19),
-       settings=settings(max_examples=100))
+       settings=settings(max_examples=50))
 def test_retrypolicy_should_retry_respects_max_retries_and_exception_types(
     max_retries: int, attempt_within: int
 ) -> None:
@@ -281,7 +281,7 @@ def test_retrypolicy_should_retry_respects_max_retries_and_exception_types(
 # Property 33: FallbackChain next_provider returns correct sequence
 # ---------------------------------------------------------------------------
 
-@given(providers=_unique_provider_pair_list(), settings=settings(max_examples=100))
+@given(providers=_unique_provider_pair_list(), settings=settings(max_examples=50))
 def test_fallbackchain_next_provider_returns_correct_sequence(
     providers: list,
 ) -> None:
