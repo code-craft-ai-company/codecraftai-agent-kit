@@ -8,7 +8,7 @@
     **Validates: Requirement 11 AC 7**
 """
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.featureflag import FeatureFlag
@@ -47,7 +47,7 @@ _metadata_strategy = st.one_of(
     default_value=st.booleans(),
     description=_description_strategy,
     metadata=_metadata_strategy,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_featureflag_json_round_trip(name, default_value, description, metadata):
     """

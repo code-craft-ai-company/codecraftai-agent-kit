@@ -12,7 +12,7 @@
 
 import json
 
-from automojo.testbase.properties import given, settings, assume
+from automojo.testbase.properties import given, assume
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.errors import ConfigurationError
@@ -53,7 +53,7 @@ _exporter_settings_strategy = st.dictionaries(
     debug_mode_enabled=_bool_strategy,
     sampling_rate=_sampling_rate_strategy,
     exporter_settings=_exporter_settings_strategy,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_observabilityconfiguration_json_round_trip(
     log_level, log_format, tracing_enabled, metrics_enabled,
@@ -105,7 +105,7 @@ def test_observabilityconfiguration_json_round_trip(
     debug_mode_enabled=_bool_strategy,
     sampling_rate=_sampling_rate_strategy,
     exporter_settings=_exporter_settings_strategy,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_observabilityconfiguration_yaml_round_trip(
     log_level, log_format, tracing_enabled, metrics_enabled,
@@ -154,7 +154,7 @@ def test_observabilityconfiguration_yaml_round_trip(
     sampling_rate=_sampling_rate_strategy,
     secret_value=st.text(min_size=10, max_size=60),
     cred_name=st.text(min_size=1, max_size=20),
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_observabilityconfiguration_serialization_excludes_credentials(
     log_level, log_format, sampling_rate, secret_value, cred_name
@@ -244,7 +244,7 @@ _invalid_sampling_rate_above = st.floats(min_value=1.001)
 
 @given(
     invalid_log_level=_invalid_log_level_strategy,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_observabilityconfiguration_rejects_invalid_log_level(invalid_log_level):
     """
@@ -271,7 +271,7 @@ def test_observabilityconfiguration_rejects_invalid_log_level(invalid_log_level)
 
 @given(
     invalid_log_format=_invalid_log_format_strategy,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_observabilityconfiguration_rejects_invalid_log_format(invalid_log_format):
     """
@@ -298,7 +298,7 @@ def test_observabilityconfiguration_rejects_invalid_log_format(invalid_log_forma
 
 @given(
     invalid_rate=_invalid_sampling_rate_below,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_observabilityconfiguration_rejects_sampling_rate_below_zero(invalid_rate):
     """
@@ -325,7 +325,7 @@ def test_observabilityconfiguration_rejects_sampling_rate_below_zero(invalid_rat
 
 @given(
     invalid_rate=_invalid_sampling_rate_above,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_observabilityconfiguration_rejects_sampling_rate_above_one(invalid_rate):
     """

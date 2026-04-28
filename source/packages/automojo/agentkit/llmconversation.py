@@ -1,26 +1,26 @@
 """
-    Defines the LlmConversation class for managing ordered sequences of
-    LlmMessage objects.
+    Defines the LLMConversation class for managing ordered sequences of
+    LLMMessage objects.
 
-    LlmConversation is a mutable collection that supports appending messages,
+    LLMConversation is a mutable collection that supports appending messages,
     truncating to a maximum count while preserving system messages, and
     serialization to and from JSON.
 """
 
 import json
 
-from automojo.agentkit.llmmessage import LlmMessage
+from automojo.agentkit.llmmessage import LLMMessage
 
 
-class LlmConversation:
+class LLMConversation:
     """
-        An ordered, mutable sequence of LlmMessage objects representing
+        An ordered, mutable sequence of LLMMessage objects representing
         a conversation history.
 
         Provides methods for appending messages, truncating the conversation
         while preserving system messages, and serializing to and from JSON.
 
-        :param messages: Optional initial list of LlmMessage objects.
+        :param messages: Optional initial list of LLMMessage objects.
     """
 
     def __init__(self, messages: list = None) -> None:
@@ -42,16 +42,16 @@ class LlmConversation:
         """
             Returns a copy of the message list.
 
-            :returns: A list of LlmMessage objects.
+            :returns: A list of LLMMessage objects.
         """
         rtnval = list(self._messages)
         return rtnval
 
-    def append(self, message: "LlmMessage") -> None:
+    def append(self, message: "LLMMessage") -> None:
         """
-            Adds an LlmMessage to the end of the conversation.
+            Adds an LLMMessage to the end of the conversation.
 
-            :param message: The LlmMessage to append.
+            :param message: The LLMMessage to append.
         """
         self._messages.append(message)
         return
@@ -105,16 +105,16 @@ class LlmConversation:
         return rtnval
 
     @classmethod
-    def from_json(cls, json_str: str) -> "LlmConversation":
+    def from_json(cls, json_str: str) -> "LLMConversation":
         """
-            Deserializes a JSON string into an LlmConversation.
+            Deserializes a JSON string into an LLMConversation.
 
             :param json_str: A JSON string.
 
-            :returns: An LlmConversation instance.
+            :returns: An LLMConversation instance.
         """
         data = json.loads(json_str)
-        messages = [LlmMessage.from_dict(m) for m in data["messages"]]
+        messages = [LLMMessage.from_dict(m) for m in data["messages"]]
         rtnval = cls(messages=messages)
         return rtnval
 
@@ -135,7 +135,7 @@ class LlmConversation:
             :returns: A human-readable string.
         """
         roles = [m.role for m in self._messages]
-        rtnval = "LlmConversation: [{}]".format(", ".join(roles))
+        rtnval = "LLMConversation: [{}]".format(", ".join(roles))
         return rtnval
 
     def __eq__(self, other) -> bool:
@@ -146,7 +146,7 @@ class LlmConversation:
 
             :returns: True if all messages are equal, False otherwise.
         """
-        if not isinstance(other, LlmConversation):
+        if not isinstance(other, LLMConversation):
             return False
 
         rtnval = self._messages == other._messages

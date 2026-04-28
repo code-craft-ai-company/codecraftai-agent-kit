@@ -9,7 +9,7 @@
 """
 
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 from automojo.agentkit.toolschema import ToolSchema
@@ -212,7 +212,7 @@ def valid_inputs_for_schema(draw, schema):
 
 @given(
     schema=tool_schema_strategy(),
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_1_json_round_trip(schema):
     """
@@ -265,7 +265,7 @@ def _schema_with_valid_inputs(draw):
 
 @given(
     test_data=_schema_with_valid_inputs(),
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_2_validates_correct_inputs_as_valid(test_data):
     """
@@ -346,7 +346,7 @@ def _missing_required_param_data(draw):
 
 @given(
     test_data=_missing_required_param_data(),
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_3_reports_missing_required_parameters(test_data):
     """
@@ -437,7 +437,7 @@ def _type_mismatch_data(draw):
 
 @given(
     test_data=_type_mismatch_data(),
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_4_reports_type_mismatches(test_data):
     """

@@ -10,7 +10,7 @@
 
 from typing import List
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.errors import SemanticError
@@ -42,7 +42,7 @@ _increment_values_strategy = st.lists(
 
 @given(
     values=_increment_values_strategy,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_counter_accumulation(
     values: List[float],
@@ -92,7 +92,7 @@ def test_counter_accumulation(
 
 @given(
     metric_type=st.sampled_from([MetricType.COUNTER, MetricType.GAUGE, MetricType.HISTOGRAM]),
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_type_enforcement(
     metric_type: MetricType,

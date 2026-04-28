@@ -2,20 +2,20 @@
     Property-based tests for the automojo.agentkit.llmproviderregistry module.
 
     Uses automojo.testbase.properties to verify:
-    - Property 26: LlmProviderRegistry registration, lookup, and enumeration
-    - Property 27: LlmProviderRegistry deregistration removes provider
-    - Property 28: LlmProviderRegistry lookup by tags returns matching providers
+    - Property 26: LLMProviderRegistry registration, lookup, and enumeration
+    - Property 27: LLMProviderRegistry deregistration removes provider
+    - Property 28: LLMProviderRegistry lookup by tags returns matching providers
 
     **Validates: Requirements 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9**
 """
 
-from automojo.testbase.properties import given, settings, assume
+from automojo.testbase.properties import given, assume
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 
 from automojo.agentkit.errors import SemanticError
-from automojo.agentkit.llmprovider import LlmProvider
-from automojo.agentkit.llmproviderregistry import LlmProviderRegistry
+from automojo.agentkit.llmprovider import LLMProvider
+from automojo.agentkit.llmproviderregistry import LLMProviderRegistry
 
 
 # ---------------------------------------------------------------------------
@@ -23,9 +23,9 @@ from automojo.agentkit.llmproviderregistry import LlmProviderRegistry
 # ---------------------------------------------------------------------------
 
 
-class _TestProvider(LlmProvider):
+class _TestProvider(LLMProvider):
     """
-        Minimal concrete subclass of LlmProvider for testing purposes.
+        Minimal concrete subclass of LLMProvider for testing purposes.
     """
 
     def complete(self, conversation, **kwargs):
@@ -111,11 +111,11 @@ def _make_provider(provider_name, model_name, tags=None):
 
 
 # ---------------------------------------------------------------------------
-# Property 26: LlmProviderRegistry registration, lookup, and enumeration
+# Property 26: LLMProviderRegistry registration, lookup, and enumeration
 # ---------------------------------------------------------------------------
 
 
-@given(specs=_unique_provider_specs(min_size=0, max_size=15), settings=settings(max_examples=50))
+@given(specs=_unique_provider_specs(min_size=0, max_size=15), constraints={"max_examples": 50})
 def test_registry_count_equals_number_of_registered_providers(
     specs: list,
 ) -> None:
@@ -125,7 +125,7 @@ def test_registry_count_equals_number_of_registered_providers(
         For any set of N providers with unique keys, after registration
         count shall equal N.
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
 
     for provider_name, model_name, tags in specs:
         provider = _make_provider(provider_name, model_name, tags)
@@ -138,7 +138,7 @@ def test_registry_count_equals_number_of_registered_providers(
     return
 
 
-@given(specs=_unique_provider_specs(min_size=1, max_size=15), settings=settings(max_examples=50))
+@given(specs=_unique_provider_specs(min_size=1, max_size=15), constraints={"max_examples": 50})
 def test_registry_lookup_returns_correct_provider(
     specs: list,
 ) -> None:
@@ -148,7 +148,7 @@ def test_registry_lookup_returns_correct_provider(
         For any registered provider, lookup(provider_name, model_name)
         shall return the correct provider instance.
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
     providers = []
 
     for provider_name, model_name, tags in specs:
@@ -168,7 +168,7 @@ def test_registry_lookup_returns_correct_provider(
     return
 
 
-@given(specs=_unique_provider_specs(min_size=0, max_size=15), settings=settings(max_examples=50))
+@given(specs=_unique_provider_specs(min_size=0, max_size=15), constraints={"max_examples": 50})
 def test_registry_lookup_returns_none_for_unregistered(
     specs: list,
 ) -> None:
@@ -178,7 +178,7 @@ def test_registry_lookup_returns_none_for_unregistered(
         lookup() shall return None for provider name / model name pairs
         that are not registered.
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
 
     for provider_name, model_name, tags in specs:
         provider = _make_provider(provider_name, model_name, tags)
@@ -193,7 +193,7 @@ def test_registry_lookup_returns_none_for_unregistered(
     return
 
 
-@given(specs=_unique_provider_specs(min_size=1, max_size=15), settings=settings(max_examples=50))
+@given(specs=_unique_provider_specs(min_size=1, max_size=15), constraints={"max_examples": 50})
 def test_registry_has_provider_returns_true_for_registered(
     specs: list,
 ) -> None:
@@ -202,7 +202,7 @@ def test_registry_has_provider_returns_true_for_registered(
 
         has_provider() shall return True for registered pairs.
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
 
     for provider_name, model_name, tags in specs:
         provider = _make_provider(provider_name, model_name, tags)
@@ -220,7 +220,7 @@ def test_registry_has_provider_returns_true_for_registered(
     return
 
 
-@given(specs=_unique_provider_specs(min_size=0, max_size=15), settings=settings(max_examples=50))
+@given(specs=_unique_provider_specs(min_size=0, max_size=15), constraints={"max_examples": 50})
 def test_registry_has_provider_returns_false_for_unregistered(
     specs: list,
 ) -> None:
@@ -229,7 +229,7 @@ def test_registry_has_provider_returns_false_for_unregistered(
 
         has_provider() shall return False for unregistered pairs.
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
 
     for provider_name, model_name, tags in specs:
         provider = _make_provider(provider_name, model_name, tags)
@@ -244,7 +244,7 @@ def test_registry_has_provider_returns_false_for_unregistered(
     return
 
 
-@given(specs=_unique_provider_specs(min_size=0, max_size=15), settings=settings(max_examples=50))
+@given(specs=_unique_provider_specs(min_size=0, max_size=15), constraints={"max_examples": 50})
 def test_registry_list_all_returns_all_providers(
     specs: list,
 ) -> None:
@@ -253,7 +253,7 @@ def test_registry_list_all_returns_all_providers(
 
         list_all() shall return all N registered providers.
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
     providers = []
 
     for provider_name, model_name, tags in specs:
@@ -279,7 +279,7 @@ def test_registry_list_all_returns_all_providers(
     return
 
 
-@given(specs=_unique_provider_specs(min_size=1, max_size=15), settings=settings(max_examples=50))
+@given(specs=_unique_provider_specs(min_size=1, max_size=15), constraints={"max_examples": 50})
 def test_registry_duplicate_registration_raises_semantic_error(
     specs: list,
 ) -> None:
@@ -289,7 +289,7 @@ def test_registry_duplicate_registration_raises_semantic_error(
         Registering a duplicate (provider_name, model_name) shall raise
         SemanticError.
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
 
     for provider_name, model_name, tags in specs:
         provider = _make_provider(provider_name, model_name, tags)
@@ -314,7 +314,7 @@ def test_registry_duplicate_registration_raises_semantic_error(
     return
 
 
-@given(specs=_unique_provider_specs(min_size=1, max_size=15), settings=settings(max_examples=50))
+@given(specs=_unique_provider_specs(min_size=1, max_size=15), constraints={"max_examples": 50})
 def test_registry_lookup_by_provider_returns_matching_providers(
     specs: list,
 ) -> None:
@@ -324,7 +324,7 @@ def test_registry_lookup_by_provider_returns_matching_providers(
         lookup_by_provider(provider_name) shall return all providers
         for that provider name.
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
     providers_by_name = {}
 
     for provider_name, model_name, tags in specs:
@@ -355,14 +355,14 @@ def test_registry_lookup_by_provider_returns_matching_providers(
 
 
 # ---------------------------------------------------------------------------
-# Property 27: LlmProviderRegistry deregistration removes provider
+# Property 27: LLMProviderRegistry deregistration removes provider
 # ---------------------------------------------------------------------------
 
 
 @given(
     specs=_unique_provider_specs(min_size=1, max_size=15),
     index_data=st.integers(min_value=0, max_value=1000),
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_registry_deregister_removes_provider(
     specs: list,
@@ -371,11 +371,11 @@ def test_registry_deregister_removes_provider(
     """
         **Validates: Requirements 9.3**
 
-        For any registered LlmProvider, calling deregister(provider_name,
+        For any registered LLMProvider, calling deregister(provider_name,
         model_name) shall remove it so that lookup() returns None,
         has_provider() returns False, and count decreases by one.
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
 
     for provider_name, model_name, tags in specs:
         provider = _make_provider(provider_name, model_name, tags)
@@ -413,7 +413,7 @@ def test_registry_deregister_removes_provider(
 
 
 # ---------------------------------------------------------------------------
-# Property 28: LlmProviderRegistry lookup by tags returns matching providers
+# Property 28: LLMProviderRegistry lookup by tags returns matching providers
 # ---------------------------------------------------------------------------
 
 
@@ -468,7 +468,7 @@ def _tagged_provider_specs(draw):
     return (common_tag_key, common_tag_value, specs)
 
 
-@given(data=_tagged_provider_specs(), settings=settings(max_examples=50))
+@given(data=_tagged_provider_specs(), constraints={"max_examples": 50})
 def test_registry_lookup_by_tags_returns_matching_providers(
     data: tuple,
 ) -> None:
@@ -483,7 +483,7 @@ def test_registry_lookup_by_tags_returns_matching_providers(
     # Need at least one spec to test
     assume(len(specs) > 0)
 
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
     expected_matching = []
 
     for provider_name, model_name, tags, should_match in specs:

@@ -1,7 +1,7 @@
 """
     Unit tests for the automojo.agentkit.llmproviderregistry module.
 
-    Tests LlmProviderRegistry construction, registration, lookup,
+    Tests LLMProviderRegistry construction, registration, lookup,
     deregistration, has_provider, lookup_by_provider, lookup_by_tags,
     clear, count, and string representations.
 
@@ -10,18 +10,18 @@
 """
 
 from automojo.agentkit.errors import SemanticError
-from automojo.agentkit.llmprovider import LlmProvider
-from automojo.agentkit.llmproviderregistry import LlmProviderRegistry
+from automojo.agentkit.llmprovider import LLMProvider
+from automojo.agentkit.llmproviderregistry import LLMProviderRegistry
 
 
 # ---------------------------------------------------------------------------
-# Concrete test subclass for testing with the abstract LlmProvider
+# Concrete test subclass for testing with the abstract LLMProvider
 # ---------------------------------------------------------------------------
 
 
-class _TestProvider(LlmProvider):
+class _TestProvider(LLMProvider):
     """
-        Minimal concrete subclass of LlmProvider for testing purposes.
+        Minimal concrete subclass of LLMProvider for testing purposes.
     """
 
     def complete(self, conversation, **kwargs):
@@ -38,11 +38,11 @@ class _TestProvider(LlmProvider):
 
 def test_empty_registry_count_is_zero():
     """
-        A new LlmProviderRegistry has count 0.
+        A new LLMProviderRegistry has count 0.
 
         **Validates: Requirements 9.8**
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
 
     assert registry.count == 0, (
         "Empty registry count should be 0, got: {}".format(registry.count)
@@ -53,11 +53,11 @@ def test_empty_registry_count_is_zero():
 
 def test_empty_registry_list_all_is_empty():
     """
-        A new LlmProviderRegistry returns an empty list from list_all.
+        A new LLMProviderRegistry returns an empty list from list_all.
 
         **Validates: Requirements 9.7**
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
 
     result = registry.list_all()
 
@@ -80,7 +80,7 @@ def test_register_and_lookup():
 
         **Validates: Requirements 9.1, 9.4**
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
     provider = _TestProvider(provider_name="openai", model_name="gpt-4")
 
     registry.register(provider)
@@ -99,7 +99,7 @@ def test_register_increments_count():
 
         **Validates: Requirements 9.1, 9.8**
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
     provider = _TestProvider(provider_name="openai", model_name="gpt-4")
 
     registry.register(provider)
@@ -117,7 +117,7 @@ def test_register_multiple_providers():
 
         **Validates: Requirements 9.1, 9.7, 9.8**
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
     provider_a = _TestProvider(provider_name="openai", model_name="gpt-4")
     provider_b = _TestProvider(provider_name="anthropic", model_name="claude-3")
 
@@ -142,7 +142,7 @@ def test_lookup_not_found_returns_none():
 
         **Validates: Requirements 9.4**
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
 
     result = registry.lookup("openai", "gpt-4")
 
@@ -164,7 +164,7 @@ def test_has_provider_returns_true_when_registered():
 
         **Validates: Requirements 9.9**
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
     provider = _TestProvider(provider_name="openai", model_name="gpt-4")
     registry.register(provider)
 
@@ -183,7 +183,7 @@ def test_has_provider_returns_false_when_not_registered():
 
         **Validates: Requirements 9.9**
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
 
     result = registry.has_provider("openai", "gpt-4")
 
@@ -205,7 +205,7 @@ def test_deregister_removes_provider():
 
         **Validates: Requirements 9.3**
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
     provider = _TestProvider(provider_name="openai", model_name="gpt-4")
     registry.register(provider)
 
@@ -227,7 +227,7 @@ def test_deregister_nonexistent_is_noop():
 
         **Validates: Requirements 9.3**
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
 
     registry.deregister("openai", "gpt-4")
 
@@ -249,7 +249,7 @@ def test_duplicate_registration_raises_semantic_error():
 
         **Validates: Requirements 9.2**
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
     provider_a = _TestProvider(provider_name="openai", model_name="gpt-4")
     provider_b = _TestProvider(provider_name="openai", model_name="gpt-4")
 
@@ -289,7 +289,7 @@ def test_lookup_by_provider_single_model():
 
         **Validates: Requirements 9.5**
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
     provider = _TestProvider(provider_name="openai", model_name="gpt-4")
     registry.register(provider)
 
@@ -312,7 +312,7 @@ def test_lookup_by_provider_multiple_models():
 
         **Validates: Requirements 9.5**
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
     provider_gpt4 = _TestProvider(provider_name="openai", model_name="gpt-4")
     provider_gpt35 = _TestProvider(provider_name="openai", model_name="gpt-3.5-turbo")
     provider_claude = _TestProvider(provider_name="anthropic", model_name="claude-3")
@@ -342,7 +342,7 @@ def test_lookup_by_provider_no_match():
 
         **Validates: Requirements 9.5**
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
     provider = _TestProvider(provider_name="openai", model_name="gpt-4")
     registry.register(provider)
 
@@ -367,7 +367,7 @@ def test_lookup_by_tags_no_matches():
 
         **Validates: Requirements 9.6**
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
     provider = _TestProvider(
         provider_name="openai", model_name="gpt-4",
         tags={"tier": "premium"}
@@ -390,7 +390,7 @@ def test_lookup_by_tags_no_matches_missing_key():
 
         **Validates: Requirements 9.6**
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
     provider = _TestProvider(
         provider_name="openai", model_name="gpt-4",
         tags={"tier": "premium"}
@@ -413,7 +413,7 @@ def test_lookup_by_tags_partial_match():
 
         **Validates: Requirements 9.6**
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
     provider_a = _TestProvider(
         provider_name="openai", model_name="gpt-4",
         tags={"tier": "premium", "region": "us-east"}
@@ -443,7 +443,7 @@ def test_lookup_by_tags_full_match():
 
         **Validates: Requirements 9.6**
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
     provider_a = _TestProvider(
         provider_name="openai", model_name="gpt-4",
         tags={"tier": "premium", "region": "us-east"}
@@ -481,7 +481,7 @@ def test_lookup_by_tags_empty_tags_returns_all():
 
         **Validates: Requirements 9.6**
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
     provider_a = _TestProvider(provider_name="openai", model_name="gpt-4")
     provider_b = _TestProvider(provider_name="anthropic", model_name="claude-3")
     registry.register(provider_a)
@@ -507,7 +507,7 @@ def test_clear_removes_all_providers():
 
         **Validates: Requirements 9.7, 9.8**
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
     provider_a = _TestProvider(provider_name="openai", model_name="gpt-4")
     provider_b = _TestProvider(provider_name="anthropic", model_name="claude-3")
     registry.register(provider_a)
@@ -536,11 +536,11 @@ def test_repr_empty_registry():
 
         **Validates: Requirements 19.17**
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
 
     result = repr(registry)
 
-    assert "LlmProviderRegistry" in result, (
+    assert "LLMProviderRegistry" in result, (
         "repr should contain class name, got: {!r}".format(result)
     )
     assert "0" in result, (
@@ -556,13 +556,13 @@ def test_repr_with_providers():
 
         **Validates: Requirements 19.17**
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
     registry.register(_TestProvider(provider_name="openai", model_name="gpt-4"))
     registry.register(_TestProvider(provider_name="anthropic", model_name="claude-3"))
 
     result = repr(registry)
 
-    assert "LlmProviderRegistry" in result, (
+    assert "LLMProviderRegistry" in result, (
         "repr should contain class name, got: {!r}".format(result)
     )
     assert "2" in result, (
@@ -578,11 +578,11 @@ def test_str_empty_registry():
 
         **Validates: Requirements 19.18**
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
 
     result = str(registry)
 
-    assert "LlmProviderRegistry" in result, (
+    assert "LLMProviderRegistry" in result, (
         "str should contain class name, got: {!r}".format(result)
     )
 
@@ -595,7 +595,7 @@ def test_str_with_providers():
 
         **Validates: Requirements 19.18**
     """
-    registry = LlmProviderRegistry()
+    registry = LLMProviderRegistry()
     registry.register(_TestProvider(provider_name="openai", model_name="gpt-4"))
 
     result = str(registry)

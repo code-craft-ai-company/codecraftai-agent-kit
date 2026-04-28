@@ -1,18 +1,18 @@
 """
-    Defines the LlmResponse class for immutable LLM completion results.
+    Defines the LLMResponse class for immutable LLM completion results.
 
-    LlmResponse encapsulates the response message, token usage, provider name,
+    LLMResponse encapsulates the response message, token usage, provider name,
     model name, and request duration for a single LLM completion request.
     Supports serialization to and from JSON representations.
 """
 
 import json
 
-from automojo.agentkit.llmmessage import LlmMessage
+from automojo.agentkit.llmmessage import LLMMessage
 from automojo.agentkit.tokenusage import TokenUsage
 
 
-class LlmResponse:
+class LLMResponse:
     """
         Immutable result of an LLM completion request.
 
@@ -21,14 +21,14 @@ class LlmResponse:
         serialization to dictionary and JSON representations, and
         deserialization from JSON.
 
-        :param message: The response LlmMessage.
+        :param message: The response LLMMessage.
         :param token_usage: The TokenUsage for this request.
         :param provider_name: The provider name string.
         :param model_name: The model name string.
         :param duration: The request duration in seconds.
     """
 
-    def __init__(self, message: LlmMessage, token_usage: TokenUsage,
+    def __init__(self, message: LLMMessage, token_usage: TokenUsage,
                  provider_name: str, model_name: str, duration: float) -> None:
         self._message = message
         self._token_usage = token_usage
@@ -38,11 +38,11 @@ class LlmResponse:
         return
 
     @property
-    def message(self) -> LlmMessage:
+    def message(self) -> LLMMessage:
         """
-            The response LlmMessage.
+            The response LLMMessage.
 
-            :returns: The LlmMessage instance.
+            :returns: The LLMMessage instance.
         """
         rtnval = self._message
         return rtnval
@@ -113,20 +113,20 @@ class LlmResponse:
         return rtnval
 
     @classmethod
-    def from_json(cls, json_str: str) -> "LlmResponse":
+    def from_json(cls, json_str: str) -> "LLMResponse":
         """
-            Deserializes a JSON string into an LlmResponse instance.
+            Deserializes a JSON string into an LLMResponse instance.
 
-            Reconstructs the LlmMessage and TokenUsage from their
+            Reconstructs the LLMMessage and TokenUsage from their
             dictionary representations contained in the JSON data.
 
             :param json_str: A JSON string.
 
-            :returns: An LlmResponse instance.
+            :returns: An LLMResponse instance.
         """
         data = json.loads(json_str)
 
-        message = LlmMessage.from_dict(data["message"])
+        message = LLMMessage.from_dict(data["message"])
 
         token_usage = TokenUsage(
             prompt_tokens=data["token_usage"]["prompt_tokens"],
@@ -163,7 +163,7 @@ class LlmResponse:
 
             :returns: A human-readable string.
         """
-        rtnval = "LlmResponse: {} / {} | {} | {:.2f}s".format(
+        rtnval = "LLMResponse: {} / {} | {} | {:.2f}s".format(
             self._provider_name, self._model_name,
             str(self._token_usage), self._duration
         )
@@ -179,7 +179,7 @@ class LlmResponse:
 
             :returns: True if all fields are equal, False otherwise.
         """
-        if not isinstance(other, LlmResponse):
+        if not isinstance(other, LLMResponse):
             return False
 
         rtnval = (self._message == other._message and

@@ -12,7 +12,7 @@ import os
 import shutil
 import tempfile
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.builtins.filereadtool import FileReadTool
@@ -33,7 +33,7 @@ from automojo.agentkit.builtins.filewritetool import FileWriteTool
         min_size=0,
         max_size=500,
     ),
-    settings=settings(max_examples=100),
+    constraints={"max_examples": 100},
 )
 def test_property_24_file_io_round_trip(content):
     """

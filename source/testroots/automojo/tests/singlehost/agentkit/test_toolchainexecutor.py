@@ -9,7 +9,7 @@
 """
 
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 from automojo.agentkit.tool import Tool
@@ -93,7 +93,7 @@ def _make_tracking_tool_class(name, input_schema_dict=None, output_schema_dict=N
         min_size=1,
         max_size=20
     ),
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_19_toolchainexecutor_executes_steps_in_sequence_with_mappings(step_count, initial_value):
     """
@@ -225,7 +225,7 @@ def test_property_19_toolchainexecutor_executes_steps_in_sequence_with_mappings(
 
 @given(
     step_count=st.integers(min_value=1, max_value=4),
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_20_toolchainexecutor_returns_correct_result_all_succeed(step_count):
     """
@@ -347,7 +347,7 @@ def _fail_at_step_data(draw):
 
 @given(
     test_data=_fail_at_step_data(),
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_20_toolchainexecutor_returns_correct_result_step_fails(test_data):
     """

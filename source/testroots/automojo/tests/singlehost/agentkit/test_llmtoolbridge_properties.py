@@ -2,20 +2,20 @@
     Property-based tests for the automojo.agentkit.llmtoolbridge module.
 
     Uses automojo.testbase.properties to verify:
-    - Property 34: LlmToolBridge preserves tool descriptor information
-    - Property 35: LlmToolBridge tool_result_to_message produces tool role message
-    - Property 36: LlmToolBridge rejects messages without tool calls
+    - Property 34: LLMToolBridge preserves tool descriptor information
+    - Property 35: LLMToolBridge tool_result_to_message produces tool role message
+    - Property 36: LLMToolBridge rejects messages without tool calls
 
     **Validates: Requirements 11.1, 11.3, 11.4, 11.5, 11.6**
 """
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 
 from automojo.agentkit.errors import SemanticError
-from automojo.agentkit.llmmessage import LlmMessage
-from automojo.agentkit.llmtoolbridge import LlmToolBridge
+from automojo.agentkit.llmmessage import LLMMessage
+from automojo.agentkit.llmtoolbridge import LLMToolBridge
 from automojo.agentkit.tooldescriptor import ToolDescriptor
 from automojo.agentkit.toolresult import ToolResult
 from automojo.agentkit.toolschema import ToolSchema
@@ -145,7 +145,7 @@ _content_text = st.text(
 @composite
 def _message_without_tool_calls(draw):
     """
-        Draws an LlmMessage whose metadata does not contain a 'tool_calls' key
+        Draws an LLMMessage whose metadata does not contain a 'tool_calls' key
         or contains an empty list for 'tool_calls'.
     """
     role = draw(_non_tool_call_role)
@@ -164,15 +164,15 @@ def _message_without_tool_calls(draw):
         # Empty metadata
         metadata = {}
 
-    message = LlmMessage(role=role, content=content, metadata=metadata)
+    message = LLMMessage(role=role, content=content, metadata=metadata)
     return message
 
 
 # ---------------------------------------------------------------------------
-# Property 34: LlmToolBridge preserves tool descriptor information
+# Property 34: LLMToolBridge preserves tool descriptor information
 # ---------------------------------------------------------------------------
 
-@given(descriptor=_tool_descriptor_with_schema(), settings=settings(max_examples=50))
+@given(descriptor=_tool_descriptor_with_schema(), constraints={"max_examples": 50})
 def test_llmtoolbridge_preserves_tool_name_and_description(
     descriptor: ToolDescriptor,
 ) -> None:
@@ -184,7 +184,7 @@ def test_llmtoolbridge_preserves_tool_name_and_description(
         shall produce a dictionary whose function name equals the tool name
         and function description equals the tool description.
     """
-    bridge = LlmToolBridge()
+    bridge = LLMToolBridge()
 
     functions = bridge.descriptors_to_functions([descriptor])
 
@@ -210,7 +210,7 @@ def test_llmtoolbridge_preserves_tool_name_and_description(
     return
 
 
-@given(descriptor=_tool_descriptor_with_schema(), settings=settings(max_examples=50))
+@given(descriptor=_tool_descriptor_with_schema(), constraints={"max_examples": 50})
 def test_llmtoolbridge_preserves_parameter_names_and_types(
     descriptor: ToolDescriptor,
 ) -> None:
@@ -221,14 +221,14 @@ def test_llmtoolbridge_preserves_parameter_names_and_types(
         LLM function definition shall preserve the parameter names and types
         from the original ToolDescriptor.
     """
-    bridge = LlmToolBridge()
+    bridge = LLMToolBridge()
 
     functions = bridge.descriptors_to_functions([descriptor])
     func_def = functions[0]
     func_params = func_def["function"]["parameters"]
     properties = func_params["properties"]
 
-    expected_type_map = LlmToolBridge.TOOL_SCHEMA_TYPE_TO_JSON_SCHEMA
+    expected_type_map = LLMToolBridge.TOOL_SCHEMA_TYPE_TO_JSON_SCHEMA
 
     for param in descriptor.input_schema.parameters:
         pname = param["name"]
@@ -249,10 +249,10 @@ def test_llmtoolbridge_preserves_parameter_names_and_types(
 
 
 # ---------------------------------------------------------------------------
-# Property 35: LlmToolBridge tool_result_to_message produces tool role message
+# Property 35: LLMToolBridge tool_result_to_message produces tool role message
 # ---------------------------------------------------------------------------
 
-@given(tool_name=_identifier, result=_tool_result(), settings=settings(max_examples=50))
+@given(tool_name=_identifier, result=_tool_result(), constraints={"max_examples": 50})
 def test_llmtoolbridge_tool_result_to_message_produces_tool_role(
     tool_name: str,
     result: ToolResult,
@@ -261,10 +261,10 @@ def test_llmtoolbridge_tool_result_to_message_produces_tool_role(
         **Validates: Requirements 11.3**
 
         For any tool name and ToolResult, tool_result_to_message() shall
-        return an LlmMessage with role "tool" and metadata containing
+        return an LLMMessage with role "tool" and metadata containing
         the tool name.
     """
-    bridge = LlmToolBridge()
+    bridge = LLMToolBridge()
 
     message = bridge.tool_result_to_message(tool_name, result)
 
@@ -286,21 +286,21 @@ def test_llmtoolbridge_tool_result_to_message_produces_tool_role(
 
 
 # ---------------------------------------------------------------------------
-# Property 36: LlmToolBridge rejects messages without tool calls
+# Property 36: LLMToolBridge rejects messages without tool calls
 # ---------------------------------------------------------------------------
 
-@given(message=_message_without_tool_calls(), settings=settings(max_examples=50))
+@given(message=_message_without_tool_calls(), constraints={"max_examples": 50})
 def test_llmtoolbridge_rejects_messages_without_tool_calls(
-    message: LlmMessage,
+    message: LLMMessage,
 ) -> None:
     """
         **Validates: Requirements 11.5**
 
-        For any LlmMessage whose metadata does not contain a 'tool_calls'
+        For any LLMMessage whose metadata does not contain a 'tool_calls'
         key or contains an empty list, message_to_tool_calls() shall raise
         SemanticError.
     """
-    bridge = LlmToolBridge()
+    bridge = LLMToolBridge()
 
     raised = False
     try:

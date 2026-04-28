@@ -9,7 +9,7 @@
 
 from datetime import datetime
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 
@@ -62,7 +62,7 @@ _attributes_strategy = st.dictionaries(
     name=_event_name_strategy,
     timestamp=_timestamp_strategy,
     attributes=_attributes_strategy,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_traceevent_json_round_trip(
     name: str,

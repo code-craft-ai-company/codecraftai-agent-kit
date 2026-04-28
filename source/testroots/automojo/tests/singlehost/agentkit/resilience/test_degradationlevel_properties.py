@@ -7,7 +7,7 @@
     **Validates: Requirements 8.2**
 """
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.degradationlevel import DegradationLevel
@@ -26,7 +26,7 @@ _degradation_level_strategy = st.sampled_from(list(DegradationLevel))
 
 @given(
     level=_degradation_level_strategy,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_degradation_level_from_string_round_trip(
     level: DegradationLevel,

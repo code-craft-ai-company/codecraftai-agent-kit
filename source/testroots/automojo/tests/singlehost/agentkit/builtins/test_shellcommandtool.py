@@ -8,7 +8,7 @@
     Feature: tool-capability-system
 """
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 
@@ -61,7 +61,7 @@ def command_with_metachar_strategy(draw):
 
 @given(
     command=command_with_metachar_strategy(),
-    settings=settings(max_examples=100),
+    constraints={"max_examples": 100},
 )
 def test_property_25_shell_rejects_metacharacters_in_safe_mode(command):
     """

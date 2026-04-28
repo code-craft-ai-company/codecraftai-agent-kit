@@ -9,7 +9,7 @@
     **Validates: Requirements 6.1, 6.3, 6.4, 6.5, 6.6, 6.7**
 """
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.circuitbreaker import CircuitBreaker
@@ -55,7 +55,7 @@ _circuit_breaker_configuration = st.builds(
 @given(
     names=_unique_names,
     configuration=_circuit_breaker_configuration,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_circuitbreakerregistry_register_lookup_consistency(
     names: list,
@@ -104,7 +104,7 @@ def test_circuitbreakerregistry_register_lookup_consistency(
 @given(
     names=_unique_names,
     configuration=_circuit_breaker_configuration,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_circuitbreakerregistry_count_consistency(
     names: list,
@@ -152,7 +152,7 @@ def test_circuitbreakerregistry_count_consistency(
     registered_names=_unique_names,
     unregistered_names=_unique_names,
     configuration=_circuit_breaker_configuration,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_circuitbreakerregistry_has_circuit_breaker_consistency(
     registered_names: list,

@@ -7,7 +7,7 @@
     **Validates: Requirements 4.2**
 """
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.circuitbreakerstate import CircuitBreakerState
@@ -26,7 +26,7 @@ _circuit_breaker_state_strategy = st.sampled_from(list(CircuitBreakerState))
 
 @given(
     state=_circuit_breaker_state_strategy,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_circuit_breaker_state_from_string_round_trip(
     state: CircuitBreakerState,

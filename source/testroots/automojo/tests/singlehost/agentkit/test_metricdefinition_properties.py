@@ -7,7 +7,7 @@
     **Validates: Requirements 11.4, 11.6, 11.7**
 """
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.metricdefinition import MetricDefinition
@@ -40,7 +40,7 @@ _unit_strategy = st.text(min_size=1, max_size=100)
     description=_description_strategy,
     unit=_unit_strategy,
     metric_type=_metric_type_strategy,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_metricdefinition_json_round_trip(
     name: str,

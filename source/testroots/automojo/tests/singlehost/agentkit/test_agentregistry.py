@@ -10,7 +10,7 @@
 import threading
 
 
-from automojo.testbase.properties import given, settings, assume
+from automojo.testbase.properties import given, assume
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 
@@ -164,7 +164,7 @@ def _property_15_agents(draw):
 
 @given(
     agents=_property_15_agents(),
-    settings=settings(max_examples=100))
+    constraints={"max_examples": 100})
 def test_property_15_registration_and_lookup_correctness(agents):
     """
         Property 15: Registry registration and lookup correctness.
@@ -300,7 +300,7 @@ def _property_16_data(draw):
 
 @given(
     test_data=_property_16_data(),
-    settings=settings(max_examples=100))
+    constraints={"max_examples": 100})
 def test_property_16_deregistration_removes_agent(test_data):
     """
         Property 16: Registry deregistration removes agent.

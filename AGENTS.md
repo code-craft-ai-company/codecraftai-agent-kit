@@ -235,6 +235,15 @@ def test_use_landscape(lscape: Landscape):
 
 The test tree should only contain resource origination declarations and tests.  It should not contain factories unless the usage of the factory is very isolated.  It is preferable to place factories in a folder such as a factory that creates the AutomationPodSimple object might be located at 'source/testroots/automojo/testshared/factories/automationpods/automationpodsimple.py'
 
+# Limiting Test Run Duration
+The `testbase testing run` command supports a `--timeout` parameter that sets a maximum wall-clock duration (in seconds) for the entire test run.  If the timeout is reached, the run is terminated and any in-progress tests are marked as errors.  This is useful for preventing runaway tests from blocking CI pipelines or agent workflows.
+
+```
+    testbase testing run --root source/testroots/automojo --includes=automojo.tests.singlehost --output=./.output/ --timeout=600
+```
+
+The example above limits the test run to 600 seconds (10 minutes).  Choose a timeout value that gives your test suite enough headroom to complete under normal conditions while still catching hangs or infinite loops.
+
 # Using TestBase Mocking
 
 The testbase framework provides its own mocking module that should be used instead of `unittest.mock`. Import the mocking utilities from `automojo.testbase.mocking`.

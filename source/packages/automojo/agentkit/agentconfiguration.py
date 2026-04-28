@@ -529,6 +529,26 @@ class AgentConfiguration:
         yaml_str = yaml.dump(data, default_flow_style=False)
         return yaml_str
 
+    def get_platform_configuration(self):
+        """
+            Returns a PlatformConfiguration from the settings dictionary
+            if a 'platform' key is present, otherwise returns None.
+
+            The platform configuration is constructed from the 'platform'
+            sub-dictionary within settings using PlatformConfiguration.from_dict.
+
+            :returns: A PlatformConfiguration instance or None.
+        """
+        platform_data = self._settings.get("platform", None)
+        if platform_data is None:
+            rtnval = None
+            return rtnval
+
+        from automojo.agentkit.platform.platformconfiguration import PlatformConfiguration
+
+        rtnval = PlatformConfiguration.from_dict(platform_data)
+        return rtnval
+
     def __repr__(self) -> str:
         """
             Returns a detailed string representation including class name

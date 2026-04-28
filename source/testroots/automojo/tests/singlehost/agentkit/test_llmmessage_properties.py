@@ -2,17 +2,17 @@
     Property-based tests for the automojo.agentkit.llmmessage module.
 
     Uses automojo.testbase.properties to verify:
-    - Property 1: LlmMessage JSON round-trip
-    - Property 9: LlmMessage construction rejects invalid roles
+    - Property 1: LLMMessage JSON round-trip
+    - Property 9: LLMMessage construction rejects invalid roles
 
     **Validates: Requirements 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 17.1, 17.2, 17.9**
 """
 
-from automojo.testbase.properties import given, settings, assume
+from automojo.testbase.properties import given, assume
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.errors import SemanticError
-from automojo.agentkit.llmmessage import LlmMessage
+from automojo.agentkit.llmmessage import LLMMessage
 
 
 # ---------------------------------------------------------------------------
@@ -41,14 +41,14 @@ _metadata = st.dictionaries(
 
 
 # ---------------------------------------------------------------------------
-# Property 1: LlmMessage JSON round-trip
+# Property 1: LLMMessage JSON round-trip
 # ---------------------------------------------------------------------------
 
 @given(
     role=_valid_role,
     content=_content,
     metadata=_metadata,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_llmmessage_json_roundtrip(
     role: str,
@@ -58,18 +58,18 @@ def test_llmmessage_json_roundtrip(
     """
         **Validates: Requirements 2.4, 2.5, 2.6, 2.7, 2.8, 17.1, 17.2, 17.9**
 
-        For any valid LlmMessage instance (with a valid role, arbitrary content
+        For any valid LLMMessage instance (with a valid role, arbitrary content
         string, and arbitrary metadata dictionary), calling to_json() and then
-        from_json() on the resulting string shall produce an LlmMessage whose
+        from_json() on the resulting string shall produce an LLMMessage whose
         role, content, and metadata are equal to the original.
     """
-    original = LlmMessage(role=role, content=content, metadata=metadata)
+    original = LLMMessage(role=role, content=content, metadata=metadata)
 
     json_str = original.to_json()
-    restored = LlmMessage.from_json(json_str)
+    restored = LLMMessage.from_json(json_str)
 
     assert original == restored, (
-        "LlmMessage JSON round-trip failed. "
+        "LLMMessage JSON round-trip failed. "
         "Original: role={!r}, content={!r}, metadata={!r}. "
         "Restored: role={!r}, content={!r}, metadata={!r}.".format(
             original.role, original.content, original.metadata,
@@ -81,12 +81,12 @@ def test_llmmessage_json_roundtrip(
 
 
 # ---------------------------------------------------------------------------
-# Property 9: LlmMessage construction rejects invalid roles
+# Property 9: LLMMessage construction rejects invalid roles
 # ---------------------------------------------------------------------------
 
 @given(
     role=st.text(min_size=1, max_size=50),
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_llmmessage_invalid_role_raises_semantic_error(
     role: str,
@@ -95,7 +95,7 @@ def test_llmmessage_invalid_role_raises_semantic_error(
         **Validates: Requirements 2.3**
 
         For any string not in the set {"system", "user", "assistant", "tool"},
-        constructing an LlmMessage with that role shall raise SemanticError
+        constructing an LLMMessage with that role shall raise SemanticError
         that identifies the invalid role and lists the valid roles.
     """
     assume(role not in {"system", "user", "assistant", "tool"})
@@ -103,13 +103,13 @@ def test_llmmessage_invalid_role_raises_semantic_error(
     raised = False
     error_message = ""
     try:
-        LlmMessage(role=role, content="test content")
+        LLMMessage(role=role, content="test content")
     except SemanticError as exc:
         raised = True
         error_message = str(exc)
 
     assert raised is True, (
-        "LlmMessage should raise SemanticError for invalid role {!r}".format(role)
+        "LLMMessage should raise SemanticError for invalid role {!r}".format(role)
     )
 
     assert repr(role) in error_message or role in error_message, (

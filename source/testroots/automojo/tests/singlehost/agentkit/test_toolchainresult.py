@@ -8,7 +8,7 @@
 """
 
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.agentkit.toolchainresult import ToolChainResult
 from automojo.agentkit.toolresult import ToolResult
@@ -119,7 +119,7 @@ step_results_strategy = st.lists(
     output=output_strategy,
     step_results=step_results_strategy,
     duration=duration_strategy,
-    settings=settings(max_examples=100))
+    constraints={"max_examples": 100})
 def test_property_22_toolchainresult_is_success_reflects_status(
     chain_name, status, output, step_results, duration
 ):
@@ -180,7 +180,7 @@ def test_property_22_toolchainresult_is_success_reflects_status(
     step_results=step_results_strategy,
     duration=duration_strategy,
     error=error_strategy,
-    settings=settings(max_examples=100))
+    constraints={"max_examples": 100})
 def test_property_23_toolchainresult_fields_and_as_dict_correctness(
     chain_name, status, output, step_results, duration, error
 ):

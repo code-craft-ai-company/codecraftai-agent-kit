@@ -9,7 +9,7 @@
 
 from datetime import datetime
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 
@@ -78,7 +78,7 @@ _metadata = st.dictionaries(
     agent_identifier=_agent_identifier,
     timestamp=_timestamp,
     metadata=_metadata,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_inmemorydeadletterstore_store_retrieve_consistency(
     identifier: str,

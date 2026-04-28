@@ -1,7 +1,7 @@
 """
     Unit tests for the automojo.agentkit.llmresponse module.
 
-    Tests LlmResponse construction, read-only properties, serialization,
+    Tests LLMResponse construction, read-only properties, serialization,
     string representations, and equality.
 
     Feature: llm-integration, Task 4.4
@@ -10,8 +10,8 @@
 
 import json
 
-from automojo.agentkit.llmmessage import LlmMessage
-from automojo.agentkit.llmresponse import LlmResponse
+from automojo.agentkit.llmmessage import LLMMessage
+from automojo.agentkit.llmresponse import LLMResponse
 from automojo.agentkit.tokenusage import TokenUsage
 
 
@@ -25,15 +25,15 @@ def _make_response(provider_name="openai", model_name="gpt-4",
                    duration=1.5, role="assistant",
                    content="Hello!", metadata=None):
     """
-        Creates an LlmResponse with sensible defaults for testing.
+        Creates an LLMResponse with sensible defaults for testing.
     """
-    message = LlmMessage(role=role, content=content, metadata=metadata)
+    message = LLMMessage(role=role, content=content, metadata=metadata)
     token_usage = TokenUsage(
         prompt_tokens=prompt_tokens,
         completion_tokens=completion_tokens,
         total_tokens=prompt_tokens + completion_tokens
     )
-    rtnval = LlmResponse(
+    rtnval = LLMResponse(
         message=message,
         token_usage=token_usage,
         provider_name=provider_name,
@@ -50,7 +50,7 @@ def _make_response(provider_name="openai", model_name="gpt-4",
 
 def test_llm_response_valid_construction():
     """
-        LlmResponse stores all fields correctly.
+        LLMResponse stores all fields correctly.
 
         **Validates: Requirements 3.1, 3.2**
     """
@@ -86,7 +86,7 @@ def test_llm_response_valid_construction():
 
 def test_llm_response_with_metadata():
     """
-        LlmResponse preserves message metadata.
+        LLMResponse preserves message metadata.
 
         **Validates: Requirements 3.1, 3.2**
     """
@@ -102,7 +102,7 @@ def test_llm_response_with_metadata():
 
 def test_llm_response_zero_duration():
     """
-        LlmResponse accepts a zero duration.
+        LLMResponse accepts a zero duration.
 
         **Validates: Requirements 3.1**
     """
@@ -122,7 +122,7 @@ def test_llm_response_zero_duration():
 
 def test_llm_response_as_dict():
     """
-        LlmResponse as_dict returns a dictionary with all response fields.
+        LLMResponse as_dict returns a dictionary with all response fields.
 
         **Validates: Requirements 3.3**
     """
@@ -164,7 +164,7 @@ def test_llm_response_as_dict():
 
 def test_llm_response_to_json():
     """
-        LlmResponse to_json returns a valid JSON string.
+        LLMResponse to_json returns a valid JSON string.
 
         **Validates: Requirements 3.4, 17.5**
     """
@@ -185,13 +185,13 @@ def test_llm_response_to_json():
 
 def test_llm_response_from_json():
     """
-        LlmResponse from_json reconstructs an equivalent instance.
+        LLMResponse from_json reconstructs an equivalent instance.
 
         **Validates: Requirements 3.5, 17.6**
     """
     original = _make_response()
     json_str = original.to_json()
-    restored = LlmResponse.from_json(json_str)
+    restored = LLMResponse.from_json(json_str)
 
     assert restored.provider_name == original.provider_name, (
         "from_json provider_name mismatch"
@@ -214,7 +214,7 @@ def test_llm_response_from_json():
 
 def test_llm_response_json_round_trip():
     """
-        LlmResponse to_json followed by from_json produces an equal object.
+        LLMResponse to_json followed by from_json produces an equal object.
 
         **Validates: Requirements 3.6, 17.11**
     """
@@ -223,10 +223,10 @@ def test_llm_response_json_round_trip():
         prompt_tokens=100, completion_tokens=200,
         duration=2.345, content="Round trip test"
     )
-    restored = LlmResponse.from_json(original.to_json())
+    restored = LLMResponse.from_json(original.to_json())
 
     assert original == restored, (
-        "JSON round-trip should produce an equal LlmResponse"
+        "JSON round-trip should produce an equal LLMResponse"
     )
 
     return
@@ -234,16 +234,16 @@ def test_llm_response_json_round_trip():
 
 def test_llm_response_json_round_trip_with_metadata():
     """
-        LlmResponse JSON round-trip preserves message metadata.
+        LLMResponse JSON round-trip preserves message metadata.
 
         **Validates: Requirements 3.6, 17.11**
     """
     metadata = {"finish_reason": "stop", "index": 0}
     original = _make_response(metadata=metadata)
-    restored = LlmResponse.from_json(original.to_json())
+    restored = LLMResponse.from_json(original.to_json())
 
     assert original == restored, (
-        "JSON round-trip with metadata should produce an equal LlmResponse"
+        "JSON round-trip with metadata should produce an equal LLMResponse"
     )
 
     return
@@ -256,7 +256,7 @@ def test_llm_response_json_round_trip_with_metadata():
 
 def test_llm_response_repr_contains_class_name_and_fields():
     """
-        LlmResponse __repr__ includes the class name, provider name,
+        LLMResponse __repr__ includes the class name, provider name,
         model name, and total token count.
 
         **Validates: Requirements 3.7, 19.7**
@@ -264,7 +264,7 @@ def test_llm_response_repr_contains_class_name_and_fields():
     resp = _make_response()
     repr_str = repr(resp)
 
-    assert "LlmResponse" in repr_str, (
+    assert "LLMResponse" in repr_str, (
         "repr should contain class name, got: {!r}".format(repr_str)
     )
     assert "openai" in repr_str, (
@@ -282,7 +282,7 @@ def test_llm_response_repr_contains_class_name_and_fields():
 
 def test_llm_response_str_contains_summary():
     """
-        LlmResponse __str__ returns a human-readable summary with provider,
+        LLMResponse __str__ returns a human-readable summary with provider,
         model, token usage, and duration.
 
         **Validates: Requirements 3.8, 19.8**
@@ -310,21 +310,21 @@ def test_llm_response_str_contains_summary():
 
 def test_llm_response_eq_same_values():
     """
-        LlmResponse __eq__ returns True for responses with identical fields.
+        LLMResponse __eq__ returns True for responses with identical fields.
 
         **Validates: Requirements 3.1**
     """
     a = _make_response()
     b = _make_response()
 
-    assert a == b, "LlmResponse with same values should be equal"
+    assert a == b, "LLMResponse with same values should be equal"
 
     return
 
 
 def test_llm_response_eq_different_provider():
     """
-        LlmResponse __eq__ returns False when provider names differ.
+        LLMResponse __eq__ returns False when provider names differ.
 
         **Validates: Requirements 3.1**
     """
@@ -332,7 +332,7 @@ def test_llm_response_eq_different_provider():
     b = _make_response(provider_name="anthropic")
 
     assert (a == b) is False, (
-        "LlmResponse with different provider_name should not be equal"
+        "LLMResponse with different provider_name should not be equal"
     )
 
     return
@@ -340,7 +340,7 @@ def test_llm_response_eq_different_provider():
 
 def test_llm_response_eq_different_model():
     """
-        LlmResponse __eq__ returns False when model names differ.
+        LLMResponse __eq__ returns False when model names differ.
 
         **Validates: Requirements 3.1**
     """
@@ -348,7 +348,7 @@ def test_llm_response_eq_different_model():
     b = _make_response(model_name="gpt-3.5")
 
     assert (a == b) is False, (
-        "LlmResponse with different model_name should not be equal"
+        "LLMResponse with different model_name should not be equal"
     )
 
     return
@@ -356,7 +356,7 @@ def test_llm_response_eq_different_model():
 
 def test_llm_response_eq_different_message():
     """
-        LlmResponse __eq__ returns False when messages differ.
+        LLMResponse __eq__ returns False when messages differ.
 
         **Validates: Requirements 3.1**
     """
@@ -364,7 +364,7 @@ def test_llm_response_eq_different_message():
     b = _make_response(content="Goodbye!")
 
     assert (a == b) is False, (
-        "LlmResponse with different message content should not be equal"
+        "LLMResponse with different message content should not be equal"
     )
 
     return
@@ -372,7 +372,7 @@ def test_llm_response_eq_different_message():
 
 def test_llm_response_eq_different_token_usage():
     """
-        LlmResponse __eq__ returns False when token usage differs.
+        LLMResponse __eq__ returns False when token usage differs.
 
         **Validates: Requirements 3.1**
     """
@@ -380,7 +380,7 @@ def test_llm_response_eq_different_token_usage():
     b = _make_response(prompt_tokens=50, completion_tokens=60)
 
     assert (a == b) is False, (
-        "LlmResponse with different token_usage should not be equal"
+        "LLMResponse with different token_usage should not be equal"
     )
 
     return
@@ -388,7 +388,7 @@ def test_llm_response_eq_different_token_usage():
 
 def test_llm_response_eq_different_duration():
     """
-        LlmResponse __eq__ returns False when durations differ.
+        LLMResponse __eq__ returns False when durations differ.
 
         **Validates: Requirements 3.1**
     """
@@ -396,7 +396,7 @@ def test_llm_response_eq_different_duration():
     b = _make_response(duration=5.0)
 
     assert (a == b) is False, (
-        "LlmResponse with different duration should not be equal"
+        "LLMResponse with different duration should not be equal"
     )
 
     return
@@ -404,14 +404,14 @@ def test_llm_response_eq_different_duration():
 
 def test_llm_response_eq_non_llm_response():
     """
-        LlmResponse __eq__ returns False when compared to a non-LlmResponse.
+        LLMResponse __eq__ returns False when compared to a non-LLMResponse.
 
         **Validates: Requirements 3.1**
     """
     resp = _make_response()
 
     assert (resp == "not a response") is False, (
-        "LlmResponse should not be equal to a string"
+        "LLMResponse should not be equal to a string"
     )
 
     return
@@ -424,15 +424,15 @@ def test_llm_response_eq_non_llm_response():
 
 def test_llm_response_empty_content_serialization():
     """
-        LlmResponse with empty message content serializes and deserializes.
+        LLMResponse with empty message content serializes and deserializes.
 
         **Validates: Requirements 3.3, 3.4, 3.5, 3.6**
     """
     original = _make_response(content="")
-    restored = LlmResponse.from_json(original.to_json())
+    restored = LLMResponse.from_json(original.to_json())
 
     assert original == restored, (
-        "Empty content LlmResponse should round-trip correctly"
+        "Empty content LLMResponse should round-trip correctly"
     )
 
     return
@@ -440,17 +440,17 @@ def test_llm_response_empty_content_serialization():
 
 def test_llm_response_large_token_counts_serialization():
     """
-        LlmResponse with large token counts serializes and deserializes.
+        LLMResponse with large token counts serializes and deserializes.
 
         **Validates: Requirements 3.3, 3.4, 3.5, 3.6**
     """
     original = _make_response(
         prompt_tokens=1000000, completion_tokens=2000000
     )
-    restored = LlmResponse.from_json(original.to_json())
+    restored = LLMResponse.from_json(original.to_json())
 
     assert original == restored, (
-        "Large token count LlmResponse should round-trip correctly"
+        "Large token count LLMResponse should round-trip correctly"
     )
 
     return
@@ -458,13 +458,13 @@ def test_llm_response_large_token_counts_serialization():
 
 def test_llm_response_special_characters_in_content():
     """
-        LlmResponse with special characters in content serializes correctly.
+        LLMResponse with special characters in content serializes correctly.
 
         **Validates: Requirements 3.4, 3.5, 3.6**
     """
     content = 'Line1\nLine2\t"quoted"\u00e9'
     original = _make_response(content=content)
-    restored = LlmResponse.from_json(original.to_json())
+    restored = LLMResponse.from_json(original.to_json())
 
     assert original == restored, (
         "Special character content should round-trip correctly"

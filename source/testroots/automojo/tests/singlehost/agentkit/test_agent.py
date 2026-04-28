@@ -10,7 +10,7 @@
 import logging
 import os
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.agent import Agent
@@ -147,7 +147,7 @@ hook_count_strategy = st.integers(min_value=1, max_value=10)
 
 @given(
     hook_count=hook_count_strategy,
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_12_hooks_invoked_in_registration_order(hook_count):
     """
@@ -223,7 +223,7 @@ def test_property_12_hooks_invoked_in_registration_order(hook_count):
 @given(
     hook_count=st.integers(min_value=2, max_value=10),
     failing_index=st.integers(min_value=0, max_value=9),
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_13_hook_exception_does_not_prevent_remaining(hook_count, failing_index):
     """
@@ -292,7 +292,7 @@ def test_property_13_hook_exception_does_not_prevent_remaining(hook_count, faili
 @given(
     hook_count=st.integers(min_value=2, max_value=10),
     deregister_index=st.integers(min_value=0, max_value=9),
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_14_hook_deregistration_removes_hook(hook_count, deregister_index):
     """
@@ -362,7 +362,7 @@ def test_property_14_hook_deregistration_removes_hook(hook_count, deregister_ind
 
 @given(
     child_count=st.integers(min_value=1, max_value=5),
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_17_sub_agent_add_and_remove(child_count):
     """
@@ -432,7 +432,7 @@ def test_property_17_sub_agent_add_and_remove(child_count):
 
 @given(
     child_count=st.integers(min_value=1, max_value=4),
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_18_parent_lifecycle_cascades(child_count):
     """
@@ -493,7 +493,7 @@ def test_property_18_parent_lifecycle_cascades(child_count):
 @given(
     name=name_strategy,
     version=version_strategy,
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_19_sub_agent_error_notifies_parent(name, version):
     """
@@ -570,7 +570,7 @@ def test_property_19_sub_agent_error_notifies_parent(name, version):
 
 @given(
     chain_length=st.integers(min_value=2, max_value=5),
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_20_cycle_detection(chain_length):
     """

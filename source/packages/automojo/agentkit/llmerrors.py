@@ -1,8 +1,8 @@
 """
     Exception classes for the LLM Integration feature.
 
-    Provides LlmRequestError for LLM provider request failures and
-    LlmResponseParsingError for output parsing and validation failures.
+    Provides LLMRequestError for LLM provider request failures and
+    LLMResponseParsingError for output parsing and validation failures.
 """
 
 import os
@@ -12,7 +12,7 @@ from typing import Optional
 from automojo.agentkit.errors import AgentKitError
 
 
-class LlmRequestError(AgentKitError):
+class LLMRequestError(AgentKitError):
     """
         Raised when an LLM provider request fails due to a provider-side error.
 
@@ -117,7 +117,7 @@ class LlmRequestError(AgentKitError):
         return rtnval
 
 
-class LlmResponseParsingError(AgentKitError):
+class LLMResponseParsingError(AgentKitError):
     """
         Raised when an OutputParser fails to parse or validate LLM response text.
 

@@ -8,7 +8,7 @@
     **Validates: Requirements 8.1, 8.2, 8.7, 8.8, 8.9**
 """
 
-from automojo.agentkit.llmerrors import LlmResponseParsingError
+from automojo.agentkit.llmerrors import LLMResponseParsingError
 from automojo.agentkit.outputparser import OutputParser
 from automojo.agentkit.outputschema import OutputSchema
 
@@ -157,7 +157,7 @@ def test_parse_with_schema_valid_object():
 def test_parse_with_schema_missing_required_field():
     """
         Parsing with a schema that detects a missing required field
-        raises LlmResponseParsingError.
+        raises LLMResponseParsingError.
 
         **Validates: Requirements 8.8, 8.9**
     """
@@ -174,12 +174,12 @@ def test_parse_with_schema_missing_required_field():
 
     try:
         parser.parse("some raw text")
-    except LlmResponseParsingError as err:
+    except LLMResponseParsingError as err:
         raised = True
         caught_error = err
 
     assert raised is True, (
-        "Should raise LlmResponseParsingError for missing required field"
+        "Should raise LLMResponseParsingError for missing required field"
     )
     assert caught_error.parser_name == "_DictOutputParser", (
         "parser_name should be the subclass name, got: {!r}".format(
@@ -198,7 +198,7 @@ def test_parse_with_schema_missing_required_field():
 def test_parse_with_schema_type_mismatch():
     """
         Parsing with a schema that detects a type mismatch raises
-        LlmResponseParsingError.
+        LLMResponseParsingError.
 
         **Validates: Requirements 8.8, 8.9**
     """
@@ -214,11 +214,11 @@ def test_parse_with_schema_type_mismatch():
 
     try:
         parser.parse("raw")
-    except LlmResponseParsingError:
+    except LLMResponseParsingError:
         raised = True
 
     assert raised is True, (
-        "Should raise LlmResponseParsingError for type mismatch"
+        "Should raise LLMResponseParsingError for type mismatch"
     )
 
     return
@@ -226,7 +226,7 @@ def test_parse_with_schema_type_mismatch():
 
 def test_parse_with_schema_error_includes_validation_details():
     """
-        The LlmResponseParsingError raised on validation failure includes
+        The LLMResponseParsingError raised on validation failure includes
         the validation error details in the error_message.
 
         **Validates: Requirements 8.9**
@@ -244,10 +244,10 @@ def test_parse_with_schema_error_includes_validation_details():
 
     try:
         parser.parse("raw text")
-    except LlmResponseParsingError as err:
+    except LLMResponseParsingError as err:
         caught_error = err
 
-    assert caught_error is not None, "Should have raised LlmResponseParsingError"
+    assert caught_error is not None, "Should have raised LLMResponseParsingError"
     assert "age" in caught_error.error_message, (
         "Error message should mention missing field 'age'"
     )

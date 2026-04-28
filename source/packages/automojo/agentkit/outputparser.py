@@ -9,7 +9,7 @@
 
 import abc
 
-from automojo.agentkit.llmerrors import LlmResponseParsingError
+from automojo.agentkit.llmerrors import LLMResponseParsingError
 from automojo.agentkit.outputschema import OutputSchema
 
 
@@ -48,7 +48,7 @@ class OutputParser(abc.ABC):
             :param raw_text: The raw LLM response text.
 
             :returns: A parsed Python object.
-            :raises: LlmResponseParsingError
+            :raises: LLMResponseParsingError
         """
         ...
 
@@ -63,7 +63,7 @@ class OutputParser(abc.ABC):
             :param raw_text: The raw LLM response text.
 
             :returns: A parsed Python object.
-            :raises: LlmResponseParsingError if parsing or validation fails.
+            :raises: LLMResponseParsingError if parsing or validation fails.
         """
         parsed = self._parse_raw(raw_text)
 
@@ -73,7 +73,7 @@ class OutputParser(abc.ABC):
                 errmsg = "Output validation failed for {}: {}".format(
                     self.__class__.__name__, "; ".join(validation_errors)
                 )
-                raise LlmResponseParsingError(
+                raise LLMResponseParsingError(
                     parser_name=self.__class__.__name__,
                     raw_text=raw_text,
                     message=errmsg

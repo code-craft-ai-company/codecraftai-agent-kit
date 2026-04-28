@@ -1,7 +1,7 @@
 """
     Unit tests for the automojo.agentkit.llmerrors module.
 
-    Tests LlmRequestError and LlmResponseParsingError field storage,
+    Tests LLMRequestError and LLMResponseParsingError field storage,
     property access, inheritance, and __repr__ output.
 
     Feature: llm-integration, Task 1.5
@@ -9,22 +9,22 @@
 """
 
 from automojo.agentkit.errors import AgentKitError
-from automojo.agentkit.llmerrors import LlmRequestError
-from automojo.agentkit.llmerrors import LlmResponseParsingError
+from automojo.agentkit.llmerrors import LLMRequestError
+from automojo.agentkit.llmerrors import LLMResponseParsingError
 
 
 # ---------------------------------------------------------------------------
-# LlmRequestError tests
+# LLMRequestError tests
 # ---------------------------------------------------------------------------
 
 
 def test_llm_request_error_inherits_from_agentkit_error():
     """
-        LlmRequestError inherits from AgentKitError.
+        LLMRequestError inherits from AgentKitError.
 
         **Validates: Requirements 15.1**
     """
-    err = LlmRequestError(
+    err = LLMRequestError(
         provider_name="openai",
         model_name="gpt-4",
         category="server_error"
@@ -32,7 +32,7 @@ def test_llm_request_error_inherits_from_agentkit_error():
 
     is_agentkit_error = isinstance(err, AgentKitError)
     assert is_agentkit_error is True, (
-        "LlmRequestError should inherit from AgentKitError"
+        "LLMRequestError should inherit from AgentKitError"
     )
 
     return
@@ -40,13 +40,13 @@ def test_llm_request_error_inherits_from_agentkit_error():
 
 def test_llm_request_error_fields():
     """
-        LlmRequestError stores and exposes provider_name, model_name,
+        LLMRequestError stores and exposes provider_name, model_name,
         category, and cause through read-only properties.
 
         **Validates: Requirements 15.2**
     """
     cause = RuntimeError("connection reset")
-    err = LlmRequestError(
+    err = LLMRequestError(
         provider_name="anthropic",
         model_name="claude-3",
         category="connection",
@@ -71,11 +71,11 @@ def test_llm_request_error_fields():
 
 def test_llm_request_error_cause_none_by_default():
     """
-        LlmRequestError cause is None when not provided.
+        LLMRequestError cause is None when not provided.
 
         **Validates: Requirements 15.2**
     """
-    err = LlmRequestError(
+    err = LLMRequestError(
         provider_name="openai",
         model_name="gpt-4",
         category="rate_limit"
@@ -90,14 +90,14 @@ def test_llm_request_error_cause_none_by_default():
 
 def test_llm_request_error_invalid_category_raises_value_error():
     """
-        LlmRequestError raises ValueError for an invalid category.
+        LLMRequestError raises ValueError for an invalid category.
 
         **Validates: Requirements 15.2**
     """
     caught = False
 
     try:
-        LlmRequestError(
+        LLMRequestError(
             provider_name="openai",
             model_name="gpt-4",
             category="not_a_real_category"
@@ -106,7 +106,7 @@ def test_llm_request_error_invalid_category_raises_value_error():
         caught = True
 
     assert caught is True, (
-        "LlmRequestError should raise ValueError for invalid category"
+        "LLMRequestError should raise ValueError for invalid category"
     )
 
     return
@@ -114,7 +114,7 @@ def test_llm_request_error_invalid_category_raises_value_error():
 
 def test_llm_request_error_all_valid_categories():
     """
-        LlmRequestError accepts all valid categories without error.
+        LLMRequestError accepts all valid categories without error.
 
         **Validates: Requirements 15.2**
     """
@@ -124,7 +124,7 @@ def test_llm_request_error_all_valid_categories():
     ]
 
     for category in valid_categories:
-        err = LlmRequestError(
+        err = LLMRequestError(
             provider_name="test_provider",
             model_name="test_model",
             category=category
@@ -138,12 +138,12 @@ def test_llm_request_error_all_valid_categories():
 
 def test_llm_request_error_repr():
     """
-        LlmRequestError __repr__ includes class name, provider, model,
+        LLMRequestError __repr__ includes class name, provider, model,
         and category.
 
         **Validates: Requirements 15.5**
     """
-    err = LlmRequestError(
+    err = LLMRequestError(
         provider_name="openai",
         model_name="gpt-4",
         category="timeout"
@@ -151,7 +151,7 @@ def test_llm_request_error_repr():
 
     repr_str = repr(err)
 
-    assert "LlmRequestError" in repr_str, (
+    assert "LLMRequestError" in repr_str, (
         "repr should contain class name, got: {!r}".format(repr_str)
     )
     assert "openai" in repr_str, (
@@ -169,11 +169,11 @@ def test_llm_request_error_repr():
 
 def test_llm_request_error_message_contains_provider_and_model():
     """
-        LlmRequestError message string includes provider name and model name.
+        LLMRequestError message string includes provider name and model name.
 
         **Validates: Requirements 15.1, 15.5**
     """
-    err = LlmRequestError(
+    err = LLMRequestError(
         provider_name="bedrock",
         model_name="titan",
         category="authentication"
@@ -193,12 +193,12 @@ def test_llm_request_error_message_contains_provider_and_model():
 
 def test_llm_request_error_message_contains_cause_when_provided():
     """
-        LlmRequestError message includes cause text when a cause is provided.
+        LLMRequestError message includes cause text when a cause is provided.
 
         **Validates: Requirements 15.2**
     """
     cause = TimeoutError("request timed out after 30s")
-    err = LlmRequestError(
+    err = LLMRequestError(
         provider_name="openai",
         model_name="gpt-4",
         category="timeout",
@@ -216,14 +216,14 @@ def test_llm_request_error_message_contains_cause_when_provided():
 
 def test_llm_request_error_catchable_as_agentkit_error():
     """
-        LlmRequestError can be caught as AgentKitError.
+        LLMRequestError can be caught as AgentKitError.
 
         **Validates: Requirements 15.1**
     """
     caught = False
 
     try:
-        raise LlmRequestError(
+        raise LLMRequestError(
             provider_name="openai",
             model_name="gpt-4",
             category="server_error"
@@ -232,24 +232,24 @@ def test_llm_request_error_catchable_as_agentkit_error():
         caught = True
 
     assert caught is True, (
-        "LlmRequestError should be catchable as AgentKitError"
+        "LLMRequestError should be catchable as AgentKitError"
     )
 
     return
 
 
 # ---------------------------------------------------------------------------
-# LlmResponseParsingError tests
+# LLMResponseParsingError tests
 # ---------------------------------------------------------------------------
 
 
 def test_llm_response_parsing_error_inherits_from_agentkit_error():
     """
-        LlmResponseParsingError inherits from AgentKitError.
+        LLMResponseParsingError inherits from AgentKitError.
 
         **Validates: Requirements 15.3**
     """
-    err = LlmResponseParsingError(
+    err = LLMResponseParsingError(
         parser_name="JsonOutputParser",
         raw_text="not json",
         message="Invalid JSON"
@@ -257,7 +257,7 @@ def test_llm_response_parsing_error_inherits_from_agentkit_error():
 
     is_agentkit_error = isinstance(err, AgentKitError)
     assert is_agentkit_error is True, (
-        "LlmResponseParsingError should inherit from AgentKitError"
+        "LLMResponseParsingError should inherit from AgentKitError"
     )
 
     return
@@ -265,12 +265,12 @@ def test_llm_response_parsing_error_inherits_from_agentkit_error():
 
 def test_llm_response_parsing_error_fields():
     """
-        LlmResponseParsingError stores and exposes parser_name, raw_text,
+        LLMResponseParsingError stores and exposes parser_name, raw_text,
         and error_message through read-only properties.
 
         **Validates: Requirements 15.4**
     """
-    err = LlmResponseParsingError(
+    err = LLMResponseParsingError(
         parser_name="RegexOutputParser",
         raw_text="some raw output text",
         message="Pattern did not match"
@@ -291,12 +291,12 @@ def test_llm_response_parsing_error_fields():
 
 def test_llm_response_parsing_error_repr():
     """
-        LlmResponseParsingError __repr__ includes class name, parser name,
+        LLMResponseParsingError __repr__ includes class name, parser name,
         and error message.
 
         **Validates: Requirements 15.5**
     """
-    err = LlmResponseParsingError(
+    err = LLMResponseParsingError(
         parser_name="JsonOutputParser",
         raw_text="bad data",
         message="Expecting value"
@@ -304,7 +304,7 @@ def test_llm_response_parsing_error_repr():
 
     repr_str = repr(err)
 
-    assert "LlmResponseParsingError" in repr_str, (
+    assert "LLMResponseParsingError" in repr_str, (
         "repr should contain class name, got: {!r}".format(repr_str)
     )
     assert "JsonOutputParser" in repr_str, (
@@ -319,13 +319,13 @@ def test_llm_response_parsing_error_repr():
 
 def test_llm_response_parsing_error_message_truncates_raw_text():
     """
-        LlmResponseParsingError message includes a truncated preview
+        LLMResponseParsingError message includes a truncated preview
         of the raw text (first 200 chars).
 
         **Validates: Requirements 15.4**
     """
     long_text = "x" * 500
-    err = LlmResponseParsingError(
+    err = LLMResponseParsingError(
         parser_name="JsonOutputParser",
         raw_text=long_text,
         message="Invalid JSON"
@@ -344,14 +344,14 @@ def test_llm_response_parsing_error_message_truncates_raw_text():
 
 def test_llm_response_parsing_error_catchable_as_agentkit_error():
     """
-        LlmResponseParsingError can be caught as AgentKitError.
+        LLMResponseParsingError can be caught as AgentKitError.
 
         **Validates: Requirements 15.3**
     """
     caught = False
 
     try:
-        raise LlmResponseParsingError(
+        raise LLMResponseParsingError(
             parser_name="JsonOutputParser",
             raw_text="bad",
             message="parse failed"
@@ -360,7 +360,7 @@ def test_llm_response_parsing_error_catchable_as_agentkit_error():
         caught = True
 
     assert caught is True, (
-        "LlmResponseParsingError should be catchable as AgentKitError"
+        "LLMResponseParsingError should be catchable as AgentKitError"
     )
 
     return

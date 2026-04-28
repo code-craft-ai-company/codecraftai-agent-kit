@@ -2,26 +2,26 @@
     Property-based tests for the automojo.agentkit.llmprovider module.
 
     Uses automojo.testbase.properties to verify:
-    - Property 7: LlmProvider construction preserves fields
-    - Property 8: LlmProvider construction rejects missing name or model
+    - Property 7: LLMProvider construction preserves fields
+    - Property 8: LLMProvider construction rejects missing name or model
 
     **Validates: Requirements 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9**
 """
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.errors import SemanticError
-from automojo.agentkit.llmprovider import LlmProvider
+from automojo.agentkit.llmprovider import LLMProvider
 
 
 # ---------------------------------------------------------------------------
 # Concrete test subclass
 # ---------------------------------------------------------------------------
 
-class _TestProvider(LlmProvider):
+class _TestProvider(LLMProvider):
     """
-        Minimal concrete subclass of LlmProvider for testing construction.
+        Minimal concrete subclass of LLMProvider for testing construction.
         Implements abstract methods as no-ops.
     """
 
@@ -84,7 +84,7 @@ _empty_or_whitespace = st.one_of(
 
 
 # ---------------------------------------------------------------------------
-# Property 7: LlmProvider construction preserves fields
+# Property 7: LLMProvider construction preserves fields
 # ---------------------------------------------------------------------------
 
 @given(
@@ -93,7 +93,7 @@ _empty_or_whitespace = st.one_of(
     config=_config,
     credential_names=_credential_names,
     tags=_tags,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_llmprovider_construction_preserves_fields(
     provider_name: str,
@@ -107,7 +107,7 @@ def test_llmprovider_construction_preserves_fields(
 
         For any valid provider name string, model name string, config
         dictionary, credential names list, and tags dictionary,
-        constructing an LlmProvider subclass shall produce an instance
+        constructing an LLMProvider subclass shall produce an instance
         whose provider_name, model_name, config, credential_names, and
         tags properties return values equal to the provided arguments.
     """
@@ -153,12 +153,12 @@ def test_llmprovider_construction_preserves_fields(
 
 
 # ---------------------------------------------------------------------------
-# Property 8: LlmProvider construction rejects missing name or model
+# Property 8: LLMProvider construction rejects missing name or model
 # ---------------------------------------------------------------------------
 
 @given(
     model_name=_model_name,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_llmprovider_rejects_none_provider_name(
     model_name: str,
@@ -166,7 +166,7 @@ def test_llmprovider_rejects_none_provider_name(
     """
         **Validates: Requirements 1.8**
 
-        For a None provider name, constructing an LlmProvider shall
+        For a None provider name, constructing an LLMProvider shall
         raise SemanticError.
     """
     raised = False
@@ -176,7 +176,7 @@ def test_llmprovider_rejects_none_provider_name(
         raised = True
 
     assert raised is True, (
-        "LlmProvider should raise SemanticError for None provider_name"
+        "LLMProvider should raise SemanticError for None provider_name"
     )
 
     return
@@ -185,7 +185,7 @@ def test_llmprovider_rejects_none_provider_name(
 @given(
     provider_name=_empty_or_whitespace,
     model_name=_model_name,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_llmprovider_rejects_empty_provider_name(
     provider_name: str,
@@ -195,7 +195,7 @@ def test_llmprovider_rejects_empty_provider_name(
         **Validates: Requirements 1.8**
 
         For any empty or whitespace-only provider name string,
-        constructing an LlmProvider shall raise SemanticError.
+        constructing an LLMProvider shall raise SemanticError.
     """
     raised = False
     try:
@@ -204,7 +204,7 @@ def test_llmprovider_rejects_empty_provider_name(
         raised = True
 
     assert raised is True, (
-        "LlmProvider should raise SemanticError for empty/whitespace "
+        "LLMProvider should raise SemanticError for empty/whitespace "
         "provider_name {!r}".format(provider_name)
     )
 
@@ -213,7 +213,7 @@ def test_llmprovider_rejects_empty_provider_name(
 
 @given(
     provider_name=_provider_name,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_llmprovider_rejects_none_model_name(
     provider_name: str,
@@ -221,7 +221,7 @@ def test_llmprovider_rejects_none_model_name(
     """
         **Validates: Requirements 1.9**
 
-        For a None model name, constructing an LlmProvider shall
+        For a None model name, constructing an LLMProvider shall
         raise SemanticError.
     """
     raised = False
@@ -231,7 +231,7 @@ def test_llmprovider_rejects_none_model_name(
         raised = True
 
     assert raised is True, (
-        "LlmProvider should raise SemanticError for None model_name"
+        "LLMProvider should raise SemanticError for None model_name"
     )
 
     return
@@ -240,7 +240,7 @@ def test_llmprovider_rejects_none_model_name(
 @given(
     provider_name=_provider_name,
     model_name=_empty_or_whitespace,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_llmprovider_rejects_empty_model_name(
     provider_name: str,
@@ -250,7 +250,7 @@ def test_llmprovider_rejects_empty_model_name(
         **Validates: Requirements 1.9**
 
         For any empty or whitespace-only model name string,
-        constructing an LlmProvider shall raise SemanticError.
+        constructing an LLMProvider shall raise SemanticError.
     """
     raised = False
     try:
@@ -259,7 +259,7 @@ def test_llmprovider_rejects_empty_model_name(
         raised = True
 
     assert raised is True, (
-        "LlmProvider should raise SemanticError for empty/whitespace "
+        "LLMProvider should raise SemanticError for empty/whitespace "
         "model_name {!r}".format(model_name)
     )
 

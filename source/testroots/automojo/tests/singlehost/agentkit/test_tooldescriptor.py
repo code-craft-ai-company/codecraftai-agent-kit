@@ -8,7 +8,7 @@
 """
 
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 
@@ -230,7 +230,7 @@ def tool_descriptor_strategy(draw):
 
 @given(
     original=tool_descriptor_strategy(),
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_5_tooldescriptor_json_round_trip(original):
     """

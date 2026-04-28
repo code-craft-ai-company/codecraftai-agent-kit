@@ -7,7 +7,7 @@
     **Validates: Requirements 9.6**
 """
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.defaultvaluestrategy import DefaultValueStrategy
@@ -70,7 +70,7 @@ _FAILURES_TO_LEVEL = {
     agent_id=_agent_identifiers,
     dep_names=_dependency_names,
     failure_counts=st.lists(_failure_counts, min_size=2, max_size=10),
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_degradationmanager_overall_level_is_maximum(
     agent_id: str,

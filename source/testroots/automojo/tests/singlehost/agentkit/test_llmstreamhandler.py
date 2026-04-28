@@ -1,7 +1,7 @@
 """
     Unit tests for the automojo.agentkit.llmstreamhandler module.
 
-    Tests LlmStreamHandler abstract method enforcement, ensuring that
+    Tests LLMStreamHandler abstract method enforcement, ensuring that
     the class cannot be instantiated directly and that subclasses must
     implement all three abstract methods (on_chunk, on_complete, on_error).
 
@@ -9,7 +9,7 @@
     **Validates: Requirements 6.3**
 """
 
-from automojo.agentkit.llmstreamhandler import LlmStreamHandler
+from automojo.agentkit.llmstreamhandler import LLMStreamHandler
 
 
 # ---------------------------------------------------------------------------
@@ -19,7 +19,7 @@ from automojo.agentkit.llmstreamhandler import LlmStreamHandler
 
 def test_llm_stream_handler_cannot_instantiate_directly():
     """
-        LlmStreamHandler cannot be instantiated directly because it has
+        LLMStreamHandler cannot be instantiated directly because it has
         abstract methods.
 
         **Validates: Requirements 6.3**
@@ -27,12 +27,12 @@ def test_llm_stream_handler_cannot_instantiate_directly():
     caught = False
 
     try:
-        LlmStreamHandler()
+        LLMStreamHandler()
     except TypeError:
         caught = True
 
     assert caught is True, (
-        "LlmStreamHandler should raise TypeError when instantiated directly"
+        "LLMStreamHandler should raise TypeError when instantiated directly"
     )
 
     return
@@ -45,7 +45,7 @@ def test_llm_stream_handler_partial_on_chunk_only():
         **Validates: Requirements 6.3**
     """
 
-    class _PartialHandler(LlmStreamHandler):
+    class _PartialHandler(LLMStreamHandler):
         def on_chunk(self, chunk):
             return
 
@@ -71,7 +71,7 @@ def test_llm_stream_handler_partial_on_chunk_and_on_complete():
         **Validates: Requirements 6.3**
     """
 
-    class _PartialHandler(LlmStreamHandler):
+    class _PartialHandler(LLMStreamHandler):
         def on_chunk(self, chunk):
             return
 
@@ -99,7 +99,7 @@ def test_llm_stream_handler_partial_on_error_only():
         **Validates: Requirements 6.3**
     """
 
-    class _PartialHandler(LlmStreamHandler):
+    class _PartialHandler(LLMStreamHandler):
         def on_error(self, error):
             return
 
@@ -125,7 +125,7 @@ def test_llm_stream_handler_complete_subclass_can_instantiate():
         **Validates: Requirements 6.3**
     """
 
-    class _CompleteHandler(LlmStreamHandler):
+    class _CompleteHandler(LLMStreamHandler):
         def on_chunk(self, chunk):
             return
 
@@ -152,7 +152,7 @@ def test_llm_stream_handler_complete_subclass_methods_callable():
         **Validates: Requirements 6.3**
     """
 
-    class _CompleteHandler(LlmStreamHandler):
+    class _CompleteHandler(LLMStreamHandler):
         def on_chunk(self, chunk):
             return
 

@@ -10,7 +10,7 @@
 import json
 import os
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 
@@ -130,7 +130,7 @@ valid_config_strategy = st.fixed_dictionaries({
 # **Validates: Requirements 3.12, 12.8**
 # ---------------------------------------------------------------------------
 
-@given(data=valid_config_strategy, settings=settings(max_examples=100))
+@given(data=valid_config_strategy, constraints={"max_examples": 100})
 def test_property_4_json_round_trip(data):
     """
         Property 4: AgentConfiguration JSON round-trip.
@@ -176,7 +176,7 @@ def test_property_4_json_round_trip(data):
 # **Validates: Requirements 3.13, 12.9**
 # ---------------------------------------------------------------------------
 
-@given(data=valid_config_strategy, settings=settings(max_examples=100))
+@given(data=valid_config_strategy, constraints={"max_examples": 100})
 def test_property_5_yaml_round_trip(data):
     """
         Property 5: AgentConfiguration YAML round-trip.
@@ -224,7 +224,7 @@ def test_property_5_yaml_round_trip(data):
 
 @given(
     name=name_strategy,
-    version=version_strategy, settings=settings(max_examples=100))
+    version=version_strategy, constraints={"max_examples": 100})
 def test_property_6_validation_rejects_missing_identity(name, version):
     """
         Property 6: AgentConfiguration validation rejects invalid configs
@@ -251,7 +251,7 @@ def test_property_6_validation_rejects_missing_identity(name, version):
     return
 
 
-@given(name=name_strategy, settings=settings(max_examples=100))
+@given(name=name_strategy, constraints={"max_examples": 100})
 def test_property_6_validation_rejects_missing_identity_name(name):
     """
         Property 6: AgentConfiguration validation rejects invalid configs
@@ -280,7 +280,7 @@ def test_property_6_validation_rejects_missing_identity_name(name):
     return
 
 
-@given(version=version_strategy, settings=settings(max_examples=100))
+@given(version=version_strategy, constraints={"max_examples": 100})
 def test_property_6_validation_rejects_missing_identity_version(version):
     """
         Property 6: AgentConfiguration validation rejects invalid configs
@@ -311,7 +311,7 @@ def test_property_6_validation_rejects_missing_identity_version(version):
 
 @given(
     name=name_strategy,
-    version=version_strategy, settings=settings(max_examples=100))
+    version=version_strategy, constraints={"max_examples": 100})
 def test_property_6_validation_rejects_non_dict_identity(name, version):
     """
         Property 6: AgentConfiguration validation rejects invalid configs
@@ -345,7 +345,7 @@ def test_property_6_validation_rejects_non_dict_identity(name, version):
 
 @given(
     name=name_strategy,
-    version=version_strategy, settings=settings(max_examples=100))
+    version=version_strategy, constraints={"max_examples": 100})
 def test_property_7_serialization_excludes_credentials(name, version):
     """
         Property 7: AgentConfiguration serialization excludes credentials.
@@ -424,7 +424,7 @@ def test_property_7_serialization_excludes_credentials(name, version):
 # **Validates: Requirements 3.1**
 # ---------------------------------------------------------------------------
 
-@given(data=valid_config_strategy, settings=settings(max_examples=100))
+@given(data=valid_config_strategy, constraints={"max_examples": 100})
 def test_property_21_from_dict_produces_valid_configuration(data):
     """
         Property 21: AgentConfiguration from_dict produces valid configuration.

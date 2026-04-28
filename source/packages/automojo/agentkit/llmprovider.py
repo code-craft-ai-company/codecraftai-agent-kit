@@ -1,7 +1,7 @@
 """
-    Defines the LlmProvider abstract base class for Large Language Model providers.
+    Defines the LLMProvider abstract base class for Large Language Model providers.
 
-    LlmProvider establishes the common interface that all LLM provider
+    LLMProvider establishes the common interface that all LLM provider
     implementations must follow. Subclasses implement the complete and
     complete_stream methods for a specific LLM service. The base class
     manages provider identity, configuration, credential references, and
@@ -13,7 +13,7 @@ import abc
 from automojo.agentkit.errors import SemanticError
 
 
-class LlmProvider(abc.ABC):
+class LLMProvider(abc.ABC):
     """
         Abstract base class for Large Language Model providers.
 
@@ -33,11 +33,11 @@ class LlmProvider(abc.ABC):
                  config: dict = None, credential_names: list = None,
                  tags: dict = None) -> None:
         if provider_name is None or len(str(provider_name).strip()) == 0:
-            errmsg = "A provider name is required when constructing an LlmProvider."
+            errmsg = "A provider name is required when constructing an LLMProvider."
             raise SemanticError(errmsg)
 
         if model_name is None or len(str(model_name).strip()) == 0:
-            errmsg = "A model name is required when constructing an LlmProvider."
+            errmsg = "A model name is required when constructing an LLMProvider."
             raise SemanticError(errmsg)
 
         self._provider_name = provider_name
@@ -102,11 +102,11 @@ class LlmProvider(abc.ABC):
         """
             Executes a synchronous completion request.
 
-            :param conversation: The conversation history as an LlmConversation.
+            :param conversation: The conversation history as an LLMConversation.
 
-            :returns: An LlmResponse with the completion result.
+            :returns: An LLMResponse with the completion result.
 
-            :raises: LlmRequestError on provider-side failure.
+            :raises: LLMRequestError on provider-side failure.
         """
         ...
 
@@ -115,12 +115,12 @@ class LlmProvider(abc.ABC):
         """
             Executes a streaming completion request.
 
-            :param conversation: The conversation history as an LlmConversation.
-            :param handler: The LlmStreamHandler to receive chunks.
+            :param conversation: The conversation history as an LLMConversation.
+            :param handler: The LLMStreamHandler to receive chunks.
 
-            :returns: The final assembled LlmResponse.
+            :returns: The final assembled LLMResponse.
 
-            :raises: LlmRequestError on provider-side failure.
+            :raises: LLMRequestError on provider-side failure.
         """
         ...
 
@@ -156,5 +156,5 @@ class LlmProvider(abc.ABC):
 
             :returns: A human-readable string.
         """
-        rtnval = "LlmProvider: {} / {}".format(self._provider_name, self._model_name)
+        rtnval = "LLMProvider: {} / {}".format(self._provider_name, self._model_name)
         return rtnval

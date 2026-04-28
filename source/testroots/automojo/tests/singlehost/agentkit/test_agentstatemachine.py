@@ -13,7 +13,7 @@ from datetime import datetime
 from datetime import timezone
 
 
-from automojo.testbase.properties import given, settings, assume
+from automojo.testbase.properties import given, assume
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 
@@ -95,7 +95,7 @@ def _invalid_transition_data(draw):
 
 
 @given(sequence=_valid_transition_sequence_strategy(min_length=1, max_length=20),
-    settings=settings(max_examples=100))
+    constraints={"max_examples": 100})
 def test_property_8_valid_transitions_update_state(sequence):
     """
         Property 8: State machine accepts valid transitions and updates state.
@@ -127,7 +127,7 @@ def test_property_8_valid_transitions_update_state(sequence):
 # ---------------------------------------------------------------------------
 
 @given(test_data=_invalid_transition_data(),
-    settings=settings(max_examples=100))
+    constraints={"max_examples": 100})
 def test_property_9_rejects_invalid_transitions(test_data):
     """
         Property 9: State machine rejects invalid transitions.
@@ -197,7 +197,7 @@ def test_property_9_rejects_invalid_transitions(test_data):
 # ---------------------------------------------------------------------------
 
 @given(sequence=_valid_transition_sequence_strategy(min_length=1, max_length=15),
-    settings=settings(max_examples=100))
+    constraints={"max_examples": 100})
 def test_property_10_records_transition_history(sequence):
     """
         Property 10: State machine records transition history.
@@ -270,7 +270,7 @@ def test_property_10_records_transition_history(sequence):
 # ---------------------------------------------------------------------------
 
 @given(state=st.sampled_from(ALL_STATES),
-    settings=settings(max_examples=100))
+    constraints={"max_examples": 100})
 def test_property_11_get_valid_transitions_matches_table(state):
     """
         Property 11: State machine get_valid_transitions matches transition table.

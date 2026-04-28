@@ -9,7 +9,7 @@
 
 from datetime import datetime
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 
@@ -47,7 +47,7 @@ _timestamp = _datetimes()
     delay=_non_negative_float,
     exception_message=_exception_message,
     timestamp=_timestamp,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_retryattempt_json_roundtrip(
     attempt_number: int,

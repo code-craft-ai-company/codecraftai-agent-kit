@@ -1,20 +1,20 @@
 """
-    Defines the LlmProviderRegistry class for tracking available LlmProvider
+    Defines the LLMProviderRegistry class for tracking available LLMProvider
     instances within an Agent in the automojo-agent-kit framework.
 
-    LlmProviderRegistry provides registration, deregistration, lookup by
+    LLMProviderRegistry provides registration, deregistration, lookup by
     provider name and model name, lookup by provider name only, lookup by
-    tags, enumeration, and count operations for LlmProvider instances.
-    Each Agent maintains its own LlmProviderRegistry instance.
+    tags, enumeration, and count operations for LLMProvider instances.
+    Each Agent maintains its own LLMProviderRegistry instance.
 """
 
 from automojo.agentkit.errors import SemanticError
-from automojo.agentkit.llmprovider import LlmProvider
+from automojo.agentkit.llmprovider import LLMProvider
 
 
-class LlmProviderRegistry:
+class LLMProviderRegistry:
     """
-        Registry tracking available LlmProvider instances for an Agent.
+        Registry tracking available LLMProvider instances for an Agent.
 
         Provides lookup by provider name + model name, by provider name only,
         by tags, and enumeration. Uses a composite key of (provider_name,
@@ -25,12 +25,12 @@ class LlmProviderRegistry:
         self._providers: dict = {}
         return
 
-    def register(self, provider: LlmProvider) -> None:
+    def register(self, provider: LLMProvider) -> None:
         """
-            Registers an LlmProvider using provider_name + model_name as
+            Registers an LLMProvider using provider_name + model_name as
             a composite key.
 
-            :param provider: The LlmProvider instance to register.
+            :param provider: The LLMProvider instance to register.
 
             :raises: SemanticError if a provider with the same name+model
                      is already registered.
@@ -42,7 +42,7 @@ class LlmProviderRegistry:
         is_duplicate = key in self._providers
 
         if is_duplicate is True:
-            errmsg = "LlmProvider {!r} model {!r} is already registered.".format(
+            errmsg = "LLMProvider {!r} model {!r} is already registered.".format(
                 provider_name, model_name
             )
             raise SemanticError(errmsg)
@@ -53,7 +53,7 @@ class LlmProviderRegistry:
 
     def deregister(self, provider_name: str, model_name: str) -> None:
         """
-            Removes an LlmProvider by provider name and model name.
+            Removes an LLMProvider by provider name and model name.
 
             If the provider is not found, the operation is a no-op.
 
@@ -69,14 +69,14 @@ class LlmProviderRegistry:
 
         return
 
-    def lookup(self, provider_name: str, model_name: str) -> LlmProvider:
+    def lookup(self, provider_name: str, model_name: str) -> LLMProvider:
         """
-            Looks up a registered LlmProvider by provider name and model name.
+            Looks up a registered LLMProvider by provider name and model name.
 
             :param provider_name: The provider name.
             :param model_name: The model name.
 
-            :returns: The LlmProvider instance, or None if not found.
+            :returns: The LLMProvider instance, or None if not found.
         """
         key = (provider_name, model_name)
         rtnval = self._providers.get(key, None)
@@ -84,11 +84,11 @@ class LlmProviderRegistry:
 
     def lookup_by_provider(self, provider_name: str) -> list:
         """
-            Returns all LlmProvider instances for a given provider name.
+            Returns all LLMProvider instances for a given provider name.
 
             :param provider_name: The provider name.
 
-            :returns: A list of LlmProvider instances matching the provider name.
+            :returns: A list of LLMProvider instances matching the provider name.
         """
         matching_providers = []
 
@@ -104,14 +104,14 @@ class LlmProviderRegistry:
 
     def lookup_by_tags(self, **tags) -> list:
         """
-            Returns LlmProvider instances matching all provided tag criteria.
+            Returns LLMProvider instances matching all provided tag criteria.
 
             Returns providers whose tags dictionary contains all the specified
             key-value pairs.
 
             :param tags: Keyword arguments representing tag key-value pairs to match.
 
-            :returns: A list of matching LlmProvider instances.
+            :returns: A list of matching LLMProvider instances.
         """
         matching_providers = []
 
@@ -141,9 +141,9 @@ class LlmProviderRegistry:
 
     def list_all(self) -> list:
         """
-            Returns all registered LlmProvider instances.
+            Returns all registered LLMProvider instances.
 
-            :returns: A list of all registered LlmProvider instances.
+            :returns: A list of all registered LLMProvider instances.
         """
         rtnval = list(self._providers.values())
         return rtnval
@@ -196,5 +196,5 @@ class LlmProviderRegistry:
             :returns: A human-readable string.
         """
         pairs = ["{}/{}".format(k[0], k[1]) for k in self._providers.keys()]
-        rtnval = "LlmProviderRegistry: [{}]".format(", ".join(pairs))
+        rtnval = "LLMProviderRegistry: [{}]".format(", ".join(pairs))
         return rtnval

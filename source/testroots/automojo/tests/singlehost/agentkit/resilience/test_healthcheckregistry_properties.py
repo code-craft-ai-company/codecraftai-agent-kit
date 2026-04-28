@@ -7,7 +7,7 @@
     **Validates: Requirements 17.1, 17.4**
 """
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 from automojo.testbase.mocking import Mock
@@ -49,7 +49,7 @@ def _make_health_check(name: str) -> TransportHealthCheck:
 
 @given(
     names=_unique_names,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_healthcheckregistry_register_lookup_consistency(names: list) -> None:
     """
@@ -94,7 +94,7 @@ def test_healthcheckregistry_register_lookup_consistency(names: list) -> None:
 
 @given(
     names=_unique_names,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_healthcheckregistry_count_consistency(names: list) -> None:
     """

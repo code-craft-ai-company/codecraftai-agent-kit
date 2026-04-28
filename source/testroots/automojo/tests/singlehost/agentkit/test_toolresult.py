@@ -8,7 +8,7 @@
 """
 
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.agentkit.toolresult import ToolResult
 
@@ -71,7 +71,7 @@ error_strategy = st.one_of(
     status=status_strategy,
     output=output_strategy,
     duration=duration_strategy,
-    settings=settings(max_examples=100))
+    constraints={"max_examples": 100})
 def test_property_15_is_success_reflects_status(tool_name, status, output, duration):
     """
         Property 15: ToolResult is_success reflects status.
@@ -127,7 +127,7 @@ def test_property_15_is_success_reflects_status(tool_name, status, output, durat
     output=output_strategy,
     duration=duration_strategy,
     error=error_strategy,
-    settings=settings(max_examples=100))
+    constraints={"max_examples": 100})
 def test_property_16_fields_and_as_dict_correctness(tool_name, status, output, duration, error):
     """
         Property 16: ToolResult fields and as_dict correctness.

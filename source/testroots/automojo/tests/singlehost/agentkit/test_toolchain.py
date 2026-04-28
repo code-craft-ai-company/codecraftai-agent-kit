@@ -9,7 +9,7 @@
 """
 
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 from automojo.agentkit.errors import SemanticError
@@ -145,7 +145,7 @@ def _property_17_data(draw):
 
 @given(
     test_data=_property_17_data(),
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_17_toolchain_validates_tool_existence_at_construction(test_data):
     """
@@ -237,7 +237,7 @@ def _property_18_data(draw):
 
 @given(
     test_data=_property_18_data(),
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_18_toolchain_validates_schema_compatibility_at_construction(test_data):
     """
@@ -321,7 +321,7 @@ def test_property_18_toolchain_validates_schema_compatibility_at_construction(te
 @given(
     tool_names_list=unique_tool_names_strategy(min_count=1, max_count=5),
     chain_name=tool_name_strategy,
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_21_toolchain_exposes_correct_tool_names_and_step_count(tool_names_list, chain_name):
     """

@@ -3,7 +3,7 @@
     retry/fallback behavior.
 
     Tests cover retry behavior, fallback behavior, all-providers-fail error,
-    LlmProviderRegistry clearing on stop, logging at correct levels,
+    LLMProviderRegistry clearing on stop, logging at correct levels,
     _initialize_llm_providers plugin discovery, and _stop_llm_providers.
 
     Feature: llm-integration
@@ -21,12 +21,12 @@ from automojo.agentkit.costtracker import CostTracker
 from automojo.agentkit.errors import SemanticError
 from automojo.agentkit.fallbackchain import FallbackChain
 from automojo.agentkit.lifecyclestate import LifecycleState
-from automojo.agentkit.llmconversation import LlmConversation
-from automojo.agentkit.llmerrors import LlmRequestError
-from automojo.agentkit.llmmessage import LlmMessage
-from automojo.agentkit.llmprovider import LlmProvider
-from automojo.agentkit.llmproviderregistry import LlmProviderRegistry
-from automojo.agentkit.llmresponse import LlmResponse
+from automojo.agentkit.llmconversation import LLMConversation
+from automojo.agentkit.llmerrors import LLMRequestError
+from automojo.agentkit.llmmessage import LLMMessage
+from automojo.agentkit.llmprovider import LLMProvider
+from automojo.agentkit.llmproviderregistry import LLMProviderRegistry
+from automojo.agentkit.llmresponse import LLMResponse
 from automojo.agentkit.retrypolicy import RetryPolicy
 from automojo.agentkit.tokenusage import TokenUsage
 
@@ -44,7 +44,7 @@ def _reset_registry():
     return
 
 
-class LlmTestAgent(Agent):
+class LLMTestAgent(Agent):
     """
         Concrete Agent subclass for testing LLM integration.
     """
@@ -93,15 +93,15 @@ class LlmTestAgent(Agent):
         return
 
 
-class FailingProvider(LlmProvider):
+class FailingProvider(LLMProvider):
     """
-        A concrete LlmProvider that fails a configurable number of times
+        A concrete LLMProvider that fails a configurable number of times
         before returning a successful response.
 
         :param provider_name: The provider name.
         :param model_name: The model name.
         :param fail_count: Number of times to fail before succeeding.
-        :param response: The LlmResponse to return on success.
+        :param response: The LLMResponse to return on success.
     """
 
     def __init__(self, provider_name, model_name, fail_count=0,
@@ -132,9 +132,9 @@ class FailingProvider(LlmProvider):
         return None
 
 
-class StubLlmProvider(LlmProvider):
+class StubLLMProvider(LLMProvider):
     """
-        A concrete LlmProvider that always returns a preconfigured response.
+        A concrete LLMProvider that always returns a preconfigured response.
     """
 
     def __init__(self, provider_name, model_name, response=None,
@@ -151,7 +151,7 @@ class StubLlmProvider(LlmProvider):
 
     def complete(self, conversation, **kwargs):
         """
-            Returns the preconfigured LlmResponse.
+            Returns the preconfigured LLMResponse.
         """
         return self._response
 
@@ -162,9 +162,9 @@ class StubLlmProvider(LlmProvider):
         return self._response
 
 
-class AlwaysFailingProvider(LlmProvider):
+class AlwaysFailingProvider(LLMProvider):
     """
-        A concrete LlmProvider that always raises RuntimeError.
+        A concrete LLMProvider that always raises RuntimeError.
     """
 
     def __init__(self, provider_name, model_name) -> None:
@@ -205,18 +205,18 @@ def _create_config(name="llm-integration-agent", version="1.0"):
 
 def _create_response(provider_name="openai", model_name="gpt-4"):
     """
-        Creates a stub LlmResponse for testing.
+        Creates a stub LLMResponse for testing.
 
         :param provider_name: The provider name.
         :param model_name: The model name.
 
-        :returns: An LlmResponse instance.
+        :returns: An LLMResponse instance.
     """
-    message = LlmMessage(role="assistant", content="Test response")
+    message = LLMMessage(role="assistant", content="Test response")
     token_usage = TokenUsage(
         prompt_tokens=10, completion_tokens=5, total_tokens=15
     )
-    response = LlmResponse(
+    response = LLMResponse(
         message=message,
         token_usage=token_usage,
         provider_name=provider_name,
@@ -230,10 +230,10 @@ def _create_conversation():
     """
         Creates a simple conversation for testing.
 
-        :returns: An LlmConversation instance.
+        :returns: An LLMConversation instance.
     """
-    conversation = LlmConversation(messages=[
-        LlmMessage(role="user", content="Hello"),
+    conversation = LLMConversation(messages=[
+        LLMMessage(role="user", content="Hello"),
     ])
     return conversation
 
@@ -251,7 +251,7 @@ def test_retry_with_failing_provider_then_succeeds():
     _reset_registry()
 
     config = _create_config()
-    agent = LlmTestAgent(configuration=config)
+    agent = LLMTestAgent(configuration=config)
 
     expected_response = _create_response(
         provider_name="openai", model_name="gpt-4"
@@ -295,7 +295,7 @@ def test_fallback_to_second_provider_on_primary_failure():
     _reset_registry()
 
     config = _create_config()
-    agent = LlmTestAgent(configuration=config)
+    agent = LLMTestAgent(configuration=config)
 
     primary_provider = AlwaysFailingProvider(
         provider_name="openai",
@@ -305,7 +305,7 @@ def test_fallback_to_second_provider_on_primary_failure():
     fallback_response = _create_response(
         provider_name="anthropic", model_name="claude-3"
     )
-    fallback_provider = StubLlmProvider(
+    fallback_provider = StubLLMProvider(
         provider_name="anthropic",
         model_name="claude-3",
         response=fallback_response,
@@ -345,13 +345,13 @@ def test_fallback_to_second_provider_on_primary_failure():
 def test_all_providers_fail_raises_llm_request_error_with_summary():
     """
         Verifies that when all providers in the FallbackChain fail,
-        an LlmRequestError is raised and its cause message includes
+        an LLMRequestError is raised and its cause message includes
         a summary of all attempted providers.
     """
     _reset_registry()
 
     config = _create_config()
-    agent = LlmTestAgent(configuration=config)
+    agent = LLMTestAgent(configuration=config)
 
     primary_provider = AlwaysFailingProvider(
         provider_name="openai",
@@ -386,7 +386,7 @@ def test_all_providers_fail_raises_llm_request_error_with_summary():
             "openai", "gpt-4", conversation,
             retry_policy=retry_policy, fallback_chain=fallback_chain,
         )
-    except LlmRequestError as err:
+    except LLMRequestError as err:
         raised = True
         caught_error = err
 
@@ -403,21 +403,21 @@ def test_all_providers_fail_raises_llm_request_error_with_summary():
 
 
 # ---------------------------------------------------------------------------
-# Tests: LlmProviderRegistry cleared after Agent.stop()
+# Tests: LLMProviderRegistry cleared after Agent.stop()
 # ---------------------------------------------------------------------------
 
 def test_registry_cleared_after_agent_stop():
     """
-        Verifies that the LlmProviderRegistry is cleared when the
+        Verifies that the LLMProviderRegistry is cleared when the
         agent transitions to STOPPED state via stop().
     """
     _reset_registry()
 
     config = _create_config()
-    agent = LlmTestAgent(configuration=config)
+    agent = LLMTestAgent(configuration=config)
 
     response = _create_response()
-    provider = StubLlmProvider(
+    provider = StubLLMProvider(
         provider_name="openai",
         model_name="gpt-4",
         response=response,
@@ -449,10 +449,10 @@ def test_logging_info_on_completion_begin_and_success():
     _reset_registry()
 
     config = _create_config()
-    agent = LlmTestAgent(configuration=config)
+    agent = LLMTestAgent(configuration=config)
 
     response = _create_response(provider_name="openai", model_name="gpt-4")
-    provider = StubLlmProvider(
+    provider = StubLLMProvider(
         provider_name="openai",
         model_name="gpt-4",
         response=response,
@@ -506,7 +506,7 @@ def test_logging_warning_on_failure_and_fallback():
     _reset_registry()
 
     config = _create_config()
-    agent = LlmTestAgent(configuration=config)
+    agent = LLMTestAgent(configuration=config)
 
     primary_provider = AlwaysFailingProvider(
         provider_name="openai",
@@ -516,7 +516,7 @@ def test_logging_warning_on_failure_and_fallback():
     fallback_response = _create_response(
         provider_name="anthropic", model_name="claude-3"
     )
-    fallback_provider = StubLlmProvider(
+    fallback_provider = StubLLMProvider(
         provider_name="anthropic",
         model_name="claude-3",
         response=fallback_response,
@@ -588,7 +588,7 @@ def test_initialize_llm_providers_discovers_from_extension_point():
     """
         Verifies that _initialize_llm_providers queries the
         "automojo.agentkit.llm_providers" extension point and registers
-        discovered providers with the agent's LlmProviderRegistry.
+        discovered providers with the agent's LLMProviderRegistry.
 
         Injects a mock automojo.extension module into sys.modules so
         that the dynamic import inside _initialize_llm_providers succeeds.
@@ -599,9 +599,9 @@ def test_initialize_llm_providers_discovers_from_extension_point():
     _reset_registry()
 
     config = _create_config()
-    agent = LlmTestAgent(configuration=config)
+    agent = LLMTestAgent(configuration=config)
 
-    discovered_provider = StubLlmProvider(
+    discovered_provider = StubLLMProvider(
         provider_name="plugin-provider",
         model_name="plugin-model",
         response=_create_response(
@@ -654,20 +654,20 @@ def test_initialize_llm_providers_discovers_from_extension_point():
 def test_stop_llm_providers_clears_registry():
     """
         Verifies that _stop_llm_providers clears all providers from
-        the agent's LlmProviderRegistry.
+        the agent's LLMProviderRegistry.
     """
     _reset_registry()
 
     config = _create_config()
-    agent = LlmTestAgent(configuration=config)
+    agent = LLMTestAgent(configuration=config)
 
     response = _create_response()
-    provider_a = StubLlmProvider(
+    provider_a = StubLLMProvider(
         provider_name="openai",
         model_name="gpt-4",
         response=response,
     )
-    provider_b = StubLlmProvider(
+    provider_b = StubLLMProvider(
         provider_name="anthropic",
         model_name="claude-3",
         response=response,

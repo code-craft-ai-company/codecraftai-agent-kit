@@ -6,87 +6,87 @@ Build the Workflow & Orchestration system bottom-up: foundational types (enums, 
 
 ## Tasks
 
-- [ ] 1. Implement foundational types: enums and error classes
-  - [ ] 1.1 Create `workflowexecutionstatus.py` with WorkflowExecutionStatus enum
+- [x] 1. Implement foundational types: enums and error classes
+  - [x] 1.1 Create `workflowexecutionstatus.py` with WorkflowExecutionStatus enum
     - Define RUNNING, COMPLETED, FAILED, PAUSED, CANCELLED values
     - Implement `from_string` class method that raises SemanticError for invalid values
     - _Requirements: 7.1, 7.2, 7.3_
-  - [ ] 1.2 Create `stepexecutionstatus.py` with StepExecutionStatus enum
+  - [x] 1.2 Create `stepexecutionstatus.py` with StepExecutionStatus enum
     - Define PENDING, RUNNING, COMPLETED, FAILED, SKIPPED, PENDING_APPROVAL, CANCELLED values
     - Implement `from_string` class method that raises SemanticError for invalid values
     - _Requirements: 7.4, 7.5, 7.6_
-  - [ ] 1.3 Create `workflowerrors.py` with WorkflowDefinitionError, WorkflowExecutionError, WorkflowCheckpointError, ApprovalTimeoutError
+  - [x] 1.3 Create `workflowerrors.py` with WorkflowDefinitionError, WorkflowExecutionError, WorkflowCheckpointError, ApprovalTimeoutError
     - All errors inherit from AgentKitError
     - Each error stores its specific fields as read-only properties
     - Each error provides `_format_message` and `__repr__` methods
     - _Requirements: 20.1–20.9_
-  - [ ]* 1.4 Write unit tests for enums and error classes
+  - [x] 1.4 Write unit tests for enums and error classes
     - Test all enum values, from_string with valid and invalid inputs
     - Test error construction, property access, repr, and error messages
     - Test file: `source/testroots/testbase/agentkit/test_workflowerrors.py`
     - _Requirements: 7.1–7.6, 20.1–20.9_
 
-- [ ] 2. Implement immutable data types: WorkflowEdge, ParallelBranch, StepResult, WorkflowResult
-  - [ ] 2.1 Create `workflowedge.py` with WorkflowEdge class
+- [x] 2. Implement immutable data types: WorkflowEdge, ParallelBranch, StepResult, WorkflowResult
+  - [x] 2.1 Create `workflowedge.py` with WorkflowEdge class
     - Immutable with read-only properties: source_step_id, target_step_id, condition, priority
     - Implement as_dict, __repr__, __str__
     - _Requirements: 3.1, 3.2, 3.13, 3.14, 3.15, 23.5, 23.6_
-  - [ ] 2.2 Create `parallelbranch.py` with ParallelBranch class
+  - [x] 2.2 Create `parallelbranch.py` with ParallelBranch class
     - Immutable with read-only properties: fork_step_id, join_step_id
     - Implement as_dict, __repr__, __str__
     - _Requirements: 8.10, 8.11, 8.12, 8.13, 23.25, 23.26_
-  - [ ] 2.3 Create `stepresult.py` with StepResult class
+  - [x] 2.3 Create `stepresult.py` with StepResult class
     - Immutable with read-only properties: step_id, step_name, status, output, duration, error
     - Implement is_success property (True when status is COMPLETED)
     - Implement as_dict, to_json, from_json, __repr__, __str__
     - _Requirements: 6.9, 6.10, 6.11, 6.12, 6.13, 6.14, 23.9, 23.10_
-  - [ ] 2.4 Create `workflowresult.py` with WorkflowResult class
+  - [x] 2.4 Create `workflowresult.py` with WorkflowResult class
     - Immutable with read-only properties: workflow_name, status, step_results, final_output, duration, error
     - Implement is_success property (True when status is COMPLETED)
     - Implement get_step_result method
     - Implement as_dict, to_json, from_json, __repr__, __str__
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 23.7, 23.8_
-  - [ ]* 2.5 Write property test for StepResult JSON round-trip
+  - [x] 2.5 Write property test for StepResult JSON round-trip
     - **Property 3: StepResult JSON Round-Trip**
     - **Validates: Requirement 6 AC 15**
-  - [ ]* 2.6 Write property test for WorkflowResult JSON round-trip
+  - [x] 2.6 Write property test for WorkflowResult JSON round-trip
     - **Property 2: WorkflowResult JSON Round-Trip**
     - **Validates: Requirement 6 AC 8, Requirement 21 AC 11**
-  - [ ]* 2.7 Write unit tests for WorkflowEdge, ParallelBranch, StepResult, WorkflowResult
+  - [x] 2.7 Write unit tests for WorkflowEdge, ParallelBranch, StepResult, WorkflowResult
     - Test construction, property access, as_dict, __repr__, __str__
     - Test StepResult and WorkflowResult is_success property
     - Test WorkflowResult get_step_result method
     - Test file: `source/testroots/testbase/agentkit/test_workflowresults.py`
     - _Requirements: 3.1–3.2, 6.1–6.15, 8.10–8.13_
 
-- [ ] 3. Implement WorkflowContext
-  - [ ] 3.1 Create `workflowcontext.py` with WorkflowContext class
+- [x] 3. Implement WorkflowContext
+  - [x] 3.1 Create `workflowcontext.py` with WorkflowContext class
     - Mutable with properties: inputs, agent, step_outputs, metadata
     - Implement get_input, get_step_output, set_step_output, get_metadata, set_metadata
     - Implement as_dict, to_json, from_dict class method
     - Implement __repr__, __str__
     - _Requirements: 5.1–5.15, 23.11, 23.12_
-  - [ ]* 3.2 Write property test for WorkflowContext JSON round-trip
+  - [x] 3.2 Write property test for WorkflowContext JSON round-trip
     - **Property 1: WorkflowContext JSON Round-Trip**
     - **Validates: Requirement 5 AC 13**
-  - [ ]* 3.3 Write unit tests for WorkflowContext
+  - [x] 3.3 Write unit tests for WorkflowContext
     - Test get_input, get_step_output, set_step_output, get_metadata, set_metadata
     - Test as_dict and to_json produce correct output
     - Test from_dict reconstructs equivalent context
     - Test file: `source/testroots/testbase/agentkit/test_workflowcontext.py`
     - _Requirements: 5.1–5.15_
 
-- [ ] 4. Checkpoint - Ensure all tests pass
+- [x] 4. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 5. Implement WorkflowStep base class and WorkflowDefinition
-  - [ ] 5.1 Create `workflowstep.py` with WorkflowStep abstract base class
+- [x] 5. Implement WorkflowStep base class and WorkflowDefinition
+  - [x] 5.1 Create `workflowstep.py` with WorkflowStep abstract base class
     - Abstract execute method accepting WorkflowContext, returning StepResult
     - Read-only properties: step_id, name, step_type, input_schema, output_schema, tags, retry_policy
     - Raise SemanticError if step_id or name is missing/empty
     - Implement __repr__, __str__
     - _Requirements: 2.1–2.10, 23.3, 23.4_
-  - [ ] 5.2 Create `workflowdefinition.py` with WorkflowDefinition class
+  - [x] 5.2 Create `workflowdefinition.py` with WorkflowDefinition class
     - Immutable DAG with validation at construction time
     - Validate: start step exists, all edge references valid, no cycles, all steps reachable, ParallelBranch fork/join valid and paths converge
     - Raise WorkflowDefinitionError for each validation failure
@@ -94,19 +94,19 @@ Build the Workflow & Orchestration system bottom-up: foundational types (enums, 
     - Implement as_dict, to_json, to_yaml, from_dict, from_json, from_yaml
     - Implement __repr__, __str__
     - _Requirements: 1.1–1.14, 8.1–8.5, 21.1–21.8, 23.1, 23.2_
-  - [ ]* 5.3 Write property test for DAG acyclicity validation
+  - [x] 5.3 Write property test for DAG acyclicity validation
     - **Property 10: DAG Acyclicity Validation**
     - **Validates: Requirement 1 AC 6, Requirement 1 AC 7**
-  - [ ]* 5.4 Write property test for DAG reachability validation
+  - [x] 5.4 Write property test for DAG reachability validation
     - **Property 11: DAG Reachability Validation**
     - **Validates: Requirement 1 AC 8, Requirement 1 AC 9**
-  - [ ]* 5.5 Write property test for WorkflowDefinition JSON round-trip
+  - [x] 5.5 Write property test for WorkflowDefinition JSON round-trip
     - **Property 6: WorkflowDefinition JSON Round-Trip**
     - **Validates: Requirement 21 AC 7**
-  - [ ]* 5.6 Write property test for WorkflowDefinition YAML round-trip
+  - [x] 5.6 Write property test for WorkflowDefinition YAML round-trip
     - **Property 7: WorkflowDefinition YAML Round-Trip**
     - **Validates: Requirement 21 AC 8**
-  - [ ]* 5.7 Write unit tests for WorkflowStep and WorkflowDefinition
+  - [x] 5.7 Write unit tests for WorkflowStep and WorkflowDefinition
     - Test WorkflowStep SemanticError for missing step_id/name
     - Test WorkflowDefinition validation: invalid start step, invalid edge refs, cycles, unreachable steps
     - Test get_step, get_outgoing_edges, get_incoming_edges, get_terminal_steps
@@ -115,8 +115,8 @@ Build the Workflow & Orchestration system bottom-up: foundational types (enums, 
     - Test file: `source/testroots/testbase/agentkit/test_workflowdefinition.py`
     - _Requirements: 1.1–1.14, 2.1–2.10, 8.1–8.5_
 
-- [ ] 6. Implement ConditionEvaluator
-  - [ ] 6.1 Create `conditionevaluator.py` with ConditionEvaluator class
+- [x] 6. Implement ConditionEvaluator
+  - [x] 6.1 Create `conditionevaluator.py` with ConditionEvaluator class
     - Evaluate expressions against WorkflowContext
     - Support steps.<step_id>.<field> and inputs.<field> references
     - Support comparison operators: ==, !=, <, >, <=, >=
@@ -127,10 +127,10 @@ Build the Workflow & Orchestration system bottom-up: foundational types (enums, 
     - Raise WorkflowDefinitionError for invalid expression syntax
     - Implement __repr__, __str__
     - _Requirements: 3.3–3.12_
-  - [ ]* 6.2 Write property test for ConditionEvaluator safety
+  - [x] 6.2 Write property test for ConditionEvaluator safety
     - **Property 13: ConditionEvaluator Safety**
     - **Validates: Requirement 3 AC 10**
-  - [ ]* 6.3 Write unit tests for ConditionEvaluator
+  - [x] 6.3 Write unit tests for ConditionEvaluator
     - Test step output references, input references
     - Test all comparison and logical operators
     - Test membership operator
@@ -140,27 +140,27 @@ Build the Workflow & Orchestration system bottom-up: foundational types (enums, 
     - Test file: `source/testroots/testbase/agentkit/test_conditionevaluator.py`
     - _Requirements: 3.3–3.12_
 
-- [ ] 7. Checkpoint - Ensure all tests pass
+- [x] 7. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 8. Implement WorkflowCheckpoint and CheckpointManager
-  - [ ] 8.1 Create `workflowcheckpoint.py` with WorkflowCheckpoint class
+- [x] 8. Implement WorkflowCheckpoint and CheckpointManager
+  - [x] 8.1 Create `workflowcheckpoint.py` with WorkflowCheckpoint class
     - Immutable with auto-generated UTC timestamp default
     - Read-only properties: workflow_name, execution_id, completed_step_ids, context_state, current_step_id, timestamp
     - Implement as_dict, to_json, from_json
     - Implement __repr__, __str__
     - _Requirements: 9.10–9.15, 23.13, 23.14_
-  - [ ] 8.2 Create `checkpointmanager.py` with CheckpointManager class
+  - [x] 8.2 Create `checkpointmanager.py` with CheckpointManager class
     - Accept MemoryStore at construction time
     - Implement save_checkpoint, load_checkpoint, list_checkpoints, delete_checkpoint
     - Raise WorkflowCheckpointError for save/load failures
     - Log checkpoint operations under `automojo.agentkit.workflow.checkpoint`
     - Implement __repr__, __str__
     - _Requirements: 9.1–9.9, 23.27, 23.28_
-  - [ ]* 8.3 Write property test for WorkflowCheckpoint JSON round-trip
+  - [x] 8.3 Write property test for WorkflowCheckpoint JSON round-trip
     - **Property 4: WorkflowCheckpoint JSON Round-Trip**
     - **Validates: Requirement 9 AC 15, Requirement 21 AC 14**
-  - [ ]* 8.4 Write unit tests for WorkflowCheckpoint and CheckpointManager
+  - [x] 8.4 Write unit tests for WorkflowCheckpoint and CheckpointManager
     - Test WorkflowCheckpoint construction, properties, as_dict, to_json, from_json
     - Test CheckpointManager save, load, list, delete operations
     - Test WorkflowCheckpointError for save/load failures
@@ -168,60 +168,60 @@ Build the Workflow & Orchestration system bottom-up: foundational types (enums, 
     - Test file: `source/testroots/testbase/agentkit/test_checkpointmanager.py`
     - _Requirements: 9.1–9.15_
 
-- [ ] 9. Implement ApprovalRequest and ApprovalGate
-  - [ ] 9.1 Create `approvalrequest.py` with ApprovalRequest class
+- [x] 9. Implement ApprovalRequest and ApprovalGate
+  - [x] 9.1 Create `approvalrequest.py` with ApprovalRequest class
     - Immutable with auto-generated UUID and UTC timestamp defaults
     - Read-only properties for all fields
     - Implement as_dict, to_json, from_json
     - Implement __repr__, __str__
     - _Requirements: 11.13–11.18, 23.15, 23.16_
-  - [ ] 9.2 Create `approvalgate.py` with ApprovalGate class
+  - [x] 9.2 Create `approvalgate.py` with ApprovalGate class
     - Implement create_request, approve, reject, list_pending
     - Implement register_handler, deregister_handler
     - Log approval events under `automojo.agentkit.workflow.approval`
     - Implement __repr__, __str__
     - _Requirements: 11.8–11.12, 23.17, 23.18_
-  - [ ]* 9.3 Write property test for ApprovalRequest JSON round-trip
+  - [x] 9.3 Write property test for ApprovalRequest JSON round-trip
     - **Property 5: ApprovalRequest JSON Round-Trip**
     - **Validates: Requirement 11 AC 18, Requirement 21 AC 17**
-  - [ ]* 9.4 Write unit tests for ApprovalRequest and ApprovalGate
+  - [x] 9.4 Write unit tests for ApprovalRequest and ApprovalGate
     - Test ApprovalRequest construction, properties, as_dict, to_json, from_json
     - Test ApprovalGate create_request, approve, reject, list_pending
     - Test handler registration and invocation
     - Test file: `source/testroots/testbase/agentkit/test_approvalgate.py`
     - _Requirements: 11.8–11.18_
 
-- [ ] 10. Checkpoint - Ensure all tests pass
+- [x] 10. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 11. Implement WorkflowConfiguration and WorkflowRegistry
-  - [ ] 11.1 Create `workflowconfiguration.py` with WorkflowConfiguration class
+- [x] 11. Implement WorkflowConfiguration and WorkflowRegistry
+  - [x] 11.1 Create `workflowconfiguration.py` with WorkflowConfiguration class
     - Validate max_parallel_workers >= 1, default_approval_timeout > 0
     - Raise ConfigurationError for invalid values
     - Implement as_dict, to_json, to_yaml, from_dict, from_json, from_yaml, from_json_file, from_yaml_file
     - File path resolution relative to AppContext
     - Implement __repr__, __str__
     - _Requirements: 17.1–17.16, 23.23, 23.24_
-  - [ ] 11.2 Create `workflowregistry.py` with WorkflowRegistry class
+  - [x] 11.2 Create `workflowregistry.py` with WorkflowRegistry class
     - Composite key: name + version
     - register (raise SemanticError on duplicate), deregister, lookup (latest version when no version specified)
     - list_all, has_workflow, count property
     - Implement __repr__, __str__
     - _Requirements: 16.1–16.9, 23.19, 23.20_
-  - [ ]* 11.3 Write property test for WorkflowConfiguration JSON round-trip
+  - [x] 11.3 Write property test for WorkflowConfiguration JSON round-trip
     - **Property 8: WorkflowConfiguration JSON Round-Trip**
     - **Validates: Requirement 17 AC 15**
-  - [ ]* 11.4 Write property test for WorkflowConfiguration YAML round-trip
+  - [x] 11.4 Write property test for WorkflowConfiguration YAML round-trip
     - **Property 9: WorkflowConfiguration YAML Round-Trip**
     - **Validates: Requirement 17 AC 16**
-  - [ ]* 11.5 Write unit tests for WorkflowConfiguration and WorkflowRegistry
+  - [x] 11.5 Write unit tests for WorkflowConfiguration and WorkflowRegistry
     - Test WorkflowConfiguration validation errors, defaults, serialization
     - Test WorkflowRegistry register, deregister, lookup, latest version, duplicate error
     - Test file: `source/testroots/testbase/agentkit/test_workflowregistry.py`
     - _Requirements: 16.1–16.9, 17.1–17.16_
 
-- [ ] 12. Implement WorkflowExecutor
-  - [ ] 12.1 Create `workflowexecutor.py` with WorkflowExecutor class
+- [x] 12. Implement WorkflowExecutor
+  - [x] 12.1 Create `workflowexecutor.py` with WorkflowExecutor class
     - Execute workflow by traversing DAG from start step in topological order
     - Evaluate edge conditions using ConditionEvaluator (ascending priority, first true wins)
     - Execute unconditional edges in parallel when multiple outgoing
@@ -235,10 +235,10 @@ Build the Workflow & Orchestration system bottom-up: foundational types (enums, 
     - Log all execution events under `automojo.agentkit.workflow.executor`
     - Implement __repr__, __str__
     - _Requirements: 4.1–4.13, 8.6–8.9, 9.6–9.7, 10.1–10.6, 22.1–22.15, 23.21, 23.22_
-  - [ ]* 12.2 Write property test for topological execution order
+  - [x] 12.2 Write property test for topological execution order
     - **Property 12: Topological Execution Order**
     - **Validates: Requirement 4 AC 2**
-  - [ ]* 12.3 Write unit tests for WorkflowExecutor
+  - [x] 12.3 Write unit tests for WorkflowExecutor
     - Test linear workflow execution (A → B → C)
     - Test conditional branching (edge conditions evaluated in priority order)
     - Test parallel branch execution (fork, concurrent execution, join)
@@ -251,37 +251,37 @@ Build the Workflow & Orchestration system bottom-up: foundational types (enums, 
     - Test file: `source/testroots/testbase/agentkit/test_workflowexecutor.py`
     - _Requirements: 4.1–4.13, 8.6–8.9, 10.1–10.6_
 
-- [ ] 13. Checkpoint - Ensure all tests pass
+- [x] 13. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 14. Implement built-in workflow steps
-  - [ ] 14.1 Create `steps/toolstep.py` with ToolStep class
+- [x] 14. Implement built-in workflow steps
+  - [x] 14.1 Create `steps/toolstep.py` with ToolStep class
     - Resolve input mapping against WorkflowContext
     - Look up Tool by name in Agent's ToolRegistry, execute via ToolExecutor
     - Return StepResult with ToolResult output or FAILED status
     - _Requirements: 12.1–12.5_
-  - [ ] 14.2 Create `steps/llmstep.py` with LlmStep class
+  - [x] 14.2 Create `steps/llmstep.py` with LlmStep class
     - Render prompt from WorkflowContext, construct LlmConversation
     - Execute completion request through Agent's LlmProviderRegistry
     - Parse response with OutputParser if provided
     - Return StepResult with LlmResponse content or FAILED status
     - _Requirements: 13.1–13.6_
-  - [ ] 14.3 Create `steps/agentstep.py` with AgentStep class
+  - [x] 14.3 Create `steps/agentstep.py` with AgentStep class
     - Construct request message from WorkflowContext
     - Send via Communication & Messaging system, await response
     - Return StepResult with response payload or FAILED status (timeout/transport error)
     - _Requirements: 14.1–14.7_
-  - [ ] 14.4 Create `steps/approvalstep.py` with ApprovalStep class
+  - [x] 14.4 Create `steps/approvalstep.py` with ApprovalStep class
     - Create ApprovalRequest via ApprovalGate, pause execution
     - Return StepResult COMPLETED on approval, FAILED on rejection
     - Raise ApprovalTimeoutError on timeout
     - _Requirements: 11.1–11.7_
-  - [ ] 14.5 Create `steps/subworkflowstep.py` with SubWorkflowStep class
+  - [x] 14.5 Create `steps/subworkflowstep.py` with SubWorkflowStep class
     - Create new WorkflowExecutor, resolve input mapping, execute sub-workflow
     - Return StepResult with sub-workflow final output or FAILED status
     - Support independent checkpointing of sub-workflow
     - _Requirements: 15.1–15.5_
-  - [ ]* 14.6 Write unit tests for built-in steps
+  - [x] 14.6 Write unit tests for built-in steps
     - Test ToolStep: input mapping resolution, tool lookup, execution, missing tool error
     - Test LlmStep: prompt rendering, completion execution, output parsing, error cases
     - Test AgentStep: message construction, send/receive, timeout, transport error
@@ -291,24 +291,24 @@ Build the Workflow & Orchestration system bottom-up: foundational types (enums, 
     - Test file: `source/testroots/testbase/agentkit/steps/test_workflowsteps.py`
     - _Requirements: 11.1–11.7, 12.1–12.5, 13.1–13.6, 14.1–14.7, 15.1–15.5_
 
-- [ ] 15. Checkpoint - Ensure all tests pass
+- [x] 15. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 16. Implement Agent workflow integration and extension points
-  - [ ] 16.1 Extend Agent base class with workflow properties and methods
+- [x] 16. Implement Agent workflow integration and extension points
+  - [x] 16.1 Extend Agent base class with workflow properties and methods
     - Add workflows, approval_gate read-only properties
     - Add register_workflow, execute_workflow, resume_workflow methods
     - execute_workflow: lookup in WorkflowRegistry, execute via WorkflowExecutor
     - Raise SemanticError if workflow not found
     - _Requirements: 18.1–18.6_
-  - [ ] 16.2 Implement Agent lifecycle integration for workflows
+  - [x] 16.2 Implement Agent lifecycle integration for workflows
     - On INITIALIZED: construct WorkflowRegistry, WorkflowExecutor, CheckpointManager, ApprovalGate from WorkflowConfiguration
     - On INITIALIZED: query "automojo.agentkit.workflow_steps" ExtensionPoint, register discovered step types
     - On STOPPED: clear WorkflowRegistry, cancel all pending ApprovalRequests
     - Default to WorkflowConfiguration with default values when not provided
     - Handle plugin load failures (log WARNING, continue) and type conflicts (log WARNING, skip)
     - _Requirements: 18.7–18.11, 19.1–19.4_
-  - [ ]* 16.3 Write unit tests for Agent workflow integration
+  - [x] 16.3 Write unit tests for Agent workflow integration
     - Test workflows, approval_gate properties
     - Test register_workflow, execute_workflow, resume_workflow methods
     - Test SemanticError for missing workflow
@@ -318,12 +318,12 @@ Build the Workflow & Orchestration system bottom-up: foundational types (enums, 
     - Test file: `source/testroots/testbase/agentkit/test_agentworkflow.py`
     - _Requirements: 18.1–18.11, 19.1–19.4_
 
-- [ ] 17. Wire module exports and create package __init__.py entries
+- [x] 17. Wire module exports and create package __init__.py entries
   - Update `source/packages/automojo/agentkit/__init__.py` to export all workflow classes
   - Ensure all imports resolve correctly across the workflow module
   - _Requirements: All_
 
-- [ ] 18. Final checkpoint - Ensure all tests pass
+- [x] 18. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes

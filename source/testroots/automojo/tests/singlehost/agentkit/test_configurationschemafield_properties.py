@@ -10,7 +10,7 @@
 
 import json
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.configurationschemafield import ConfigurationSchemaField
@@ -43,7 +43,7 @@ _default_value_strategy = st.one_of(
     required=st.booleans(),
     default_value=_default_value_strategy,
     description=st.text(min_size=0, max_size=100),
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_configurationschemafield_json_round_trip(field_path, type_constraint, required, default_value, description):
     """

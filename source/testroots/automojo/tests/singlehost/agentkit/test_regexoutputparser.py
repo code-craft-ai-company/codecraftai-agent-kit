@@ -8,7 +8,7 @@
     **Validates: Requirements 8.5, 8.6**
 """
 
-from automojo.agentkit.llmerrors import LlmResponseParsingError
+from automojo.agentkit.llmerrors import LLMResponseParsingError
 from automojo.agentkit.outputschema import OutputSchema
 from automojo.agentkit.regexoutputparser import RegexOutputParser
 
@@ -122,7 +122,7 @@ def test_parse_pattern_with_no_named_groups():
 def test_parse_no_match_raises_error():
     """
         Parsing text that does not match the pattern raises
-        LlmResponseParsingError.
+        LLMResponseParsingError.
 
         **Validates: Requirements 8.6**
     """
@@ -133,12 +133,12 @@ def test_parse_no_match_raises_error():
 
     try:
         parser.parse("no match here")
-    except LlmResponseParsingError as err:
+    except LLMResponseParsingError as err:
         raised = True
         caught_error = err
 
     assert raised is True, (
-        "Should raise LlmResponseParsingError when pattern does not match"
+        "Should raise LLMResponseParsingError when pattern does not match"
     )
     assert caught_error.parser_name == "RegexOutputParser", (
         "parser_name should be 'RegexOutputParser', got: {!r}".format(
@@ -154,7 +154,7 @@ def test_parse_no_match_raises_error():
 
 def test_parse_no_match_error_includes_pattern():
     """
-        The LlmResponseParsingError for a non-matching pattern includes
+        The LLMResponseParsingError for a non-matching pattern includes
         the pattern in the error_message.
 
         **Validates: Requirements 8.6**
@@ -166,10 +166,10 @@ def test_parse_no_match_error_includes_pattern():
 
     try:
         parser.parse("no match")
-    except LlmResponseParsingError as err:
+    except LLMResponseParsingError as err:
         caught_error = err
 
-    assert caught_error is not None, "Should have raised LlmResponseParsingError"
+    assert caught_error is not None, "Should have raised LLMResponseParsingError"
     assert "did not match" in caught_error.error_message, (
         "Error message should indicate no match, got: {!r}".format(
             caught_error.error_message
@@ -187,7 +187,7 @@ def test_parse_no_match_error_includes_pattern():
 def test_parse_empty_string_no_match():
     """
         Parsing an empty string with a non-trivial pattern raises
-        LlmResponseParsingError.
+        LLMResponseParsingError.
 
         **Validates: Requirements 8.6**
     """
@@ -197,11 +197,11 @@ def test_parse_empty_string_no_match():
 
     try:
         parser.parse("")
-    except LlmResponseParsingError:
+    except LLMResponseParsingError:
         raised = True
 
     assert raised is True, (
-        "Should raise LlmResponseParsingError for empty string"
+        "Should raise LLMResponseParsingError for empty string"
     )
 
     return
@@ -238,7 +238,7 @@ def test_parse_with_schema_valid():
 
 def test_parse_with_schema_missing_field_raises_error():
     """
-        RegexOutputParser with a schema raises LlmResponseParsingError
+        RegexOutputParser with a schema raises LLMResponseParsingError
         when the parsed groups do not satisfy the schema.
 
         **Validates: Requirements 8.8, 8.9**
@@ -256,11 +256,11 @@ def test_parse_with_schema_missing_field_raises_error():
 
     try:
         parser.parse("Name: Alice")
-    except LlmResponseParsingError:
+    except LLMResponseParsingError:
         raised = True
 
     assert raised is True, (
-        "Should raise LlmResponseParsingError when schema validation fails"
+        "Should raise LLMResponseParsingError when schema validation fails"
     )
 
     return

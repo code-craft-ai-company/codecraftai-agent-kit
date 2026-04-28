@@ -9,7 +9,7 @@
 
 from datetime import datetime
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 
@@ -57,7 +57,7 @@ _labels_strategy = st.dictionaries(
     value=_value_strategy,
     timestamp=_timestamp_strategy,
     labels=_labels_strategy,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_metricmeasurement_json_round_trip(
     metric_name: str,

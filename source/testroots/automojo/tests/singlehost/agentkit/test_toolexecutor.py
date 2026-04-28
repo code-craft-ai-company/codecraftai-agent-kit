@@ -9,7 +9,7 @@
 """
 
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 from automojo.agentkit.tool import Tool
@@ -187,7 +187,7 @@ def _invalid_input_data(draw):
 
 @given(
     test_data=_invalid_input_data(),
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_12_toolexecutor_validates_input_and_rejects_invalid_inputs(test_data):
     """
@@ -309,7 +309,7 @@ def _invalid_output_data(draw):
 
 @given(
     test_data=_invalid_output_data(),
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_13_toolexecutor_validates_output_and_rejects_invalid_outputs(test_data):
     """
@@ -424,7 +424,7 @@ def _valid_output_data(draw):
 
 @given(
     test_data=_valid_output_data(),
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_14_toolexecutor_returns_correct_toolresult_on_success(test_data):
     """
@@ -513,7 +513,7 @@ def test_property_14_toolexecutor_returns_correct_toolresult_on_success(test_dat
         min_size=1,
         max_size=50
     ),
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_14_toolexecutor_returns_correct_toolresult_on_failure(tool_name, error_message):
     """

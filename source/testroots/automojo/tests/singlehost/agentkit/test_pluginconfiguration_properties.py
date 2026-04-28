@@ -8,7 +8,7 @@
     **Validates: Requirement 19 AC 11**
 """
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.pluginconfiguration import PluginConfiguration
@@ -40,7 +40,7 @@ _search_paths_strategy = st.lists(
     disabled_plugins=_plugin_names_strategy,
     search_paths=_search_paths_strategy,
     automatic_discovery_enabled=st.booleans(),
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_pluginconfiguration_json_round_trip(enabled_plugins, disabled_plugins,
                                               search_paths, automatic_discovery_enabled):

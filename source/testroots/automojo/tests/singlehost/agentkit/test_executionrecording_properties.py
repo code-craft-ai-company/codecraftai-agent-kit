@@ -10,7 +10,7 @@
 
 from datetime import datetime
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 
@@ -73,7 +73,7 @@ def _build_record(seq, event_type, agent_id, correlation_id, timestamp, payload)
     event_types=st.lists(_event_type_strategy, min_size=0, max_size=10),
     correlation_id=_short_text,
     payload=_payload_strategy,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_executionrecording_json_round_trip(agent_id, start_time, end_time, event_types, correlation_id, payload):
     """
@@ -134,7 +134,7 @@ def test_executionrecording_json_round_trip(agent_id, start_time, end_time, even
     event_types=st.lists(_event_type_strategy, min_size=1, max_size=20),
     filter_type=_event_type_strategy,
     correlation_id=_short_text,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_executionrecording_filter_by_event_type_correctness(agent_id, start_time, end_time, event_types, filter_type, correlation_id):
     """

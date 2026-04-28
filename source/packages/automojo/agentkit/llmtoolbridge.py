@@ -1,22 +1,22 @@
 """
-    Defines the LlmToolBridge class for converting between Tool system types
+    Defines the LLMToolBridge class for converting between Tool system types
     and LLM function calling format.
 
-    LlmToolBridge is a stateless utility class that converts ToolDescriptor
+    LLMToolBridge is a stateless utility class that converts ToolDescriptor
     objects into OpenAI-compatible function definition dictionaries, extracts
-    tool call requests from LlmMessage metadata, and converts ToolResult
-    objects into LlmMessage instances with role "tool".
+    tool call requests from LLMMessage metadata, and converts ToolResult
+    objects into LLMMessage instances with role "tool".
 """
 
 import json
 
 from automojo.agentkit.errors import SemanticError
-from automojo.agentkit.llmmessage import LlmMessage
+from automojo.agentkit.llmmessage import LLMMessage
 from automojo.agentkit.tooldescriptor import ToolDescriptor
 from automojo.agentkit.toolresult import ToolResult
 
 
-class LlmToolBridge:
+class LLMToolBridge:
     """
         Converts between Tool system types and LLM function calling format.
         Stateless utility class.
@@ -91,11 +91,11 @@ class LlmToolBridge:
 
         return rtnval
 
-    def message_to_tool_calls(self, message: LlmMessage) -> list:
+    def message_to_tool_calls(self, message: LLMMessage) -> list:
         """
-            Extracts tool call requests from an LlmMessage.
+            Extracts tool call requests from an LLMMessage.
 
-            :param message: An LlmMessage with tool call metadata.
+            :param message: An LLMMessage with tool call metadata.
 
             :returns: A list of dicts with 'tool_name' and 'arguments' keys.
 
@@ -106,12 +106,12 @@ class LlmToolBridge:
 
         has_tool_calls = tool_calls is not None
         if has_tool_calls is False:
-            errmsg = "LlmMessage does not contain tool call information."
+            errmsg = "LLMMessage does not contain tool call information."
             raise SemanticError(errmsg)
 
         is_empty = len(tool_calls) == 0
         if is_empty is True:
-            errmsg = "LlmMessage does not contain tool call information."
+            errmsg = "LLMMessage does not contain tool call information."
             raise SemanticError(errmsg)
 
         rtnval = []
@@ -130,14 +130,14 @@ class LlmToolBridge:
         return rtnval
 
     def tool_result_to_message(self, tool_name: str,
-                                result: ToolResult) -> LlmMessage:
+                                result: ToolResult) -> LLMMessage:
         """
-            Converts a ToolResult into an LlmMessage with role "tool".
+            Converts a ToolResult into an LLMMessage with role "tool".
 
             :param tool_name: The name of the tool that was executed.
             :param result: The ToolResult from tool execution.
 
-            :returns: An LlmMessage with role "tool".
+            :returns: An LLMMessage with role "tool".
         """
         has_output = result.output is not None
         if has_output is True:
@@ -145,7 +145,7 @@ class LlmToolBridge:
         else:
             content = ""
 
-        rtnval = LlmMessage(
+        rtnval = LLMMessage(
             role="tool",
             content=content,
             metadata={"tool_name": tool_name}

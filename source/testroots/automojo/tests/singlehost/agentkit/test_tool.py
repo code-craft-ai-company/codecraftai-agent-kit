@@ -11,7 +11,7 @@
 """
 
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 
@@ -213,7 +213,7 @@ def _make_tool_class(name, description, version, input_schema_dict, output_schem
     input_schema_dict=schema_dict_strategy(),
     output_schema_dict=schema_dict_strategy(),
     tags=tags_strategy,
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_6_descriptor_reflects_tool_metadata(name, description, version, input_schema_dict, output_schema_dict, tags):
     """
@@ -284,7 +284,7 @@ def test_property_6_descriptor_reflects_tool_metadata(name, description, version
     name=tool_name_strategy,
     tags=tags_strategy,
     cred_names=credential_names_strategy,
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_7_construction_preserves_tags_and_credential_names(name, tags, cred_names):
     """
@@ -346,7 +346,7 @@ def test_property_7_construction_preserves_tags_and_credential_names(name, tags,
     input_schema_dict=schema_dict_strategy(),
     output_schema_dict=schema_dict_strategy(),
     name=tool_name_strategy,
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_8_class_level_schema_declarations_validated_and_converted(input_schema_dict, output_schema_dict, name):
     """
@@ -468,7 +468,7 @@ def test_property_8_invalid_schema_raises_semantic_error():
     input_schema_dict=schema_dict_strategy(),
     output_schema_dict=schema_dict_strategy(),
     tags=tags_strategy,
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_26_create_tool_factory_produces_working_tool(name, description, version, input_schema_dict, output_schema_dict, tags):
     """

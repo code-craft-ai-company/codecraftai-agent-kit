@@ -11,7 +11,7 @@
     **Validates: Requirements 3.2, 3.5, 3.6, 3.16, 3.11**
 """
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.circuitbreaker import CircuitBreaker
@@ -50,7 +50,7 @@ _circuit_breaker_configuration = st.builds(
 @given(
     name=_circuit_breaker_name,
     configuration=_circuit_breaker_configuration,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_circuitbreaker_initial_state_is_closed(
     name: str,
@@ -108,7 +108,7 @@ _small_circuit_breaker_configuration = st.builds(
 @given(
     name=_circuit_breaker_name,
     configuration=_small_circuit_breaker_configuration,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_circuitbreaker_closed_to_open_on_failure_threshold(
     name: str,
@@ -174,7 +174,7 @@ _additional_requests = st.integers(min_value=1, max_value=20)
     name=_circuit_breaker_name,
     configuration=_open_reject_configuration,
     num_requests=_additional_requests,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_circuitbreaker_open_state_rejects_all_requests(
     name: str,
@@ -261,7 +261,7 @@ _pre_reset_state = st.sampled_from([
     name=_circuit_breaker_name,
     configuration=_open_reject_configuration,
     target_state=_pre_reset_state,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_circuitbreaker_reset_returns_to_closed(
     name: str,
@@ -365,7 +365,7 @@ _small_event_count_configuration = st.builds(
 @given(
     name=_circuit_breaker_name,
     configuration=_small_event_count_configuration,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_circuitbreaker_event_count_matches_transition_count(
     name: str,

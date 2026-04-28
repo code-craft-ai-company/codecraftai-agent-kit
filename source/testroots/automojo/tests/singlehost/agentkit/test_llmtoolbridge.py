@@ -1,9 +1,9 @@
 """
     Unit tests for the automojo.agentkit.llmtoolbridge module.
 
-    Tests LlmToolBridge descriptors_to_functions, message_to_tool_calls,
+    Tests LLMToolBridge descriptors_to_functions, message_to_tool_calls,
     and tool_result_to_message methods with various ToolDescriptor schemas,
-    valid and invalid LlmMessage metadata, and ToolResult conversions.
+    valid and invalid LLMMessage metadata, and ToolResult conversions.
 
     Feature: llm-integration, Task 14.3
     **Validates: Requirements 11.1, 11.2, 11.3, 11.4, 11.5, 11.6**
@@ -12,8 +12,8 @@
 import json
 
 from automojo.agentkit.errors import SemanticError
-from automojo.agentkit.llmmessage import LlmMessage
-from automojo.agentkit.llmtoolbridge import LlmToolBridge
+from automojo.agentkit.llmmessage import LLMMessage
+from automojo.agentkit.llmtoolbridge import LLMToolBridge
 from automojo.agentkit.tooldescriptor import ToolDescriptor
 from automojo.agentkit.toolresult import ToolResult
 from automojo.agentkit.toolschema import ToolSchema
@@ -55,7 +55,7 @@ def test_descriptors_to_functions_empty_list():
 
         **Validates: Requirements 11.1**
     """
-    bridge = LlmToolBridge()
+    bridge = LLMToolBridge()
 
     result = bridge.descriptors_to_functions([])
 
@@ -77,7 +77,7 @@ def test_descriptors_to_functions_string_param():
 
         **Validates: Requirements 11.1, 11.4, 11.6**
     """
-    bridge = LlmToolBridge()
+    bridge = LLMToolBridge()
     params = [{"name": "query", "type": "string", "required": True, "description": "Search query"}]
     descriptor = _make_descriptor("search", "Search tool", params=params)
 
@@ -112,7 +112,7 @@ def test_descriptors_to_functions_integer_param():
 
         **Validates: Requirements 11.1, 11.4, 11.6**
     """
-    bridge = LlmToolBridge()
+    bridge = LLMToolBridge()
     params = [{"name": "count", "type": "integer", "required": True}]
     descriptor = _make_descriptor("counter", "Count tool", params=params)
 
@@ -136,7 +136,7 @@ def test_descriptors_to_functions_float_param():
 
         **Validates: Requirements 11.1, 11.4, 11.6**
     """
-    bridge = LlmToolBridge()
+    bridge = LLMToolBridge()
     params = [{"name": "temperature", "type": "float", "required": True}]
     descriptor = _make_descriptor("sampler", "Sampler tool", params=params)
 
@@ -160,7 +160,7 @@ def test_descriptors_to_functions_boolean_param():
 
         **Validates: Requirements 11.1, 11.4, 11.6**
     """
-    bridge = LlmToolBridge()
+    bridge = LLMToolBridge()
     params = [{"name": "verbose", "type": "boolean", "required": False}]
     descriptor = _make_descriptor("logger", "Logger tool", params=params)
 
@@ -187,7 +187,7 @@ def test_descriptors_to_functions_list_param():
 
         **Validates: Requirements 11.1, 11.4, 11.6**
     """
-    bridge = LlmToolBridge()
+    bridge = LLMToolBridge()
     params = [{"name": "items", "type": "list", "required": True}]
     descriptor = _make_descriptor("batch", "Batch tool", params=params)
 
@@ -211,7 +211,7 @@ def test_descriptors_to_functions_dictionary_param():
 
         **Validates: Requirements 11.1, 11.4, 11.6**
     """
-    bridge = LlmToolBridge()
+    bridge = LLMToolBridge()
     params = [{"name": "config", "type": "dictionary", "required": True}]
     descriptor = _make_descriptor("configurator", "Config tool", params=params)
 
@@ -236,7 +236,7 @@ def test_descriptors_to_functions_no_input_schema():
 
         **Validates: Requirements 11.1, 11.4**
     """
-    bridge = LlmToolBridge()
+    bridge = LLMToolBridge()
     descriptor = _make_descriptor("simple", "Simple tool", params=None)
 
     result = bridge.descriptors_to_functions([descriptor])
@@ -261,7 +261,7 @@ def test_descriptors_to_functions_multiple_params():
 
         **Validates: Requirements 11.1, 11.4, 11.6**
     """
-    bridge = LlmToolBridge()
+    bridge = LLMToolBridge()
     params = [
         {"name": "query", "type": "string", "required": True, "description": "The query"},
         {"name": "limit", "type": "integer", "required": False},
@@ -298,7 +298,7 @@ def test_descriptors_to_functions_multiple_descriptors():
 
         **Validates: Requirements 11.1, 11.6**
     """
-    bridge = LlmToolBridge()
+    bridge = LLMToolBridge()
     desc_a = _make_descriptor("tool_a", "Tool A", params=[{"name": "x", "type": "string", "required": True}])
     desc_b = _make_descriptor("tool_b", "Tool B", params=[{"name": "y", "type": "integer", "required": True}])
 
@@ -323,7 +323,7 @@ def test_descriptors_to_functions_preserves_name_and_description():
 
         **Validates: Requirements 11.6**
     """
-    bridge = LlmToolBridge()
+    bridge = LLMToolBridge()
     descriptor = _make_descriptor("my_tool", "A detailed description of my tool", params=None)
 
     result = bridge.descriptors_to_functions([descriptor])
@@ -351,7 +351,7 @@ def test_message_to_tool_calls_valid():
 
         **Validates: Requirements 11.2**
     """
-    bridge = LlmToolBridge()
+    bridge = LLMToolBridge()
     metadata = {
         "tool_calls": [
             {
@@ -362,7 +362,7 @@ def test_message_to_tool_calls_valid():
             }
         ]
     }
-    message = LlmMessage(role="assistant", content="", metadata=metadata)
+    message = LLMMessage(role="assistant", content="", metadata=metadata)
 
     result = bridge.message_to_tool_calls(message)
 
@@ -385,14 +385,14 @@ def test_message_to_tool_calls_multiple():
 
         **Validates: Requirements 11.2**
     """
-    bridge = LlmToolBridge()
+    bridge = LLMToolBridge()
     metadata = {
         "tool_calls": [
             {"function": {"name": "tool_a", "arguments": {"x": 1}}},
             {"function": {"name": "tool_b", "arguments": {"y": "abc"}}},
         ]
     }
-    message = LlmMessage(role="assistant", content="", metadata=metadata)
+    message = LLMMessage(role="assistant", content="", metadata=metadata)
 
     result = bridge.message_to_tool_calls(message)
 
@@ -415,13 +415,13 @@ def test_message_to_tool_calls_missing_arguments():
 
         **Validates: Requirements 11.2**
     """
-    bridge = LlmToolBridge()
+    bridge = LLMToolBridge()
     metadata = {
         "tool_calls": [
             {"function": {"name": "no_args_tool"}}
         ]
     }
-    message = LlmMessage(role="assistant", content="", metadata=metadata)
+    message = LLMMessage(role="assistant", content="", metadata=metadata)
 
     result = bridge.message_to_tool_calls(message)
 
@@ -444,8 +444,8 @@ def test_message_to_tool_calls_no_tool_calls_raises():
 
         **Validates: Requirements 11.5**
     """
-    bridge = LlmToolBridge()
-    message = LlmMessage(role="assistant", content="Hello", metadata={})
+    bridge = LLMToolBridge()
+    message = LLMMessage(role="assistant", content="Hello", metadata={})
 
     caught = False
     try:
@@ -472,9 +472,9 @@ def test_message_to_tool_calls_empty_list_raises():
 
         **Validates: Requirements 11.5**
     """
-    bridge = LlmToolBridge()
+    bridge = LLMToolBridge()
     metadata = {"tool_calls": []}
-    message = LlmMessage(role="assistant", content="", metadata=metadata)
+    message = LLMMessage(role="assistant", content="", metadata=metadata)
 
     caught = False
     try:
@@ -501,8 +501,8 @@ def test_message_to_tool_calls_no_metadata_raises():
 
         **Validates: Requirements 11.5**
     """
-    bridge = LlmToolBridge()
-    message = LlmMessage(role="assistant", content="Hello")
+    bridge = LLMToolBridge()
+    message = LLMMessage(role="assistant", content="Hello")
 
     caught = False
     try:
@@ -524,12 +524,12 @@ def test_message_to_tool_calls_no_metadata_raises():
 
 def test_tool_result_to_message_success():
     """
-        Converting a successful ToolResult produces an LlmMessage with
+        Converting a successful ToolResult produces an LLMMessage with
         role "tool", JSON content from as_dict, and tool_name in metadata.
 
         **Validates: Requirements 11.3**
     """
-    bridge = LlmToolBridge()
+    bridge = LLMToolBridge()
     result = ToolResult(
         tool_name="search",
         status=ToolResult.STATUS_SUCCESS,
@@ -561,12 +561,12 @@ def test_tool_result_to_message_success():
 
 def test_tool_result_to_message_failure():
     """
-        Converting a failed ToolResult produces an LlmMessage with
+        Converting a failed ToolResult produces an LLMMessage with
         role "tool" and the error information in the content.
 
         **Validates: Requirements 11.3**
     """
-    bridge = LlmToolBridge()
+    bridge = LLMToolBridge()
     result = ToolResult(
         tool_name="broken",
         status=ToolResult.STATUS_FAILURE,
@@ -593,12 +593,12 @@ def test_tool_result_to_message_failure():
 
 def test_tool_result_to_message_none_output():
     """
-        Converting a ToolResult with None output produces an LlmMessage
+        Converting a ToolResult with None output produces an LLMMessage
         with empty string content.
 
         **Validates: Requirements 11.3**
     """
-    bridge = LlmToolBridge()
+    bridge = LLMToolBridge()
     result = ToolResult(
         tool_name="void_tool",
         status=ToolResult.STATUS_SUCCESS,
@@ -629,7 +629,7 @@ def test_type_mapping_covers_all_tool_schema_types():
 
         **Validates: Requirements 11.4**
     """
-    bridge = LlmToolBridge()
+    bridge = LLMToolBridge()
     mapping = bridge.TOOL_SCHEMA_TYPE_TO_JSON_SCHEMA
 
     expected_types = {"string", "integer", "float", "boolean", "list", "dictionary"}
@@ -648,7 +648,7 @@ def test_type_mapping_values():
 
         **Validates: Requirements 11.4**
     """
-    bridge = LlmToolBridge()
+    bridge = LLMToolBridge()
     mapping = bridge.TOOL_SCHEMA_TYPE_TO_JSON_SCHEMA
 
     expected = {

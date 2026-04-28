@@ -12,12 +12,12 @@
 
 import json
 
-from automojo.testbase.properties import given, settings, assume
+from automojo.testbase.properties import given, assume
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 
 from automojo.agentkit.jsonoutputparser import JsonOutputParser
-from automojo.agentkit.llmerrors import LlmResponseParsingError
+from automojo.agentkit.llmerrors import LLMResponseParsingError
 from automojo.agentkit.outputparser import OutputParser
 from automojo.agentkit.outputschema import OutputSchema
 from automojo.agentkit.regexoutputparser import RegexOutputParser
@@ -90,7 +90,9 @@ def _schema_with_valid_object(draw):
     """
         Draws an OutputSchema and a dictionary that satisfies all field constraints.
     """
-    fields = draw(_unique_field_list())
+    fields = draw(st.lists(_field_definition(), min_size=1, max_size=8).map(
+        lambda flds: list({f["name"]: f for f in flds}.values())
+    ))
     assume(len(fields) > 0)
 
     schema = OutputSchema(fields=fields)
@@ -109,12 +111,21 @@ def _schema_with_required_field(draw):
         Draws an OutputSchema that has at least one required field.
         Returns the schema and the name of a required field.
     """
-    fields = draw(_unique_field_list())
-    required_fields = [f for f in fields if f.get("required", True)]
-    assume(len(required_fields) > 0)
+    # Generate at least one required field to avoid UnsatisfiedAssumption
+    required_field = draw(_field_definition())
+    required_field = {**required_field, "required": True}
+
+    other_fields = draw(st.lists(_field_definition(), min_size=0, max_size=7).map(
+        lambda flds: list({f["name"]: f for f in flds}.values())
+    ))
+
+    # Combine and deduplicate by name, ensuring the required field is present
+    all_fields_map = {f["name"]: f for f in other_fields}
+    all_fields_map[required_field["name"]] = required_field
+    fields = list(all_fields_map.values())
 
     schema = OutputSchema(fields=fields)
-    required_name = draw(st.sampled_from([f["name"] for f in required_fields]))
+    required_name = required_field["name"]
 
     return (schema, fields, required_name)
 
@@ -124,7 +135,9 @@ def _schema_with_type_mismatch(draw):
     """
         Draws an OutputSchema and a dictionary where one field has a wrong type.
     """
-    fields = draw(_unique_field_list())
+    fields = draw(st.lists(_field_definition(), min_size=1, max_size=8).map(
+        lambda flds: list({f["name"]: f for f in flds}.values())
+    ))
     assume(len(fields) > 0)
 
     schema = OutputSchema(fields=fields)
@@ -217,7 +230,7 @@ def _regex_pattern_and_matching_text(draw):
 # Property 5: OutputSchema JSON round-trip
 # ---------------------------------------------------------------------------
 
-@given(fields=_unique_field_list(), settings=settings(max_examples=50))
+@given(fields=_unique_field_list(), constraints={"max_examples": 50})
 def test_outputschema_json_roundtrip(fields: list) -> None:
     """
         **Validates: Requirements 8.13, 8.14, 8.15, 8.16, 8.17**
@@ -244,7 +257,7 @@ def test_outputschema_json_roundtrip(fields: list) -> None:
 # Property 21: OutputSchema validates correct objects as valid
 # ---------------------------------------------------------------------------
 
-@given(data=_schema_with_valid_object(), settings=settings(max_examples=50))
+@given(data=_schema_with_valid_object(), constraints={"max_examples": 50})
 def test_outputschema_validates_correct_objects_as_valid(data: tuple) -> None:
     """
         **Validates: Requirements 8.10, 8.11, 8.12**
@@ -268,7 +281,7 @@ def test_outputschema_validates_correct_objects_as_valid(data: tuple) -> None:
 # Property 22: OutputSchema reports missing required fields and type mismatches
 # ---------------------------------------------------------------------------
 
-@given(data=_schema_with_required_field(), settings=settings(max_examples=50))
+@given(data=_schema_with_required_field(), constraints={"max_examples": 50})
 def test_outputschema_reports_missing_required_fields(data: tuple) -> None:
     """
         **Validates: Requirements 8.10, 8.11, 8.12**
@@ -294,7 +307,7 @@ def test_outputschema_reports_missing_required_fields(data: tuple) -> None:
     return
 
 
-@given(data=_schema_with_type_mismatch(), settings=settings(max_examples=50))
+@given(data=_schema_with_type_mismatch(), constraints={"max_examples": 50})
 def test_outputschema_reports_type_mismatches(data: tuple) -> None:
     """
         **Validates: Requirements 8.10, 8.11, 8.12**
@@ -331,7 +344,7 @@ def test_outputschema_reports_type_mismatches(data: tuple) -> None:
 # Property 23: JsonOutputParser parses valid JSON and rejects invalid JSON
 # ---------------------------------------------------------------------------
 
-@given(obj=_json_dict, settings=settings(max_examples=50))
+@given(obj=_json_dict, constraints={"max_examples": 50})
 def test_jsonoutputparser_parses_valid_json(obj: dict) -> None:
     """
         **Validates: Requirements 8.3, 8.4**
@@ -353,27 +366,27 @@ def test_jsonoutputparser_parses_valid_json(obj: dict) -> None:
     return
 
 
-@given(bad_text=_invalid_json_text, settings=settings(max_examples=50))
+@given(bad_text=_invalid_json_text, constraints={"max_examples": 50})
 def test_jsonoutputparser_rejects_invalid_json(bad_text: str) -> None:
     """
         **Validates: Requirements 8.3, 8.4**
 
         For any string that is not valid JSON, JsonOutputParser.parse()
-        shall raise LlmResponseParsingError containing the raw text.
+        shall raise LLMResponseParsingError containing the raw text.
     """
     parser = JsonOutputParser()
 
     raised = False
     try:
         parser.parse(bad_text)
-    except LlmResponseParsingError as exc:
+    except LLMResponseParsingError as exc:
         raised = True
         assert exc.raw_text == bad_text, (
-            "LlmResponseParsingError raw_text should be the input text"
+            "LLMResponseParsingError raw_text should be the input text"
         )
 
     assert raised, (
-        "Expected LlmResponseParsingError for invalid JSON: {!r}".format(bad_text)
+        "Expected LLMResponseParsingError for invalid JSON: {!r}".format(bad_text)
     )
 
     return
@@ -383,7 +396,7 @@ def test_jsonoutputparser_rejects_invalid_json(bad_text: str) -> None:
 # Property 24: RegexOutputParser extracts named groups and rejects non-matching text
 # ---------------------------------------------------------------------------
 
-@given(data=_regex_pattern_and_matching_text(), settings=settings(max_examples=50))
+@given(data=_regex_pattern_and_matching_text(), constraints={"max_examples": 50})
 def test_regexoutputparser_extracts_named_groups(data: tuple) -> None:
     """
         **Validates: Requirements 8.5, 8.6**
@@ -419,7 +432,7 @@ def test_regexoutputparser_extracts_named_groups(data: tuple) -> None:
 @given(
     data=_regex_pattern_and_matching_text(),
     noise=st.text(alphabet="!@#$%^&*()", min_size=5, max_size=20),
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_regexoutputparser_rejects_non_matching_text(
     data: tuple,
@@ -429,7 +442,7 @@ def test_regexoutputparser_rejects_non_matching_text(
         **Validates: Requirements 8.5, 8.6**
 
         For any text that does not match the pattern, RegexOutputParser.parse()
-        shall raise LlmResponseParsingError containing the raw text and pattern.
+        shall raise LLMResponseParsingError containing the raw text and pattern.
     """
     pattern, _, _ = data
 
@@ -438,14 +451,14 @@ def test_regexoutputparser_rejects_non_matching_text(
     raised = False
     try:
         parser.parse(noise)
-    except LlmResponseParsingError as exc:
+    except LLMResponseParsingError as exc:
         raised = True
         assert exc.raw_text == noise, (
-            "LlmResponseParsingError raw_text should be the input text"
+            "LLMResponseParsingError raw_text should be the input text"
         )
 
     assert raised, (
-        "Expected LlmResponseParsingError for non-matching text: {!r}".format(noise)
+        "Expected LLMResponseParsingError for non-matching text: {!r}".format(noise)
     )
 
     return
@@ -455,7 +468,7 @@ def test_regexoutputparser_rejects_non_matching_text(
 # Property 25: OutputParser validates parsed output against OutputSchema
 # ---------------------------------------------------------------------------
 
-@given(data=_schema_with_required_field(), settings=settings(max_examples=50))
+@given(data=_schema_with_required_field(), constraints={"max_examples": 50})
 def test_outputparser_validates_parsed_output_against_schema(
     data: tuple,
 ) -> None:
@@ -464,7 +477,7 @@ def test_outputparser_validates_parsed_output_against_schema(
 
         For any OutputParser with an OutputSchema, and any raw text that
         parses successfully but produces output that does not conform to
-        the schema, parse() shall raise LlmResponseParsingError with
+        the schema, parse() shall raise LLMResponseParsingError with
         validation error details.
     """
     schema, fields, required_name = data
@@ -482,10 +495,10 @@ def test_outputparser_validates_parsed_output_against_schema(
     raised = False
     try:
         parser.parse(raw_json)
-    except LlmResponseParsingError as exc:
+    except LLMResponseParsingError as exc:
         raised = True
         assert exc.raw_text == raw_json, (
-            "LlmResponseParsingError raw_text should be the input JSON"
+            "LLMResponseParsingError raw_text should be the input JSON"
         )
         assert "validation" in exc.error_message.lower() or required_name in str(exc), (
             "Error should mention validation failure or the missing field {!r}".format(
@@ -494,7 +507,7 @@ def test_outputparser_validates_parsed_output_against_schema(
         )
 
     assert raised, (
-        "Expected LlmResponseParsingError when parsed output violates schema "
+        "Expected LLMResponseParsingError when parsed output violates schema "
         "(missing required field {!r})".format(required_name)
     )
 

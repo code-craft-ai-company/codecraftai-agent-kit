@@ -21,6 +21,8 @@ from automojo.agentkit.agentidentity import AgentIdentity
 from automojo.agentkit.agentregistry import AgentRegistry
 from automojo.agentkit.agentstatemachine import AgentStateMachine
 from automojo.agentkit.configurationmanager import ConfigurationManager
+from automojo.agentkit.contextwindow import ContextWindow
+from automojo.agentkit.contextwindowstrategy import ContextWindowStrategy
 from automojo.agentkit.costtracker import CostTracker
 from automojo.agentkit.debugsession import DebugSession
 from automojo.agentkit.errors import SemanticError
@@ -28,12 +30,20 @@ from automojo.agentkit.fallbackchain import FallbackChain
 from automojo.agentkit.featureflagregistry import FeatureFlagRegistry
 from automojo.agentkit.hotreloadmonitor import HotReloadMonitor
 from automojo.agentkit.hotreloadpolicy import HotReloadPolicy
+from automojo.agentkit.inmemorystore import InMemoryStore
 from automojo.agentkit.lifecyclestate import LifecycleState
-from automojo.agentkit.llmconversation import LlmConversation
-from automojo.agentkit.llmerrors import LlmRequestError
-from automojo.agentkit.llmprovider import LlmProvider
-from automojo.agentkit.llmproviderregistry import LlmProviderRegistry
-from automojo.agentkit.llmresponse import LlmResponse
+from automojo.agentkit.llmconversation import LLMConversation
+from automojo.agentkit.llmerrors import LLMRequestError
+from automojo.agentkit.llmprovider import LLMProvider
+from automojo.agentkit.llmproviderregistry import LLMProviderRegistry
+from automojo.agentkit.llmresponse import LLMResponse
+from automojo.agentkit.memoryconfiguration import MemoryConfiguration
+from automojo.agentkit.memoryentry import MemoryEntry
+from automojo.agentkit.memoryquery import MemoryQuery
+from automojo.agentkit.memoryqueryresult import MemoryQueryResult
+from automojo.agentkit.memoryscope import MemoryScope
+from automojo.agentkit.memorystore import MemoryStore
+from automojo.agentkit.memorystoreregistry import MemoryStoreRegistry
 from automojo.agentkit.observabilityconfiguration import ObservabilityConfiguration
 from automojo.agentkit.observabilitypipeline import ObservabilityPipeline
 from automojo.agentkit.pluginmanager import PluginManager
@@ -48,6 +58,27 @@ from automojo.agentkit.toolexecutor import ToolExecutor
 from automojo.agentkit.toolregistry import ToolRegistry
 from automojo.agentkit.toolresult import ToolResult
 from automojo.agentkit.transitionrecord import TransitionRecord
+from automojo.agentkit.workflowconfiguration import WorkflowConfiguration
+from automojo.agentkit.workflowdefinition import WorkflowDefinition
+from automojo.agentkit.workflowexecutor import WorkflowExecutor
+from automojo.agentkit.workflowregistry import WorkflowRegistry
+from automojo.agentkit.workflowresult import WorkflowResult
+from automojo.agentkit.addressresolver import AddressResolver
+from automojo.agentkit.jsonmessageserializer import JsonMessageSerializer
+from automojo.agentkit.agentaddress import AgentAddress
+from automojo.agentkit.approvalgate import ApprovalGate
+from automojo.agentkit.checkpointmanager import CheckpointManager
+from automojo.agentkit.message import Message
+from automojo.agentkit.messageenvelope import MessageEnvelope
+from automojo.agentkit.messagepattern import MessagePattern
+from automojo.agentkit.messagerouter import MessageRouter
+from automojo.agentkit.messageserializerregistry import MessageSerializerRegistry
+from automojo.agentkit.messagingconfiguration import MessagingConfiguration
+from automojo.agentkit.pubsubbroker import PubSubBroker
+from automojo.agentkit.requestresponsehandler import RequestResponseHandler
+from automojo.agentkit.subscription import Subscription
+from automojo.agentkit.transport import Transport
+from automojo.agentkit.transportregistry import TransportRegistry
 
 
 VALID_TRANSITION_POINTS = [
@@ -108,8 +139,36 @@ class Agent(abc.ABC):
         self._tool_executor = ToolExecutor()
         self._tool_chain_executor = ToolChainExecutor(tool_executor=self._tool_executor)
 
-        self._llm_provider_registry = LlmProviderRegistry()
+        self._llm_provider_registry = LLMProviderRegistry()
         self._cost_tracker = CostTracker()
+
+        self._memory_store: Optional[MemoryStore] = None
+        self._memory_store_registry: MemoryStoreRegistry = MemoryStoreRegistry()
+        self._context_window: Optional[ContextWindow] = None
+        self._memory_configuration: Optional[MemoryConfiguration] = None
+
+        self._workflow_registry: WorkflowRegistry = WorkflowRegistry()
+        self._workflow_executor: Optional[WorkflowExecutor] = None
+        self._checkpoint_manager: Optional[CheckpointManager] = None
+        self._approval_gate: ApprovalGate = ApprovalGate()
+        self._workflow_configuration: Optional[WorkflowConfiguration] = None
+
+        self._transport_registry: TransportRegistry = TransportRegistry()
+        self._message_serializer_registry: MessageSerializerRegistry = MessageSerializerRegistry()
+        self._message_router: MessageRouter = MessageRouter()
+        self._pubsub_broker: PubSubBroker = PubSubBroker()
+        self._address_resolver: AddressResolver = AddressResolver(agent_registry=AgentRegistry.instance())
+        self._request_response_handler: RequestResponseHandler = RequestResponseHandler()
+        self._messaging_configuration: Optional[MessagingConfiguration] = None
+
+        self._platform_runtime = None
+
+        platform_config = configuration.get_platform_configuration()
+        if platform_config is not None:
+            from automojo.agentkit.platform.platformruntime import PlatformRuntime
+            self._platform_runtime = PlatformRuntime.create_auto(
+                configuration=platform_config
+            )
 
         AgentRegistry.instance().register(self)
 
@@ -296,11 +355,11 @@ class Agent(abc.ABC):
         return self._tool_registry
 
     @property
-    def llm_providers(self) -> LlmProviderRegistry:
+    def llm_providers(self) -> LLMProviderRegistry:
         """
-            Returns the Agent's LlmProviderRegistry instance.
+            Returns the Agent's LLMProviderRegistry instance.
 
-            :returns: The LlmProviderRegistry for this agent.
+            :returns: The LLMProviderRegistry for this agent.
         """
         return self._llm_provider_registry
 
@@ -312,6 +371,97 @@ class Agent(abc.ABC):
             :returns: The CostTracker for this agent.
         """
         return self._cost_tracker
+
+    @property
+    def memory(self) -> Optional[MemoryStore]:
+        """
+            The Agent's primary MemoryStore instance.
+
+            :returns: The primary MemoryStore or None.
+        """
+        return self._memory_store
+
+    @property
+    def memory_stores(self) -> MemoryStoreRegistry:
+        """
+            The Agent's MemoryStoreRegistry instance.
+
+            :returns: The MemoryStoreRegistry for this agent.
+        """
+        return self._memory_store_registry
+
+    @property
+    def context_window(self) -> Optional[ContextWindow]:
+        """
+            The Agent's ContextWindow instance.
+
+            :returns: The ContextWindow or None.
+        """
+        return self._context_window
+
+    @property
+    def workflows(self) -> WorkflowRegistry:
+        """
+            Returns the Agent's WorkflowRegistry instance.
+
+            :returns: The WorkflowRegistry for this agent.
+        """
+        return self._workflow_registry
+
+    @property
+    def approval_gate(self) -> ApprovalGate:
+        """
+            Returns the Agent's ApprovalGate instance.
+
+            :returns: The ApprovalGate for this agent.
+        """
+        return self._approval_gate
+
+    @property
+    def transports(self) -> TransportRegistry:
+        """
+            Returns the Agent's TransportRegistry instance.
+
+            :returns: The TransportRegistry for this agent.
+        """
+        return self._transport_registry
+
+    @property
+    def message_router(self) -> MessageRouter:
+        """
+            Returns the Agent's MessageRouter instance.
+
+            :returns: The MessageRouter for this agent.
+        """
+        return self._message_router
+
+    @property
+    def pubsub(self) -> PubSubBroker:
+        """
+            Returns the Agent's PubSubBroker instance.
+
+            :returns: The PubSubBroker for this agent.
+        """
+        return self._pubsub_broker
+
+    @property
+    def address_resolver(self) -> AddressResolver:
+        """
+            Returns the Agent's AddressResolver instance.
+
+            :returns: The AddressResolver for this agent.
+        """
+        return self._address_resolver
+
+    @property
+    def platform_runtime(self):
+        """
+            Returns the PlatformRuntime instance, or None when not configured.
+
+            :returns: The PlatformRuntime or None.
+        """
+        rtnval = self._platform_runtime
+        return rtnval
 
     # -----------------------------------------------------------------------
     # Abstract lifecycle methods
@@ -826,12 +976,256 @@ class Agent(abc.ABC):
         return
 
     # -----------------------------------------------------------------------
+    # Messaging lifecycle helpers for subclasses
+    # -----------------------------------------------------------------------
+
+    def _initialize_messaging(self, messaging_configuration=None) -> None:
+        """
+            Initializes the messaging subsystem for this Agent.
+
+            Stores the messaging configuration, configures the
+            RequestResponseHandler with the default request timeout,
+            registers a default JsonMessageSerializer when no
+            MessagingConfiguration is provided, and discovers Transport
+            and MessageSerializer plugins from automojo-extension
+            ExtensionPoint entries.
+
+            Subclasses should call this method during their initialize()
+            implementation to set up messaging.
+
+            :param messaging_configuration: Optional MessagingConfiguration.
+                If None, defaults to a JsonMessageSerializer and no
+                registered transports.
+        """
+        self._messaging_configuration = messaging_configuration
+
+        if messaging_configuration is not None:
+            default_timeout = messaging_configuration.default_request_timeout
+            self._request_response_handler = RequestResponseHandler(
+                default_timeout=default_timeout
+            )
+
+        # Register default JsonMessageSerializer when no configuration is provided
+        if messaging_configuration is None:
+            default_serializer = JsonMessageSerializer()
+            default_format_name = default_serializer.format_name
+            has_default = self._message_serializer_registry.has_serializer(default_format_name)
+
+            if has_default is not True:
+                self._message_serializer_registry.register(default_serializer)
+
+        # Discover and register Transport plugins
+        try:
+            from automojo.extension import ExtensionPoint
+            transport_extension_point = ExtensionPoint("automojo.agentkit.transports")
+            discovered_transports = transport_extension_point.query()
+
+            for transport_entry in discovered_transports:
+                try:
+                    transport_instance = transport_entry
+                    transport_name = transport_instance.name
+                    has_conflict = self._transport_registry.has_transport(transport_name)
+
+                    if has_conflict is True:
+                        self._logger.warning(
+                            "Transport plugin name conflict: transport '%s' is already "
+                            "registered in agent '%s'. Skipping plugin transport.",
+                            transport_name,
+                            self._identity.identifier,
+                        )
+                        continue
+
+                    self._transport_registry.register(transport=transport_instance)
+
+                except Exception as plugin_err:
+                    self._logger.warning(
+                        "Failed to load transport plugin for agent '%s': %s",
+                        self._identity.identifier,
+                        str(plugin_err),
+                    )
+
+        except ImportError:
+            self._logger.info(
+                "automojo-extension not available; skipping transport plugin "
+                "discovery for agent '%s'",
+                self._identity.identifier,
+            )
+        except Exception as discovery_err:
+            self._logger.warning(
+                "Transport plugin discovery failed for agent '%s': %s",
+                self._identity.identifier,
+                str(discovery_err),
+            )
+
+        # Discover and register MessageSerializer plugins
+        try:
+            from automojo.extension import ExtensionPoint
+            serializer_extension_point = ExtensionPoint("automojo.agentkit.message_serializers")
+            discovered_serializers = serializer_extension_point.query()
+
+            for serializer_entry in discovered_serializers:
+                try:
+                    serializer_instance = serializer_entry
+                    format_name = serializer_instance.format_name
+                    has_conflict = self._message_serializer_registry.has_serializer(format_name)
+
+                    if has_conflict is True:
+                        self._logger.warning(
+                            "MessageSerializer plugin name conflict: format '%s' is "
+                            "already registered in agent '%s'. Skipping plugin serializer.",
+                            format_name,
+                            self._identity.identifier,
+                        )
+                        continue
+
+                    self._message_serializer_registry.register(serializer_instance)
+
+                except Exception as plugin_err:
+                    self._logger.warning(
+                        "Failed to load message serializer plugin for agent '%s': %s",
+                        self._identity.identifier,
+                        str(plugin_err),
+                    )
+
+        except ImportError:
+            self._logger.info(
+                "automojo-extension not available; skipping message serializer plugin "
+                "discovery for agent '%s'",
+                self._identity.identifier,
+            )
+        except Exception as discovery_err:
+            self._logger.warning(
+                "Message serializer plugin discovery failed for agent '%s': %s",
+                self._identity.identifier,
+                str(discovery_err),
+            )
+
+        self._logger.info(
+            "Messaging initialized for agent '%s'",
+            self._identity.identifier,
+        )
+        return
+
+    def _stop_messaging(self) -> None:
+        """
+            Disconnects all connected transports, clears the
+            TransportRegistry, removes all PubSubBroker subscriptions,
+            and resets the messaging configuration.
+
+            Subclasses should call this method during their stop()
+            implementation to clean up messaging resources.
+        """
+        # Disconnect all connected transports
+        all_transports = self._transport_registry.list_all()
+
+        for transport in all_transports:
+            is_connected = transport.is_connected()
+
+            if is_connected is True:
+                try:
+                    transport.disconnect()
+                except Exception as disconnect_err:
+                    self._logger.warning(
+                        "Failed to disconnect transport '%s' for agent '%s': %s",
+                        transport.name,
+                        self._identity.identifier,
+                        str(disconnect_err),
+                    )
+
+        # Clear the TransportRegistry
+        registered_transports = self._transport_registry.list_all()
+
+        for transport in registered_transports:
+            self._transport_registry.deregister(transport.name)
+
+        # Remove all PubSubBroker subscriptions
+        all_subscriptions = list(self._pubsub_broker._subscriptions)
+
+        for subscription in all_subscriptions:
+            self._pubsub_broker.unsubscribe(subscription)
+
+        # Reset messaging configuration
+        self._messaging_configuration = None
+
+        self._logger.info(
+            "Messaging stopped for agent '%s'",
+            self._identity.identifier,
+        )
+        return
+
+    # -----------------------------------------------------------------------
+    # Platform runtime convenience methods
+    # -----------------------------------------------------------------------
+
+    def get_compute_service(self):
+        """
+            Convenience method delegating to the PlatformRuntime.
+
+            :returns: A ComputeService instance.
+            :raises: SemanticError
+        """
+        if self._platform_runtime is None:
+            err_msg = "PlatformRuntime must be configured before accessing platform services."
+            raise SemanticError(err_msg)
+        rtnval = self._platform_runtime.get_compute_service()
+        return rtnval
+
+    def get_storage_service(self):
+        """
+            Convenience method delegating to the PlatformRuntime.
+
+            :returns: A StorageService instance.
+            :raises: SemanticError
+        """
+        if self._platform_runtime is None:
+            err_msg = "PlatformRuntime must be configured before accessing platform services."
+            raise SemanticError(err_msg)
+        rtnval = self._platform_runtime.get_storage_service()
+        return rtnval
+
+    def get_messaging_service(self):
+        """
+            Convenience method delegating to the PlatformRuntime.
+
+            :returns: A MessagingService instance.
+            :raises: SemanticError
+        """
+        if self._platform_runtime is None:
+            err_msg = "PlatformRuntime must be configured before accessing platform services."
+            raise SemanticError(err_msg)
+        rtnval = self._platform_runtime.get_messaging_service()
+        return rtnval
+
+    def _stop_platform(self) -> None:
+        """
+            Logs the platform runtime status at INFO level when the Agent
+            transitions to the STOPPED state.
+
+            Subclasses should call this method during their stop()
+            implementation to log platform runtime status.
+        """
+        if self._platform_runtime is not None:
+            platform_type = self._platform_runtime.platform_type.to_string()
+            try:
+                health_results = self._platform_runtime.health_check()
+            except Exception as health_err:
+                health_results = {"error": str(health_err)}
+
+            self._logger.info(
+                "Platform runtime status for agent '%s': platform=%s, health=%s",
+                self._identity.identifier,
+                platform_type,
+                health_results,
+            )
+        return
+
+    # -----------------------------------------------------------------------
     # LLM provider lifecycle helpers for subclasses
     # -----------------------------------------------------------------------
 
     def _initialize_llm_providers(self) -> None:
         """
-            Discovers and registers LlmProviderPlugin instances from the
+            Discovers and registers LLMProviderPlugin instances from the
             "automojo.agentkit.llm_providers" extension point.
 
             Subclasses should call this method during their initialize()
@@ -894,7 +1288,7 @@ class Agent(abc.ABC):
 
     def _stop_llm_providers(self) -> None:
         """
-            Clears the Agent's LlmProviderRegistry.
+            Clears the Agent's LLMProviderRegistry.
 
             Subclasses should call this method during their stop()
             implementation to clean up LLM providers.
@@ -907,25 +1301,653 @@ class Agent(abc.ABC):
         return
 
     # -----------------------------------------------------------------------
+    # Memory lifecycle helpers for subclasses
+    # -----------------------------------------------------------------------
+
+    def _initialize_memory(self, memory_configuration: MemoryConfiguration = None) -> None:
+        """
+            Initializes the memory system from the given MemoryConfiguration.
+
+            Constructs the primary MemoryStore and ContextWindow based on
+            the configuration. When no configuration is provided, defaults
+            to an InMemoryStore with MemoryScope.AGENT and no expiration.
+
+            Discovers and registers MemoryBackendPlugin instances from the
+            "automojo.agentkit.memory_backends" extension point.
+
+            Subclasses should call this method during their initialize()
+            implementation to set up memory.
+
+            :param memory_configuration: Optional MemoryConfiguration. If None,
+                defaults to InMemoryStore with AGENT scope.
+        """
+        self._memory_configuration = memory_configuration
+
+        if memory_configuration is not None:
+            backend_type = memory_configuration.backend_type
+            expiration_policy = memory_configuration.expiration_policy
+
+            if backend_type == "inmemory":
+                self._memory_store = InMemoryStore(
+                    store_name="primary",
+                    expiration_policy=expiration_policy,
+                )
+            elif backend_type == "file":
+                from automojo.agentkit.filememorystore import FileMemoryStore
+                directory_path = memory_configuration.connection_params.get("directory_path", ".memory")
+                self._memory_store = FileMemoryStore(
+                    store_name="primary",
+                    directory_path=directory_path,
+                    expiration_policy=expiration_policy,
+                )
+            else:
+                self._memory_store = InMemoryStore(
+                    store_name="primary",
+                    expiration_policy=expiration_policy,
+                )
+
+            context_settings = memory_configuration.connection_params.get("context_window", {})
+            max_tokens = context_settings.get("max_tokens", 4096)
+            strategy_str = context_settings.get("strategy", "FIFO")
+            strategy = ContextWindowStrategy.from_string(strategy_str)
+
+            self._context_window = ContextWindow(
+                max_tokens=max_tokens,
+                strategy=strategy,
+                token_counter=lambda text: len(text.split()),
+            )
+        else:
+            self._memory_store = InMemoryStore(store_name="primary")
+
+            self._context_window = ContextWindow(
+                max_tokens=4096,
+                strategy=ContextWindowStrategy.FIFO,
+                token_counter=lambda text: len(text.split()),
+            )
+
+        self._memory_store_registry = MemoryStoreRegistry()
+        self._memory_store_registry.register(store=self._memory_store)
+
+        self._discover_memory_backend_plugins()
+
+        self._logger.info(
+            "Memory initialized for agent '%s' with store '%s'",
+            self._identity.identifier,
+            self._memory_store.store_name,
+        )
+        return
+
+    def _discover_memory_backend_plugins(self) -> None:
+        """
+            Discovers and registers MemoryBackendPlugin instances from the
+            "automojo.agentkit.memory_backends" extension point.
+
+            Logs WARNING on plugin load failure and continues.
+            Logs WARNING on store name conflict and skips.
+        """
+        try:
+            from automojo.extension import ExtensionPoint
+            extension_point = ExtensionPoint("automojo.agentkit.memory_backends")
+            discovered_stores = extension_point.query()
+
+            for store_entry in discovered_stores:
+                try:
+                    store_instance = store_entry
+                    store_name = store_instance.store_name
+                    has_conflict = self._memory_store_registry.has_store(name=store_name)
+
+                    if has_conflict is True:
+                        self._logger.warning(
+                            "Memory backend plugin name conflict: store '%s' is already "
+                            "registered in agent '%s'. Skipping plugin store.",
+                            store_name,
+                            self._identity.identifier,
+                        )
+                        continue
+
+                    self._memory_store_registry.register(store=store_instance)
+
+                except Exception as plugin_err:
+                    self._logger.warning(
+                        "Failed to load memory backend plugin for agent '%s': %s",
+                        self._identity.identifier,
+                        str(plugin_err),
+                    )
+
+        except ImportError:
+            self._logger.info(
+                "automojo-extension not available; skipping memory backend plugin "
+                "discovery for agent '%s'",
+                self._identity.identifier,
+            )
+        except Exception as discovery_err:
+            self._logger.warning(
+                "Memory backend plugin discovery failed for agent '%s': %s",
+                self._identity.identifier,
+                str(discovery_err),
+            )
+
+        return
+
+    def _stop_memory(self) -> None:
+        """
+            Clears the Agent's MemoryStoreRegistry and resets memory references.
+
+            Subclasses should call this method during their stop()
+            implementation to clean up memory resources.
+        """
+        self._memory_store_registry.clear()
+        self._memory_store = None
+        self._context_window = None
+        self._memory_configuration = None
+
+        self._logger.info(
+            "Memory cleared for agent '%s'",
+            self._identity.identifier,
+        )
+        return
+
+    # -----------------------------------------------------------------------
+    # Workflow lifecycle methods
+    # -----------------------------------------------------------------------
+
+    def _initialize_workflows(self) -> None:
+        """
+            Initializes the workflow subsystem for this Agent.
+
+            Constructs the WorkflowExecutor and CheckpointManager from the
+            WorkflowConfiguration. If no WorkflowConfiguration is provided,
+            defaults to a WorkflowConfiguration with default values.
+
+            Queries the "automojo.agentkit.workflow_steps" ExtensionPoint
+            and registers all discovered WorkflowStep types.
+
+            Subclasses should call this method during their initialize()
+            implementation to set up workflow capabilities.
+        """
+        if self._workflow_configuration is None:
+            self._workflow_configuration = WorkflowConfiguration()
+
+        if self._memory_store is not None:
+            self._checkpoint_manager = CheckpointManager(
+                memory_store=self._memory_store
+            )
+
+        self._workflow_executor = WorkflowExecutor(
+            configuration=self._workflow_configuration,
+            checkpoint_manager=self._checkpoint_manager
+        )
+
+        self._logger.info(
+            "Workflow subsystem initialized for agent '%s'.",
+            self._identity.identifier,
+        )
+
+        # Discover workflow step plugins via ExtensionPoint
+        try:
+            from automojo.extension import ExtensionPoint
+            extension_point = ExtensionPoint("automojo.agentkit.workflow_steps")
+            discovered_steps = extension_point.query()
+
+            for step_entry in discovered_steps:
+                try:
+                    step_type_name = step_entry.step_type if hasattr(step_entry, "step_type") else str(step_entry)
+
+                    self._logger.info(
+                        "Discovered workflow step plugin '%s' for agent '%s'.",
+                        step_type_name,
+                        self._identity.identifier,
+                    )
+
+                except Exception as plugin_err:
+                    self._logger.warning(
+                        "Failed to load workflow step plugin for agent '%s': %s",
+                        self._identity.identifier,
+                        str(plugin_err),
+                    )
+
+        except ImportError:
+            self._logger.info(
+                "automojo-extension not available; skipping workflow step plugin "
+                "discovery for agent '%s'.",
+                self._identity.identifier,
+            )
+        except Exception as discovery_err:
+            self._logger.warning(
+                "Workflow step plugin discovery failed for agent '%s': %s",
+                self._identity.identifier,
+                str(discovery_err),
+            )
+
+        return
+
+    def _stop_workflows(self) -> None:
+        """
+            Clears the Agent's WorkflowRegistry and cancels all pending
+            ApprovalRequests.
+
+            Subclasses should call this method during their stop()
+            implementation to clean up workflow resources.
+        """
+        self._workflow_registry = WorkflowRegistry()
+        self._workflow_executor = None
+        self._checkpoint_manager = None
+        self._workflow_configuration = None
+
+        # Cancel all pending approval requests
+        pending_requests = self._approval_gate.list_pending()
+        for request in pending_requests:
+            try:
+                self._approval_gate.reject(
+                    request.identifier,
+                    reason="Agent stopped."
+                )
+            except Exception:
+                pass
+
+        self._logger.info(
+            "Workflow subsystem stopped for agent '%s'.",
+            self._identity.identifier,
+        )
+        return
+
+    # -----------------------------------------------------------------------
+    # Memory convenience methods
+    # -----------------------------------------------------------------------
+
+    def register_memory_store(self, store: MemoryStore) -> None:
+        """
+            Registers a MemoryStore with this Agent's MemoryStoreRegistry.
+
+            :param store: The MemoryStore instance to register.
+        """
+        self._memory_store_registry.register(store=store)
+        return
+
+    def store_memory(self, content: str, metadata: dict = None,
+                     tags: list = None, scope: MemoryScope = None) -> MemoryEntry:
+        """
+            Creates a MemoryEntry and stores it in the Agent's primary MemoryStore.
+
+            :param content: The content string for the memory entry.
+            :param metadata: Optional metadata dictionary.
+            :param tags: Optional list of tag strings.
+            :param scope: Optional MemoryScope. Defaults to AGENT.
+
+            :returns: The stored MemoryEntry.
+            :raises: SemanticError if no primary MemoryStore is configured.
+        """
+        if self._memory_store is None:
+            errmsg = "No primary MemoryStore is configured for agent '{}'.".format(
+                self._identity.identifier
+            )
+            raise SemanticError(errmsg)
+
+        if scope is None:
+            scope = MemoryScope.AGENT
+
+        entry = MemoryEntry(
+            content=content,
+            scope=scope,
+            metadata=metadata,
+            tags=tags,
+        )
+
+        stored_entry = self._memory_store.store(entry=entry)
+        rtnval = stored_entry
+        return rtnval
+
+    def search_memory(self, query: MemoryQuery) -> MemoryQueryResult:
+        """
+            Executes a MemoryQuery against the Agent's primary MemoryStore.
+
+            :param query: The MemoryQuery with filter criteria.
+
+            :returns: A MemoryQueryResult with matching entries.
+            :raises: SemanticError if no primary MemoryStore is configured.
+        """
+        if self._memory_store is None:
+            errmsg = "No primary MemoryStore is configured for agent '{}'.".format(
+                self._identity.identifier
+            )
+            raise SemanticError(errmsg)
+
+        rtnval = self._memory_store.search(query=query)
+        return rtnval
+
+    def build_context(self, conversation: LLMConversation,
+                      memory_query: MemoryQuery = None) -> LLMConversation:
+        """
+            Builds a trimmed LLMConversation using the Agent's ContextWindow.
+
+            If a memory_query is provided, searches the primary MemoryStore
+            and passes the matching entries to the ContextWindow for inclusion.
+
+            :param conversation: The input LLMConversation.
+            :param memory_query: Optional MemoryQuery for retrieving relevant memory.
+
+            :returns: A trimmed LLMConversation that fits within the token limit.
+            :raises: SemanticError if no ContextWindow is configured.
+        """
+        if self._context_window is None:
+            errmsg = "No ContextWindow is configured for agent '{}'.".format(
+                self._identity.identifier
+            )
+            raise SemanticError(errmsg)
+
+        memory_entries = None
+        if memory_query is not None and self._memory_store is not None:
+            query_result = self._memory_store.search(query=memory_query)
+            memory_entries = query_result.entries
+
+        rtnval = self._context_window.build(
+            conversation=conversation,
+            memory_entries=memory_entries,
+        )
+        return rtnval
+
+    # -----------------------------------------------------------------------
+    # Workflow methods
+    # -----------------------------------------------------------------------
+
+    def register_workflow(self, workflow: WorkflowDefinition) -> None:
+        """
+            Registers a WorkflowDefinition with this Agent's WorkflowRegistry.
+
+            :param workflow: The WorkflowDefinition instance to register.
+        """
+        self._workflow_registry.register(workflow)
+        return
+
+    def execute_workflow(self, name: str, inputs: dict,
+                         version: str = None) -> WorkflowResult:
+        """
+            Looks up and executes a workflow by name and optional version.
+
+            Retrieves the WorkflowDefinition from the Agent's WorkflowRegistry
+            using the provided name and optional version, then executes the
+            workflow through the WorkflowExecutor.
+
+            :param name: The workflow name to look up.
+            :param inputs: The initial input dictionary for the workflow.
+            :param version: Optional version string. When None, the latest version is used.
+
+            :returns: A WorkflowResult with the execution outcome.
+            :raises: SemanticError if the workflow is not found in the registry.
+        """
+        workflow = self._workflow_registry.lookup(name, version)
+        if workflow is None:
+            errmsg = "Workflow '{}' not found in the registry.".format(name)
+            raise SemanticError(errmsg)
+
+        if self._workflow_executor is None:
+            self._workflow_executor = WorkflowExecutor(
+                configuration=self._workflow_configuration,
+                checkpoint_manager=self._checkpoint_manager
+            )
+
+        result = self._workflow_executor.execute(workflow, inputs, agent=self)
+        return result
+
+    def resume_workflow(self, execution_id: str,
+                        workflow_name: str = None) -> WorkflowResult:
+        """
+            Resumes a workflow from the last checkpoint.
+
+            Loads the most recent checkpoint for the given execution identifier
+            and continues execution from the step following the last completed step.
+
+            :param execution_id: The workflow execution identifier.
+            :param workflow_name: Optional workflow name to look up the WorkflowDefinition.
+
+            :returns: A WorkflowResult with the execution outcome.
+            :raises: SemanticError if the workflow name is provided but not found.
+        """
+        if self._workflow_executor is None:
+            self._workflow_executor = WorkflowExecutor(
+                configuration=self._workflow_configuration,
+                checkpoint_manager=self._checkpoint_manager
+            )
+
+        workflow = None
+        if workflow_name is not None:
+            workflow = self._workflow_registry.lookup(workflow_name)
+            if workflow is None:
+                errmsg = "Workflow '{}' not found in the registry.".format(workflow_name)
+                raise SemanticError(errmsg)
+
+        result = self._workflow_executor.resume(execution_id, workflow, agent=self)
+        return result
+
+    # -----------------------------------------------------------------------
+    # Messaging methods
+    # -----------------------------------------------------------------------
+
+    def register_transport(self, transport: Transport) -> None:
+        """
+            Registers a Transport with this Agent's TransportRegistry.
+
+            :param transport: The Transport instance to register.
+        """
+        self._transport_registry.register(transport=transport)
+        return
+
+    def send_message(self, recipient_id: str, payload: object,
+                     transport_name: str = None,
+                     serialization_format: str = None,
+                     pattern: MessagePattern = MessagePattern.FIRE_AND_FORGET,
+                     headers: dict = None) -> MessageEnvelope:
+        """
+            Constructs and sends a Message to the specified recipient.
+
+            Resolves the default transport name and serialization format
+            from the MessagingConfiguration when not provided. Looks up
+            the transport from the TransportRegistry, resolves the
+            recipient address via the AddressResolver, constructs a
+            Message, and sends it through the transport.
+
+            :param recipient_id: The recipient agent identifier.
+            :param payload: The message payload.
+            :param transport_name: Optional transport name. Defaults to
+                the MessagingConfiguration default.
+            :param serialization_format: Optional serialization format
+                name. Defaults to the MessagingConfiguration default.
+            :param pattern: The MessagePattern. Defaults to
+                FIRE_AND_FORGET.
+            :param headers: Optional headers dictionary.
+
+            :returns: A MessageEnvelope with delivery metadata.
+
+            :raises SemanticError: If the requested transport is not
+                found in the TransportRegistry.
+        """
+        effective_transport_name = transport_name
+        if effective_transport_name is None and self._messaging_configuration is not None:
+            effective_transport_name = self._messaging_configuration.default_transport
+
+        effective_serialization_format = serialization_format
+        if effective_serialization_format is None and self._messaging_configuration is not None:
+            effective_serialization_format = self._messaging_configuration.default_serialization_format
+
+        transport = self._transport_registry.lookup(effective_transport_name)
+
+        if transport is None:
+            errmsg_lines = [
+                "Transport '{}' not found in agent '{}'.".format(
+                    effective_transport_name, self._identity.identifier
+                ),
+            ]
+            errmsg = os.linesep.join(errmsg_lines)
+            raise SemanticError(errmsg)
+
+        recipient_address = self._address_resolver.resolve(
+            agent_identifier=recipient_id,
+            transport_name=effective_transport_name,
+        )
+
+        sender_address = AgentAddress(
+            agent_identifier=self._identity.identifier,
+            transport_name=effective_transport_name,
+        )
+
+        message = Message(
+            sender=sender_address,
+            recipient=recipient_address,
+            payload=payload,
+            pattern=pattern,
+            headers=headers,
+        )
+
+        envelope = transport.send(message)
+
+        return envelope
+
+    def request(self, recipient_id: str, payload: object,
+                transport_name: str = None,
+                serialization_format: str = None,
+                timeout: float = None,
+                headers: dict = None) -> Message:
+        """
+            Sends a request and awaits a correlated response.
+
+            Resolves the default transport name and serialization format
+            from the MessagingConfiguration when not provided. Constructs
+            a REQUEST Message and delegates to the RequestResponseHandler
+            for correlated response tracking.
+
+            :param recipient_id: The recipient agent identifier.
+            :param payload: The request payload.
+            :param transport_name: Optional transport name. Defaults to
+                the MessagingConfiguration default.
+            :param serialization_format: Optional serialization format
+                name. Defaults to the MessagingConfiguration default.
+            :param timeout: Optional timeout in seconds.
+            :param headers: Optional headers dictionary.
+
+            :returns: The correlated response Message.
+
+            :raises SemanticError: If the requested transport is not
+                found in the TransportRegistry.
+            :raises MessageTimeoutError: If no response is received
+                within the timeout duration.
+        """
+        effective_transport_name = transport_name
+        if effective_transport_name is None and self._messaging_configuration is not None:
+            effective_transport_name = self._messaging_configuration.default_transport
+
+        effective_serialization_format = serialization_format
+        if effective_serialization_format is None and self._messaging_configuration is not None:
+            effective_serialization_format = self._messaging_configuration.default_serialization_format
+
+        transport = self._transport_registry.lookup(effective_transport_name)
+
+        if transport is None:
+            errmsg_lines = [
+                "Transport '{}' not found in agent '{}'.".format(
+                    effective_transport_name, self._identity.identifier
+                ),
+            ]
+            errmsg = os.linesep.join(errmsg_lines)
+            raise SemanticError(errmsg)
+
+        recipient_address = self._address_resolver.resolve(
+            agent_identifier=recipient_id,
+            transport_name=effective_transport_name,
+        )
+
+        sender_address = AgentAddress(
+            agent_identifier=self._identity.identifier,
+            transport_name=effective_transport_name,
+        )
+
+        message = Message(
+            sender=sender_address,
+            recipient=recipient_address,
+            payload=payload,
+            pattern=MessagePattern.REQUEST,
+            headers=headers,
+        )
+
+        response = self._request_response_handler.send_request(
+            message=message,
+            transport=transport,
+            timeout=timeout,
+        )
+
+        return response
+
+    def publish(self, topic: str, payload: object) -> None:
+        """
+            Publishes an event message to a topic.
+
+            Constructs a sender AgentAddress from the agent's identity,
+            constructs an EVENT Message with a None recipient, and
+            delegates to the PubSubBroker for topic-based delivery.
+
+            :param topic: The topic string.
+            :param payload: The event payload.
+        """
+        sender_address = AgentAddress(
+            agent_identifier=self._identity.identifier,
+            transport_name="pubsub",
+        )
+
+        recipient_address = AgentAddress(
+            agent_identifier="",
+            transport_name="pubsub",
+        )
+
+        message = Message(
+            sender=sender_address,
+            recipient=recipient_address,
+            payload=payload,
+            pattern=MessagePattern.EVENT,
+        )
+
+        self._pubsub_broker.publish(topic=topic, message=message)
+
+        return
+
+    def subscribe(self, topic: str, handler: callable) -> Subscription:
+        """
+            Subscribes to a topic with a handler callback.
+
+            Delegates to the PubSubBroker subscribe method using the
+            agent's identity identifier as the subscriber agent ID.
+
+            :param topic: The topic string.
+            :param handler: The MessageHandler callback.
+
+            :returns: A Subscription object.
+        """
+        subscription = self._pubsub_broker.subscribe(
+            topic=topic,
+            subscriber_agent_id=self._identity.identifier,
+            handler=handler,
+        )
+
+        return subscription
+
+    # -----------------------------------------------------------------------
     # LLM provider methods
     # -----------------------------------------------------------------------
 
-    def register_llm_provider(self, provider: LlmProvider) -> None:
+    def register_llm_provider(self, provider: LLMProvider) -> None:
         """
-            Registers an LlmProvider with this Agent's LlmProviderRegistry.
+            Registers an LLMProvider with this Agent's LLMProviderRegistry.
 
-            :param provider: The LlmProvider instance to register.
+            :param provider: The LLMProvider instance to register.
         """
         self._llm_provider_registry.register(provider)
         return
 
     def complete(self, provider_name: str, model_name: str,
-                 conversation: LlmConversation, retry_policy: RetryPolicy = None,
-                 fallback_chain: FallbackChain = None, **kwargs) -> LlmResponse:
+                 conversation: LLMConversation, retry_policy: RetryPolicy = None,
+                 fallback_chain: FallbackChain = None, **kwargs) -> LLMResponse:
         """
-            Looks up the LlmProvider and executes a completion request.
+            Looks up the LLMProvider and executes a completion request.
 
-            Looks up the provider in the Agent's LlmProviderRegistry using
+            Looks up the provider in the Agent's LLMProviderRegistry using
             the provider name and model name. If found, executes the
             completion request and records token usage and cost in the
             Agent's CostTracker. If not found, raises a SemanticError.
@@ -934,7 +1956,7 @@ class Agent(abc.ABC):
             request is retried according to the policy. When all retries are
             exhausted and a FallbackChain is configured, the next provider
             in the chain is attempted. If all providers fail, an
-            LlmRequestError is raised with a summary of all attempted
+            LLMRequestError is raised with a summary of all attempted
             providers.
 
             :param provider_name: The provider name.
@@ -943,10 +1965,10 @@ class Agent(abc.ABC):
             :param retry_policy: Optional RetryPolicy for retry behavior.
             :param fallback_chain: Optional FallbackChain for fallback behavior.
 
-            :returns: An LlmResponse.
+            :returns: An LLMResponse.
 
             :raises: SemanticError if provider not found.
-            :raises: LlmRequestError on provider failure after retries and fallbacks.
+            :raises: LLMRequestError on provider failure after retries and fallbacks.
         """
         llm_logger = logging.getLogger("automojo.agentkit.llm")
 
@@ -1030,7 +2052,7 @@ class Agent(abc.ABC):
 
         err_msg = os.linesep.join(err_msg_lines)
 
-        raise LlmRequestError(
+        raise LLMRequestError(
             provider_name=provider_name,
             model_name=model_name,
             category="server_error",
@@ -1038,23 +2060,23 @@ class Agent(abc.ABC):
         )
 
     def _attempt_completion_with_retries(
-        self, provider: LlmProvider, provider_name: str, model_name: str,
-        conversation: LlmConversation, retry_policy: RetryPolicy,
+        self, provider: LLMProvider, provider_name: str, model_name: str,
+        conversation: LLMConversation, retry_policy: RetryPolicy,
         fallback_chain: FallbackChain,
         llm_logger: logging.Logger, failed_providers: list, **kwargs
-    ) -> Optional[LlmResponse]:
+    ) -> Optional[LLMResponse]:
         """
             Attempts a completion request with optional retry logic.
 
             If the completion succeeds, records cost and returns the
-            LlmResponse. If it fails and a retry policy is configured,
+            LLMResponse. If it fails and a retry policy is configured,
             retries according to the policy. If all attempts fail and
             a fallback chain or retry policy is configured, appends the
             failure to the failed_providers list and returns None.
             If neither retry_policy nor fallback_chain is configured,
             the exception is re-raised directly.
 
-            :param provider: The LlmProvider instance.
+            :param provider: The LLMProvider instance.
             :param provider_name: The provider name.
             :param model_name: The model name.
             :param conversation: The conversation history.
@@ -1063,7 +2085,7 @@ class Agent(abc.ABC):
             :param llm_logger: The logger for LLM operations.
             :param failed_providers: List to append failure entries to.
 
-            :returns: An LlmResponse on success, or None on failure.
+            :returns: An LLMResponse on success, or None on failure.
         """
         attempt = 0
         last_exception = None

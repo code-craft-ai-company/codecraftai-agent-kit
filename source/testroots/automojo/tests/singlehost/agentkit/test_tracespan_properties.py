@@ -12,7 +12,7 @@
 
 from datetime import datetime, timedelta
 
-from automojo.testbase.properties import given, settings, assume
+from automojo.testbase.properties import given, assume
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 
@@ -95,7 +95,7 @@ _event_name_strategy = st.text(min_size=1, max_size=50)
     attributes=_attributes_strategy,
     event_names=st.lists(_event_name_strategy, min_size=0, max_size=3),
     event_timestamps=st.lists(_timestamp_strategy, min_size=3, max_size=3),
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_tracespan_json_round_trip_completed(
     span_name: str,
@@ -213,7 +213,7 @@ def test_tracespan_json_round_trip_completed(
         min_size=1,
         max_size=20,
     ),
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_tracespan_set_attribute_accumulates(
     span_name: str,
@@ -267,7 +267,7 @@ def test_tracespan_set_attribute_accumulates(
         min_size=1,
         max_size=20,
     ),
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_tracespan_add_event_accumulates(
     span_name: str,
@@ -314,7 +314,7 @@ def test_tracespan_add_event_accumulates(
     span_name=_span_name_strategy,
     start_time=_timestamp_strategy,
     seconds_elapsed=st.integers(min_value=1, max_value=86400),
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_tracespan_duration_equals_elapsed_time(
     span_name: str,

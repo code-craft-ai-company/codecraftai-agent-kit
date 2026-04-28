@@ -9,7 +9,7 @@
 
 from datetime import datetime
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 
@@ -50,7 +50,7 @@ _event_type_strategy = st.sampled_from(["lifecycle", "tool", "llm", "memory", "w
     end_time=_timestamp_strategy,
     event_types=st.lists(_event_type_strategy, min_size=1, max_size=20),
     correlation_id=_short_text,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_executionreplayer_traversal_visits_all_records_in_order(agent_id, start_time, end_time, event_types, correlation_id):
     """

@@ -8,7 +8,7 @@
 
 import uuid
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.correlationcontext import CorrelationContext
@@ -33,7 +33,7 @@ _parent_correlation_id_strategy = st.one_of(
 @given(
     correlation_id=_correlation_id_strategy,
     parent_correlation_id=_parent_correlation_id_strategy,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_correlationcontext_json_round_trip(correlation_id, parent_correlation_id):
     """
@@ -73,7 +73,7 @@ def test_correlationcontext_json_round_trip(correlation_id, parent_correlation_i
 
 @given(
     parent_correlation_id=_parent_correlation_id_strategy,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_correlationcontext_auto_generates_valid_uuid(parent_correlation_id):
     """
@@ -106,7 +106,7 @@ def test_correlationcontext_auto_generates_valid_uuid(parent_correlation_id):
 @given(
     correlation_id=_correlation_id_strategy,
     parent_correlation_id=_parent_correlation_id_strategy,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_correlationcontext_create_child_preserves_parent_chain(correlation_id, parent_correlation_id):
     """

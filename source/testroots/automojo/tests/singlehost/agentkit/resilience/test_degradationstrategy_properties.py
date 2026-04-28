@@ -8,7 +8,7 @@
     **Validates: Requirements 7.4, 7.5**
 """
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.cachedresultstrategy import CachedResultStrategy
@@ -62,7 +62,7 @@ _optional_contexts = st.one_of(
     dependency_name=_dependency_names,
     exception_message=_exception_messages,
     context=_optional_contexts,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_default_value_strategy_returns_configured_default(
     default_value,
@@ -121,7 +121,7 @@ _cached_values = st.one_of(
     dependency_name=_dependency_names,
     exception_message=_exception_messages,
     context=_optional_contexts,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_cached_result_strategy_returns_cached_result(
     cached_value,

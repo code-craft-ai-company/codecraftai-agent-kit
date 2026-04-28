@@ -7,7 +7,7 @@
     **Validates: Requirements 11.9**
 """
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.deadletterqueue import DeadLetterQueue
@@ -49,7 +49,7 @@ _enqueue_count = st.integers(min_value=1, max_value=50)
     retry_attempts=_retry_attempts,
     source_component=_source_component,
     agent_identifier=_agent_identifier,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_deadletterqueue_enqueue_increases_count(
     n: int,

@@ -7,7 +7,7 @@
     **Validates: Requirements 23.4, 23.5, 23.6**
 """
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.breakpoint import Breakpoint
@@ -37,7 +37,7 @@ _optional_target_name_strategy = st.one_of(st.none(), _target_name_strategy)
     bp_target=_optional_target_name_strategy,
     event_type=_valid_type_strategy,
     event_target=_optional_target_name_strategy,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_breakpoint_matches_logic(
     bp_type: str,

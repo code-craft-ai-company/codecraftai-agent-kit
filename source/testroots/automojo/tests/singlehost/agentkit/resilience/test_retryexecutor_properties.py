@@ -9,7 +9,7 @@
     **Validates: Requirements 1.4, 1.5, 1.6, 1.7**
 """
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.retryexecutor import RetryExecutor
@@ -48,7 +48,7 @@ _return_value = st.one_of(
     base_delay=_base_delay,
     max_delay=_max_delay,
     return_value=_return_value,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_retryexecutor_success_path(
     max_retries: int,
@@ -111,7 +111,7 @@ def test_retryexecutor_success_path(
     base_delay=st.floats(min_value=0.001, max_value=0.01),
     max_delay=st.floats(min_value=0.01, max_value=0.05),
     error_message=st.text(min_size=1, max_size=50),
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_retryexecutor_failure_path_exhausted_retries(
     max_retries: int,
@@ -193,7 +193,7 @@ _exception_types = [RuntimeError, ValueError, TypeError, KeyError, IOError, OSEr
     error_message=st.text(min_size=1, max_size=50),
     retryable_index=st.integers(min_value=0, max_value=2),
     non_retryable_index=st.integers(min_value=3, max_value=5),
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_retryexecutor_non_retryable_exception_propagation(
     max_retries: int,

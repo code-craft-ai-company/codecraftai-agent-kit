@@ -13,7 +13,7 @@ import json
 
 from datetime import datetime
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 
@@ -61,7 +61,7 @@ _metadata_strategy = st.dictionaries(
     correlation_id=_short_text,
     agent_id=_short_text,
     metadata=_metadata_strategy,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_structuredlogentry_json_round_trip(timestamp, level, message, logger_name, correlation_id, agent_id, metadata):
     """
@@ -142,7 +142,7 @@ def test_structuredlogentry_json_round_trip(timestamp, level, message, logger_na
     correlation_id=_short_text,
     agent_id=_short_text,
     metadata=_metadata_strategy,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_jsonlogformatter_produces_valid_json_with_all_fields(timestamp, level, message, logger_name, correlation_id, agent_id, metadata):
     """

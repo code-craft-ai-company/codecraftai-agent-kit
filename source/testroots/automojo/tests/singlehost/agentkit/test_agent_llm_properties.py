@@ -2,14 +2,14 @@
     Property-based tests for Agent LLM integration.
 
     Uses the automojo.testbase.properties engine to verify:
-    - Property 37: Agent LlmProviderRegistry cleared on stop
+    - Property 37: Agent LLMProviderRegistry cleared on stop
     - Property 38: Agent complete raises SemanticError for unknown provider
     - Property 39: LLM error fields are accessible
 
     **Validates: Requirements 12.4, 12.6, 15.2, 15.4**
 """
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 
@@ -18,12 +18,12 @@ from automojo.agentkit.agentconfiguration import AgentConfiguration
 from automojo.agentkit.agentregistry import AgentRegistry
 from automojo.agentkit.errors import SemanticError
 from automojo.agentkit.lifecyclestate import LifecycleState
-from automojo.agentkit.llmconversation import LlmConversation
-from automojo.agentkit.llmerrors import LlmRequestError, LlmResponseParsingError
-from automojo.agentkit.llmmessage import LlmMessage
-from automojo.agentkit.llmprovider import LlmProvider
-from automojo.agentkit.llmproviderregistry import LlmProviderRegistry
-from automojo.agentkit.llmresponse import LlmResponse
+from automojo.agentkit.llmconversation import LLMConversation
+from automojo.agentkit.llmerrors import LLMRequestError, LLMResponseParsingError
+from automojo.agentkit.llmmessage import LLMMessage
+from automojo.agentkit.llmprovider import LLMProvider
+from automojo.agentkit.llmproviderregistry import LLMProviderRegistry
+from automojo.agentkit.llmresponse import LLMResponse
 from automojo.agentkit.tokenusage import TokenUsage
 
 
@@ -40,7 +40,7 @@ def _reset_registry():
     return
 
 
-class LlmTestAgent(Agent):
+class LLMTestAgent(Agent):
     """
         Concrete Agent subclass for testing LLM integration properties.
     """
@@ -71,9 +71,9 @@ class LlmTestAgent(Agent):
         return
 
 
-class StubLlmProvider(LlmProvider):
+class StubLLMProvider(LLMProvider):
     """
-        A concrete LlmProvider subclass for testing that does nothing.
+        A concrete LLMProvider subclass for testing that does nothing.
     """
 
     def __init__(self, provider_name: str, model_name: str,
@@ -121,7 +121,7 @@ _model_name_text = st.text(
     max_size=15,
 )
 
-_error_category = st.sampled_from(list(LlmRequestError.VALID_CATEGORIES))
+_error_category = st.sampled_from(list(LLMRequestError.VALID_CATEGORIES))
 
 _content_text = st.text(
     alphabet="abcdefghijklmnopqrstuvwxyz0123456789 .,!?",
@@ -162,31 +162,31 @@ def _unique_provider_pairs(draw):
 
 
 # ---------------------------------------------------------------------------
-# Property 37: Agent LlmProviderRegistry cleared on stop
+# Property 37: Agent LLMProviderRegistry cleared on stop
 # ---------------------------------------------------------------------------
 
-@given(provider_pairs=_unique_provider_pairs(), settings=settings(max_examples=50))
+@given(provider_pairs=_unique_provider_pairs(), constraints={"max_examples": 50})
 def test_agent_llm_registry_cleared_on_stop(
     provider_pairs: list,
 ) -> None:
     """
         **Validates: Requirements 12.6**
 
-        For any Agent with N registered LlmProviders, after the Agent
-        transitions to STOPPED state, the Agent's LlmProviderRegistry
+        For any Agent with N registered LLMProviders, after the Agent
+        transitions to STOPPED state, the Agent's LLMProviderRegistry
         count shall be zero.
     """
     _reset_registry()
 
     config = _create_config()
-    agent = LlmTestAgent(configuration=config)
+    agent = LLMTestAgent(configuration=config)
 
     try:
         agent.initialize()
         agent.start()
 
         for pname, mname in provider_pairs:
-            provider = StubLlmProvider(provider_name=pname, model_name=mname)
+            provider = StubLLMProvider(provider_name=pname, model_name=mname)
             agent.register_llm_provider(provider)
 
         assert agent.llm_providers.count == len(provider_pairs), (
@@ -215,7 +215,7 @@ def test_agent_llm_registry_cleared_on_stop(
 @given(
     provider_name=_identifier,
     model_name=_model_name_text,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_agent_complete_raises_semantic_error_for_unknown_provider(
     provider_name: str,
@@ -225,18 +225,18 @@ def test_agent_complete_raises_semantic_error_for_unknown_provider(
         **Validates: Requirements 12.4**
 
         For any Agent and any provider_name + model_name combination not
-        registered in the Agent's LlmProviderRegistry, calling complete()
+        registered in the Agent's LLMProviderRegistry, calling complete()
         shall raise SemanticError that includes the provider name, model
         name, and agent identity.
     """
     _reset_registry()
 
     config = _create_config()
-    agent = LlmTestAgent(configuration=config)
+    agent = LLMTestAgent(configuration=config)
 
     try:
-        conversation = LlmConversation(messages=[
-            LlmMessage(role="user", content="hello"),
+        conversation = LLMConversation(messages=[
+            LLMMessage(role="user", content="hello"),
         ])
 
         raised = False
@@ -282,7 +282,7 @@ def test_agent_complete_raises_semantic_error_for_unknown_provider(
     provider_name=_identifier,
     model_name=_model_name_text,
     category=_error_category,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_llm_request_error_fields_are_accessible(
     provider_name: str,
@@ -292,13 +292,13 @@ def test_llm_request_error_fields_are_accessible(
     """
         **Validates: Requirements 15.2**
 
-        For any LlmRequestError, the provider_name, model_name, category,
+        For any LLMRequestError, the provider_name, model_name, category,
         and cause properties shall be accessible and match the constructor
         arguments.
     """
     cause = Exception("test cause")
 
-    error = LlmRequestError(
+    error = LLMRequestError(
         provider_name=provider_name,
         model_name=model_name,
         category=category,
@@ -334,7 +334,7 @@ def test_llm_request_error_fields_are_accessible(
     parser_name=_identifier,
     raw_text=_content_text,
     error_message=_error_message_text,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_llm_response_parsing_error_fields_are_accessible(
     parser_name: str,
@@ -344,11 +344,11 @@ def test_llm_response_parsing_error_fields_are_accessible(
     """
         **Validates: Requirements 15.4**
 
-        For any LlmResponseParsingError, the parser_name, raw_text, and
+        For any LLMResponseParsingError, the parser_name, raw_text, and
         error_message properties shall be accessible and match the
         constructor arguments.
     """
-    error = LlmResponseParsingError(
+    error = LLMResponseParsingError(
         parser_name=parser_name,
         raw_text=raw_text,
         message=error_message,

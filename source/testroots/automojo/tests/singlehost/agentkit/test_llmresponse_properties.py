@@ -2,16 +2,16 @@
     Property-based tests for the automojo.agentkit.llmresponse module.
 
     Uses automojo.testbase.properties to verify:
-    - Property 3: LlmResponse JSON round-trip
+    - Property 3: LLMResponse JSON round-trip
 
     **Validates: Requirements 3.3, 3.4, 3.5, 3.6, 17.5, 17.6, 17.11**
 """
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
-from automojo.agentkit.llmmessage import LlmMessage
-from automojo.agentkit.llmresponse import LlmResponse
+from automojo.agentkit.llmmessage import LLMMessage
+from automojo.agentkit.llmresponse import LLMResponse
 from automojo.agentkit.tokenusage import TokenUsage
 
 
@@ -60,7 +60,7 @@ _duration = st.floats(
 
 
 # ---------------------------------------------------------------------------
-# Property 3: LlmResponse JSON round-trip
+# Property 3: LLMResponse JSON round-trip
 # ---------------------------------------------------------------------------
 
 @given(
@@ -72,7 +72,7 @@ _duration = st.floats(
     provider_name=_provider_name,
     model_name=_model_name,
     duration=_duration,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_llmresponse_json_roundtrip(
     role: str,
@@ -87,13 +87,13 @@ def test_llmresponse_json_roundtrip(
     """
         **Validates: Requirements 3.3, 3.4, 3.5, 3.6, 17.5, 17.6, 17.11**
 
-        For any valid LlmResponse instance (with a valid LlmMessage,
+        For any valid LLMResponse instance (with a valid LLMMessage,
         TokenUsage, provider name, model name, and duration), calling
         to_json() and then from_json() on the resulting string shall
-        produce an LlmResponse whose message, token_usage, provider_name,
+        produce an LLMResponse whose message, token_usage, provider_name,
         model_name, and duration are equal to the original.
     """
-    message = LlmMessage(role=role, content=content, metadata=metadata)
+    message = LLMMessage(role=role, content=content, metadata=metadata)
     total_tokens = prompt_tokens + completion_tokens
     token_usage = TokenUsage(
         prompt_tokens=prompt_tokens,
@@ -101,7 +101,7 @@ def test_llmresponse_json_roundtrip(
         total_tokens=total_tokens,
     )
 
-    original = LlmResponse(
+    original = LLMResponse(
         message=message,
         token_usage=token_usage,
         provider_name=provider_name,
@@ -110,10 +110,10 @@ def test_llmresponse_json_roundtrip(
     )
 
     json_str = original.to_json()
-    restored = LlmResponse.from_json(json_str)
+    restored = LLMResponse.from_json(json_str)
 
     assert original == restored, (
-        "LlmResponse JSON round-trip failed. "
+        "LLMResponse JSON round-trip failed. "
         "Original: provider={!r}, model={!r}, tokens={}, duration={}. "
         "Restored: provider={!r}, model={!r}, tokens={}, duration={}.".format(
             original.provider_name, original.model_name,

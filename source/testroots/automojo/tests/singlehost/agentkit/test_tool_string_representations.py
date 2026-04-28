@@ -9,7 +9,7 @@
     Feature: tool-capability-system
 """
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 
@@ -226,7 +226,7 @@ def _property_31_data(draw):
 # ---------------------------------------------------------------------------
 
 
-@given(data=_property_31_data(), settings=settings(max_examples=100))
+@given(data=_property_31_data(), constraints={"max_examples": 100})
 def test_property_31_tool_string_representations(data):
     """
         Property 31: Tool string representations contain required information.

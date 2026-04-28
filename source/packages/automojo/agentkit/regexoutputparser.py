@@ -4,13 +4,13 @@
 
     RegexOutputParser extends OutputParser to handle regex-based extraction
     of named capture groups from LLM responses. It compiles the pattern
-    at construction time and raises LlmResponseParsingError when the
+    at construction time and raises LLMResponseParsingError when the
     pattern does not match the response text.
 """
 
 import re
 
-from automojo.agentkit.llmerrors import LlmResponseParsingError
+from automojo.agentkit.llmerrors import LLMResponseParsingError
 from automojo.agentkit.outputparser import OutputParser
 from automojo.agentkit.outputschema import OutputSchema
 
@@ -52,13 +52,13 @@ class RegexOutputParser(OutputParser):
             :param raw_text: The raw LLM response text.
 
             :returns: A dictionary of named capture group matches.
-            :raises: LlmResponseParsingError if pattern does not match.
+            :raises: LLMResponseParsingError if pattern does not match.
         """
         match = self._compiled.search(raw_text)
 
         if match is None:
             errmsg = "Regex pattern {!r} did not match the response text.".format(self._pattern)
-            raise LlmResponseParsingError(
+            raise LLMResponseParsingError(
                 parser_name=self.__class__.__name__,
                 raw_text=raw_text,
                 message=errmsg

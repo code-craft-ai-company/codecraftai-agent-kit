@@ -11,7 +11,7 @@
 import json
 
 from automojo.agentkit.jsonoutputparser import JsonOutputParser
-from automojo.agentkit.llmerrors import LlmResponseParsingError
+from automojo.agentkit.llmerrors import LLMResponseParsingError
 from automojo.agentkit.outputschema import OutputSchema
 
 
@@ -137,7 +137,7 @@ def test_parse_valid_json_empty_list():
 
 def test_parse_invalid_json_raises_error():
     """
-        Parsing invalid JSON raises LlmResponseParsingError.
+        Parsing invalid JSON raises LLMResponseParsingError.
 
         **Validates: Requirements 8.4**
     """
@@ -148,12 +148,12 @@ def test_parse_invalid_json_raises_error():
 
     try:
         parser.parse("not valid json {{{")
-    except LlmResponseParsingError as err:
+    except LLMResponseParsingError as err:
         raised = True
         caught_error = err
 
     assert raised is True, (
-        "Should raise LlmResponseParsingError for invalid JSON"
+        "Should raise LLMResponseParsingError for invalid JSON"
     )
     assert caught_error.parser_name == "JsonOutputParser", (
         "parser_name should be 'JsonOutputParser', got: {!r}".format(
@@ -169,7 +169,7 @@ def test_parse_invalid_json_raises_error():
 
 def test_parse_empty_string_raises_error():
     """
-        Parsing an empty string raises LlmResponseParsingError.
+        Parsing an empty string raises LLMResponseParsingError.
 
         **Validates: Requirements 8.4**
     """
@@ -179,11 +179,11 @@ def test_parse_empty_string_raises_error():
 
     try:
         parser.parse("")
-    except LlmResponseParsingError:
+    except LLMResponseParsingError:
         raised = True
 
     assert raised is True, (
-        "Should raise LlmResponseParsingError for empty string"
+        "Should raise LLMResponseParsingError for empty string"
     )
 
     return
@@ -191,7 +191,7 @@ def test_parse_empty_string_raises_error():
 
 def test_parse_invalid_json_error_includes_detail():
     """
-        The LlmResponseParsingError for invalid JSON includes the
+        The LLMResponseParsingError for invalid JSON includes the
         JSON parsing error detail in the error_message.
 
         **Validates: Requirements 8.4**
@@ -202,10 +202,10 @@ def test_parse_invalid_json_error_includes_detail():
 
     try:
         parser.parse("{bad json}")
-    except LlmResponseParsingError as err:
+    except LLMResponseParsingError as err:
         caught_error = err
 
-    assert caught_error is not None, "Should have raised LlmResponseParsingError"
+    assert caught_error is not None, "Should have raised LLMResponseParsingError"
     assert "JSON" in caught_error.error_message or "json" in caught_error.error_message.lower(), (
         "Error message should mention JSON, got: {!r}".format(
             caught_error.error_message
@@ -244,7 +244,7 @@ def test_parse_with_schema_valid():
 
 def test_parse_with_schema_invalid_raises_error():
     """
-        JsonOutputParser with a schema raises LlmResponseParsingError
+        JsonOutputParser with a schema raises LLMResponseParsingError
         when the parsed JSON does not conform to the schema.
 
         **Validates: Requirements 8.8, 8.9**
@@ -259,11 +259,11 @@ def test_parse_with_schema_invalid_raises_error():
 
     try:
         parser.parse(raw)
-    except LlmResponseParsingError:
+    except LLMResponseParsingError:
         raised = True
 
     assert raised is True, (
-        "Should raise LlmResponseParsingError when schema validation fails"
+        "Should raise LLMResponseParsingError when schema validation fails"
     )
 
     return

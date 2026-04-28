@@ -8,7 +8,7 @@
     **Validates: Requirement 2 AC 8**
 """
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.configurationlayer import ConfigurationLayer
@@ -50,7 +50,7 @@ _source_strategy = st.sampled_from([
     priority=st.integers(),
     source=_source_strategy,
     configuration=_configuration_strategy,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_configurationlayer_json_round_trip(name, priority, source, configuration):
     """

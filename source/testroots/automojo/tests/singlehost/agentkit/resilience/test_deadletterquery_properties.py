@@ -9,7 +9,7 @@
 
 from datetime import datetime
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 
@@ -109,7 +109,7 @@ _entries_list = st.lists(
 @given(
     entries=_entries_list,
     filter_operation_type=_operation_type,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_deadletterquery_filtering_by_operation_type(
     entries: list,

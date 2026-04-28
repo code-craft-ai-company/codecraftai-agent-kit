@@ -12,7 +12,7 @@ import os
 
 import automojo.testbase as testbase
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 
@@ -92,7 +92,7 @@ _ALL_RESILIENCE_TEST_FILES = (
 
 @given(
     filename=st.sampled_from(_ALL_RESILIENCE_TEST_FILES),
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_no_hypothesis_imports_in_resilience_files(filename: str) -> None:
     """

@@ -1,7 +1,7 @@
 """
     Unit tests for the automojo.agentkit.llmprovider module.
 
-    Tests LlmProvider abstract method enforcement, construction validation,
+    Tests LLMProvider abstract method enforcement, construction validation,
     read-only properties, string representations, and get_model_info.
 
     Feature: llm-integration, Task 4.4
@@ -9,7 +9,7 @@
 """
 
 from automojo.agentkit.errors import SemanticError
-from automojo.agentkit.llmprovider import LlmProvider
+from automojo.agentkit.llmprovider import LLMProvider
 
 
 # ---------------------------------------------------------------------------
@@ -17,9 +17,9 @@ from automojo.agentkit.llmprovider import LlmProvider
 # ---------------------------------------------------------------------------
 
 
-class _TestProvider(LlmProvider):
+class _TestProvider(LLMProvider):
     """
-        Minimal concrete subclass of LlmProvider for testing purposes.
+        Minimal concrete subclass of LLMProvider for testing purposes.
     """
 
     def complete(self, conversation, **kwargs):
@@ -36,7 +36,7 @@ class _TestProvider(LlmProvider):
 
 def test_llm_provider_cannot_instantiate_directly():
     """
-        LlmProvider cannot be instantiated directly because it has
+        LLMProvider cannot be instantiated directly because it has
         abstract methods.
 
         **Validates: Requirements 1.1, 1.2**
@@ -44,12 +44,12 @@ def test_llm_provider_cannot_instantiate_directly():
     caught = False
 
     try:
-        LlmProvider(provider_name="openai", model_name="gpt-4")
+        LLMProvider(provider_name="openai", model_name="gpt-4")
     except TypeError:
         caught = True
 
     assert caught is True, (
-        "LlmProvider should raise TypeError when instantiated directly"
+        "LLMProvider should raise TypeError when instantiated directly"
     )
 
     return
@@ -63,7 +63,7 @@ def test_llm_provider_partial_subclass_cannot_instantiate():
         **Validates: Requirements 1.1, 1.2**
     """
 
-    class _PartialProvider(LlmProvider):
+    class _PartialProvider(LLMProvider):
         def complete(self, conversation, **kwargs):
             return None
 
@@ -75,7 +75,7 @@ def test_llm_provider_partial_subclass_cannot_instantiate():
         caught = True
 
     assert caught is True, (
-        "Partial LlmProvider subclass should raise TypeError"
+        "Partial LLMProvider subclass should raise TypeError"
     )
 
     return
@@ -88,7 +88,7 @@ def test_llm_provider_partial_subclass_cannot_instantiate():
 
 def test_llm_provider_valid_construction():
     """
-        LlmProvider accepts valid provider_name and model_name.
+        LLMProvider accepts valid provider_name and model_name.
 
         **Validates: Requirements 1.3, 1.4**
     """
@@ -106,7 +106,7 @@ def test_llm_provider_valid_construction():
 
 def test_llm_provider_with_config():
     """
-        LlmProvider stores a copy of the config dictionary.
+        LLMProvider stores a copy of the config dictionary.
 
         **Validates: Requirements 1.5**
     """
@@ -124,7 +124,7 @@ def test_llm_provider_with_config():
 
 def test_llm_provider_with_credential_names():
     """
-        LlmProvider stores a copy of the credential_names list.
+        LLMProvider stores a copy of the credential_names list.
 
         **Validates: Requirements 1.6**
     """
@@ -142,7 +142,7 @@ def test_llm_provider_with_credential_names():
 
 def test_llm_provider_with_tags():
     """
-        LlmProvider stores a copy of the tags dictionary.
+        LLMProvider stores a copy of the tags dictionary.
 
         **Validates: Requirements 1.7**
     """
@@ -160,7 +160,7 @@ def test_llm_provider_with_tags():
 
 def test_llm_provider_defaults_empty_config():
     """
-        LlmProvider defaults config to an empty dict when not provided.
+        LLMProvider defaults config to an empty dict when not provided.
 
         **Validates: Requirements 1.5**
     """
@@ -175,7 +175,7 @@ def test_llm_provider_defaults_empty_config():
 
 def test_llm_provider_defaults_empty_credential_names():
     """
-        LlmProvider defaults credential_names to an empty list when not provided.
+        LLMProvider defaults credential_names to an empty list when not provided.
 
         **Validates: Requirements 1.6**
     """
@@ -192,7 +192,7 @@ def test_llm_provider_defaults_empty_credential_names():
 
 def test_llm_provider_defaults_empty_tags():
     """
-        LlmProvider defaults tags to an empty dict when not provided.
+        LLMProvider defaults tags to an empty dict when not provided.
 
         **Validates: Requirements 1.7**
     """
@@ -212,7 +212,7 @@ def test_llm_provider_defaults_empty_tags():
 
 def test_llm_provider_none_provider_name_raises_semantic_error():
     """
-        LlmProvider raises SemanticError when provider_name is None.
+        LLMProvider raises SemanticError when provider_name is None.
 
         **Validates: Requirements 1.8**
     """
@@ -224,7 +224,7 @@ def test_llm_provider_none_provider_name_raises_semantic_error():
         caught = True
 
     assert caught is True, (
-        "LlmProvider should raise SemanticError for None provider_name"
+        "LLMProvider should raise SemanticError for None provider_name"
     )
 
     return
@@ -232,7 +232,7 @@ def test_llm_provider_none_provider_name_raises_semantic_error():
 
 def test_llm_provider_empty_provider_name_raises_semantic_error():
     """
-        LlmProvider raises SemanticError when provider_name is empty.
+        LLMProvider raises SemanticError when provider_name is empty.
 
         **Validates: Requirements 1.8**
     """
@@ -244,7 +244,7 @@ def test_llm_provider_empty_provider_name_raises_semantic_error():
         caught = True
 
     assert caught is True, (
-        "LlmProvider should raise SemanticError for empty provider_name"
+        "LLMProvider should raise SemanticError for empty provider_name"
     )
 
     return
@@ -252,7 +252,7 @@ def test_llm_provider_empty_provider_name_raises_semantic_error():
 
 def test_llm_provider_whitespace_provider_name_raises_semantic_error():
     """
-        LlmProvider raises SemanticError when provider_name is whitespace only.
+        LLMProvider raises SemanticError when provider_name is whitespace only.
 
         **Validates: Requirements 1.8**
     """
@@ -264,7 +264,7 @@ def test_llm_provider_whitespace_provider_name_raises_semantic_error():
         caught = True
 
     assert caught is True, (
-        "LlmProvider should raise SemanticError for whitespace-only provider_name"
+        "LLMProvider should raise SemanticError for whitespace-only provider_name"
     )
 
     return
@@ -272,7 +272,7 @@ def test_llm_provider_whitespace_provider_name_raises_semantic_error():
 
 def test_llm_provider_none_model_name_raises_semantic_error():
     """
-        LlmProvider raises SemanticError when model_name is None.
+        LLMProvider raises SemanticError when model_name is None.
 
         **Validates: Requirements 1.9**
     """
@@ -284,7 +284,7 @@ def test_llm_provider_none_model_name_raises_semantic_error():
         caught = True
 
     assert caught is True, (
-        "LlmProvider should raise SemanticError for None model_name"
+        "LLMProvider should raise SemanticError for None model_name"
     )
 
     return
@@ -292,7 +292,7 @@ def test_llm_provider_none_model_name_raises_semantic_error():
 
 def test_llm_provider_empty_model_name_raises_semantic_error():
     """
-        LlmProvider raises SemanticError when model_name is empty.
+        LLMProvider raises SemanticError when model_name is empty.
 
         **Validates: Requirements 1.9**
     """
@@ -304,7 +304,7 @@ def test_llm_provider_empty_model_name_raises_semantic_error():
         caught = True
 
     assert caught is True, (
-        "LlmProvider should raise SemanticError for empty model_name"
+        "LLMProvider should raise SemanticError for empty model_name"
     )
 
     return
@@ -312,7 +312,7 @@ def test_llm_provider_empty_model_name_raises_semantic_error():
 
 def test_llm_provider_whitespace_model_name_raises_semantic_error():
     """
-        LlmProvider raises SemanticError when model_name is whitespace only.
+        LLMProvider raises SemanticError when model_name is whitespace only.
 
         **Validates: Requirements 1.9**
     """
@@ -324,7 +324,7 @@ def test_llm_provider_whitespace_model_name_raises_semantic_error():
         caught = True
 
     assert caught is True, (
-        "LlmProvider should raise SemanticError for whitespace-only model_name"
+        "LLMProvider should raise SemanticError for whitespace-only model_name"
     )
 
     return
@@ -337,7 +337,7 @@ def test_llm_provider_whitespace_model_name_raises_semantic_error():
 
 def test_llm_provider_repr_contains_class_name_and_fields():
     """
-        LlmProvider __repr__ includes the concrete class name, provider name,
+        LLMProvider __repr__ includes the concrete class name, provider name,
         and model name.
 
         **Validates: Requirements 1.10, 19.1**
@@ -360,7 +360,7 @@ def test_llm_provider_repr_contains_class_name_and_fields():
 
 def test_llm_provider_str_contains_provider_and_model():
     """
-        LlmProvider __str__ returns a human-readable summary with provider
+        LLMProvider __str__ returns a human-readable summary with provider
         name and model name.
 
         **Validates: Requirements 1.11, 19.2**

@@ -8,7 +8,7 @@
     **Validates: Requirement 12 AC 8, Requirement 13 AC 3**
 """
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.configurationmanager import ConfigurationManager
@@ -33,7 +33,7 @@ _optional_bool = st.one_of(st.none(), st.booleans())
     default_value=st.booleans(),
     override_value=_optional_bool,
     config_value=_optional_bool,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_featureflag_evaluation_precedence(flag_name, default_value, override_value, config_value):
     """

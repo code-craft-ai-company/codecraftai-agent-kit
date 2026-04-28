@@ -1,13 +1,13 @@
 """
-    Defines the LlmStreamChunk class for immutable streaming response chunks.
+    Defines the LLMStreamChunk class for immutable streaming response chunks.
 
-    LlmStreamChunk encapsulates a partial content string and an optional
+    LLMStreamChunk encapsulates a partial content string and an optional
     metadata dictionary from a streaming LLM response. The chunk is
     immutable once constructed.
 """
 
 
-class LlmStreamChunk:
+class LLMStreamChunk:
     """
         Immutable partial content from a streaming LLM response.
 

@@ -2,7 +2,7 @@
     Defines the FallbackChain class for configuring fallback provider
     sequences in the automojo-agent-kit framework.
 
-    FallbackChain maintains an ordered list of LlmProvider name-model pairs
+    FallbackChain maintains an ordered list of LLMProvider name-model pairs
     that defines the fallback sequence when a provider fails. The chain is
     traversed in order until a provider succeeds or all providers have been
     exhausted.
@@ -11,7 +11,7 @@
 
 class FallbackChain:
     """
-        An ordered list of LlmProvider name-model pairs defining
+        An ordered list of LLMProvider name-model pairs defining
         the fallback sequence when a provider fails.
 
         :param providers: An ordered list of (provider_name, model_name) tuples.

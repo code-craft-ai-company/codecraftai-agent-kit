@@ -13,7 +13,7 @@
 
 from typing import List
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 
@@ -52,7 +52,7 @@ _metric_type_strategy = st.sampled_from([
 
 @given(
     names=_unique_metric_names_strategy(),
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_registry_registration_and_lookup_correctness(
     names: List[str],

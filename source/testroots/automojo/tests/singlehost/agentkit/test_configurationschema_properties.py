@@ -8,7 +8,7 @@
     **Validates: Requirement 5 AC 12, Requirement 5 AC 1, Requirement 5 AC 2**
 """
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 
@@ -61,7 +61,7 @@ def _schema_field_strategy(draw):
 @given(
     name=st.text(min_size=0, max_size=50),
     fields=st.lists(_schema_field_strategy(), max_size=10),
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_configurationschema_json_round_trip(name, fields):
     """
@@ -170,7 +170,7 @@ def _build_nested_config(field_path, value):
     field_path=st.text(min_size=1, max_size=30),
     mismatched_value=st.integers(),
     description=st.text(min_size=0, max_size=50),
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_schema_validation_type_mismatch_detection(field_path, mismatched_value, description):
     """

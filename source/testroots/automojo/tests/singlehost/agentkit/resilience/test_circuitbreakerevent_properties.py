@@ -9,7 +9,7 @@
 
 from datetime import datetime
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 
@@ -56,7 +56,7 @@ _timestamp = _datetimes()
     new_state=_circuit_breaker_state,
     reason=_reason,
     timestamp=_timestamp,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_circuitbreakerevent_json_roundtrip(
     name: str,

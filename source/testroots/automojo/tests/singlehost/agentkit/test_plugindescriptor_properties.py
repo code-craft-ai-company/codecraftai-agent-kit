@@ -8,7 +8,7 @@
     **Validates: Requirement 15 AC 7**
 """
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.plugindependency import PluginDependency
@@ -74,7 +74,7 @@ def _build_dependency(dep_name, dep_version_constraint):
     dep_names=st.lists(st.text(min_size=1, max_size=30), min_size=0, max_size=3),
     dep_constraints=st.lists(_version_constraint_strategy, min_size=0, max_size=3),
     status=_status_strategy,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_plugindescriptor_json_round_trip(name, version, description, author,
                                           extension_points, dep_names,

@@ -10,7 +10,7 @@
 
 from datetime import datetime
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 
@@ -81,7 +81,7 @@ _metadata = st.dictionaries(
     agent_identifier=_agent_identifier,
     timestamp=_timestamp,
     metadata=_metadata,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_deadletterentry_json_roundtrip(
     identifier: str,
@@ -189,7 +189,7 @@ def test_deadletterentry_json_roundtrip(
     source_component=_source_component,
     agent_identifier=_agent_identifier,
     metadata=_metadata,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_deadletterentry_auto_generates_identifier_and_timestamp(
     operation_type: str,

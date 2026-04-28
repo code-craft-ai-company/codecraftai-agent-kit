@@ -2,19 +2,19 @@
     Property-based tests for the automojo.agentkit.llmconversation module.
 
     Uses automojo.testbase.properties to verify:
-    - Property 2: LlmConversation JSON round-trip
-    - Property 10: LlmConversation append increases count and preserves order
-    - Property 11: LlmConversation messages property returns a copy
-    - Property 12: LlmConversation truncate preserves system messages
+    - Property 2: LLMConversation JSON round-trip
+    - Property 10: LLMConversation append increases count and preserves order
+    - Property 11: LLMConversation messages property returns a copy
+    - Property 12: LLMConversation truncate preserves system messages
 
     **Validates: Requirements 2.9, 2.10, 2.11, 2.12, 2.13, 2.14, 2.15, 2.16, 17.3, 17.4, 17.10**
 """
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
-from automojo.agentkit.llmmessage import LlmMessage
-from automojo.agentkit.llmconversation import LlmConversation
+from automojo.agentkit.llmmessage import LLMMessage
+from automojo.agentkit.llmconversation import LLMConversation
 
 
 # ---------------------------------------------------------------------------
@@ -41,7 +41,7 @@ _metadata = st.dictionaries(
 )
 
 _llm_message = st.builds(
-    LlmMessage,
+    LLMMessage,
     role=_valid_role,
     content=_content,
     metadata=_metadata,
@@ -51,12 +51,12 @@ _llm_message_list = st.lists(_llm_message, min_size=0, max_size=20)
 
 
 # ---------------------------------------------------------------------------
-# Property 2: LlmConversation JSON round-trip
+# Property 2: LLMConversation JSON round-trip
 # ---------------------------------------------------------------------------
 
 @given(
     messages=_llm_message_list,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_llmconversation_json_roundtrip(
     messages: list,
@@ -64,18 +64,18 @@ def test_llmconversation_json_roundtrip(
     """
         **Validates: Requirements 2.14, 2.15, 2.16, 17.3, 17.4, 17.10**
 
-        For any valid LlmConversation instance (containing zero or more valid
-        LlmMessage objects), calling to_json() and then from_json() on the
-        resulting string shall produce an LlmConversation whose messages list
+        For any valid LLMConversation instance (containing zero or more valid
+        LLMMessage objects), calling to_json() and then from_json() on the
+        resulting string shall produce an LLMConversation whose messages list
         is equal to the original.
     """
-    original = LlmConversation(messages=messages)
+    original = LLMConversation(messages=messages)
 
     json_str = original.to_json()
-    restored = LlmConversation.from_json(json_str)
+    restored = LLMConversation.from_json(json_str)
 
     assert original == restored, (
-        "LlmConversation JSON round-trip failed. "
+        "LLMConversation JSON round-trip failed. "
         "Original count: {}, Restored count: {}.".format(
             original.count, restored.count,
         )
@@ -85,27 +85,27 @@ def test_llmconversation_json_roundtrip(
 
 
 # ---------------------------------------------------------------------------
-# Property 10: LlmConversation append increases count and preserves order
+# Property 10: LLMConversation append increases count and preserves order
 # ---------------------------------------------------------------------------
 
 @given(
     initial_messages=_llm_message_list,
     new_message=_llm_message,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_llmconversation_append_increases_count_and_preserves_order(
     initial_messages: list,
-    new_message: LlmMessage,
+    new_message: LLMMessage,
 ) -> None:
     """
         **Validates: Requirements 2.9, 2.10, 2.11**
 
-        For any LlmConversation and any valid LlmMessage, calling
+        For any LLMConversation and any valid LLMMessage, calling
         append(message) shall increase the conversation's count by one,
         and the last element of the messages list shall be the appended
         message.
     """
-    conversation = LlmConversation(messages=list(initial_messages))
+    conversation = LLMConversation(messages=list(initial_messages))
     count_before = conversation.count
 
     conversation.append(new_message)
@@ -129,12 +129,12 @@ def test_llmconversation_append_increases_count_and_preserves_order(
 
 
 # ---------------------------------------------------------------------------
-# Property 11: LlmConversation messages property returns a copy
+# Property 11: LLMConversation messages property returns a copy
 # ---------------------------------------------------------------------------
 
 @given(
     messages=_llm_message_list,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_llmconversation_messages_returns_copy(
     messages: list,
@@ -142,15 +142,15 @@ def test_llmconversation_messages_returns_copy(
     """
         **Validates: Requirements 2.12**
 
-        For any LlmConversation, the list returned by the messages property
+        For any LLMConversation, the list returned by the messages property
         shall be a separate copy. Modifying the returned list shall not
         affect the conversation's internal state.
     """
-    conversation = LlmConversation(messages=list(messages))
+    conversation = LLMConversation(messages=list(messages))
     count_before = conversation.count
 
     returned_list = conversation.messages
-    extra_message = LlmMessage(role="user", content="injected message")
+    extra_message = LLMMessage(role="user", content="injected message")
     returned_list.append(extra_message)
 
     assert conversation.count == count_before, (
@@ -164,13 +164,13 @@ def test_llmconversation_messages_returns_copy(
 
 
 # ---------------------------------------------------------------------------
-# Property 12: LlmConversation truncate preserves system messages
+# Property 12: LLMConversation truncate preserves system messages
 # ---------------------------------------------------------------------------
 
 @given(
     messages=_llm_message_list,
     max_messages=st.integers(min_value=0, max_value=30),
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_llmconversation_truncate_preserves_system_messages(
     messages: list,
@@ -179,14 +179,14 @@ def test_llmconversation_truncate_preserves_system_messages(
     """
         **Validates: Requirements 2.13**
 
-        For any LlmConversation containing a mix of system and non-system
+        For any LLMConversation containing a mix of system and non-system
         messages, and any max_messages limit, calling truncate(max_messages)
         shall preserve all system messages and remove the oldest non-system
         messages first, resulting in a conversation with at most max_messages
         total messages (or all system messages if max_messages is less than
         the system message count).
     """
-    conversation = LlmConversation(messages=list(messages))
+    conversation = LLMConversation(messages=list(messages))
 
     system_count = sum(1 for m in messages if m.role == "system")
 

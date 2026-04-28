@@ -7,7 +7,7 @@
     **Validates: Requirements 5.1, 5.2, 5.3, 5.4, 5.5**
 """
 
-from automojo.testbase.properties import given, settings, assume
+from automojo.testbase.properties import given, assume
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.errors import SemanticError
@@ -31,7 +31,7 @@ _non_negative_float = st.floats(
 @given(
     prompt_cost=_non_negative_float,
     completion_cost=_non_negative_float,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_costestimate_valid_construction_preserves_fields(
     prompt_cost: float,
@@ -80,7 +80,7 @@ def test_costestimate_valid_construction_preserves_fields(
     prompt_cost=_non_negative_float,
     completion_cost=_non_negative_float,
     total_cost=_non_negative_float,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_costestimate_invalid_total_raises_semantic_error(
     prompt_cost: float,

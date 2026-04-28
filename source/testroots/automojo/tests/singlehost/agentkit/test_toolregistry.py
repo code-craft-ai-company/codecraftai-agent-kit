@@ -9,7 +9,7 @@
 """
 
 
-from automojo.testbase.properties import given, settings, assume
+from automojo.testbase.properties import given, assume
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 from automojo.agentkit.tool import Tool
@@ -121,7 +121,7 @@ def unique_tool_names_strategy(draw, min_size=1, max_size=10):
 @given(
     names=unique_tool_names_strategy(min_size=1, max_size=8),
     unregistered_name=tool_name_strategy,
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_9_registration_lookup_and_enumeration_correctness(names, unregistered_name):
     """
@@ -255,7 +255,7 @@ def _deregister_data(draw):
 
 @given(
     test_data=_deregister_data(),
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_10_deregistration_removes_tool(test_data):
     """
@@ -351,7 +351,7 @@ def _tag_lookup_data(draw):
 
 @given(
     test_data=_tag_lookup_data(),
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_11_lookup_by_tags_returns_matching_tools(test_data):
     """

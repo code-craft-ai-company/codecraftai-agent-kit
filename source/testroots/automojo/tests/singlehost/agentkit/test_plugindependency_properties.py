@@ -10,7 +10,7 @@
 
 import json
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.plugindependency import PluginDependency
@@ -33,7 +33,7 @@ _version_constraint_strategy = st.one_of(
 @given(
     name=st.text(min_size=1, max_size=50),
     version_constraint=_version_constraint_strategy,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_plugindependency_json_round_trip(name, version_constraint):
     """

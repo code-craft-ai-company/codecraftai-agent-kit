@@ -11,7 +11,7 @@ import json
 import uuid
 
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 
@@ -84,7 +84,7 @@ optional_identifier_strategy = st.one_of(
     version=version_strategy,
     tags=tags_strategy,
     identifier=optional_identifier_strategy,
-    settings=settings(max_examples=100))
+    constraints={"max_examples": 100})
 def test_property_1_json_round_trip(name, version, tags, identifier):
     """
         Property 1: AgentIdentity JSON round-trip.
@@ -138,7 +138,7 @@ def test_property_1_json_round_trip(name, version, tags, identifier):
     version=version_strategy,
     tags=tags_strategy,
     identifier=optional_identifier_strategy,
-    settings=settings(max_examples=100))
+    constraints={"max_examples": 100})
 def test_property_2_serialization_completeness(name, version, tags, identifier):
     """
         Property 2: AgentIdentity serialization completeness.
@@ -237,7 +237,7 @@ def test_property_2_serialization_completeness(name, version, tags, identifier):
     name=name_strategy,
     version=version_strategy,
     tags=tags_strategy,
-    settings=settings(max_examples=100))
+    constraints={"max_examples": 100})
 def test_property_3_auto_generates_uuid(name, version, tags):
     """
         Property 3: AgentIdentity auto-generates UUID.

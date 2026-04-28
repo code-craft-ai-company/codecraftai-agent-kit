@@ -10,7 +10,7 @@
 
 from datetime import datetime
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 
@@ -62,7 +62,7 @@ _timestamp_strategy = _datetimes(
     new_value=_json_serializable_values,
     source=_source_strategy,
     timestamp=_timestamp_strategy,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_configurationchangeevent_json_round_trip(field_path, previous_value, new_value, source, timestamp):
     """

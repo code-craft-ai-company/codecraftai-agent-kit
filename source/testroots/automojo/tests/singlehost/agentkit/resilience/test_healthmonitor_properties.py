@@ -7,7 +7,7 @@
     **Validates: Requirements 18.6**
 """
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.healthcheck import HealthCheck
@@ -71,7 +71,7 @@ _status_lists = st.lists(
 
 @given(
     statuses=_status_lists,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_healthmonitor_overall_status_computation(statuses: list) -> None:
     """

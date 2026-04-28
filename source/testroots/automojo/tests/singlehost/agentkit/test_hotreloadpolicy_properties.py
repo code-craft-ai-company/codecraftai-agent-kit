@@ -8,7 +8,7 @@
     **Validates: Requirement 10 AC 7**
 """
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.hotreloadpolicy import HotReloadPolicy
@@ -38,7 +38,7 @@ _monitored_files_strategy = st.lists(
     monitored_files=_monitored_files_strategy,
     environment_monitoring_enabled=st.booleans(),
     automatic_reload_enabled=st.booleans(),
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_hotreloadpolicy_json_round_trip(polling_interval, monitored_files,
                                          environment_monitoring_enabled,

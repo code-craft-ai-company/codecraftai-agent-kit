@@ -9,7 +9,7 @@
 
 import json
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 
 from automojo.agentkit.circuitbreakerconfiguration import CircuitBreakerConfiguration
@@ -36,7 +36,7 @@ _positive_float = st.floats(
     success_threshold=_positive_int,
     open_state_timeout=_positive_float,
     half_open_max_attempts=_positive_int,
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_circuitbreakerconfiguration_json_roundtrip(
     failure_threshold: int,

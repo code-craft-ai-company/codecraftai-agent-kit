@@ -8,7 +8,7 @@
     **Validates: Requirement 1 AC 3**
 """
 
-from automojo.testbase.properties import given, settings, assume
+from automojo.testbase.properties import given, assume
 from automojo.testbase.properties import strategies as st
 from automojo.testbase.properties.strategies import composite
 
@@ -95,7 +95,7 @@ def _layer_list_strategy(draw):
 
 @given(
     data=_layer_list_strategy(),
-    settings=settings(max_examples=50),
+    constraints={"max_examples": 50},
 )
 def test_configuration_hierarchy_merge_priority(data):
     """

@@ -1,7 +1,7 @@
 """
-    Defines the LlmMessage class for immutable conversation messages.
+    Defines the LLMMessage class for immutable conversation messages.
 
-    LlmMessage encapsulates a role, content string, and optional metadata
+    LLMMessage encapsulates a role, content string, and optional metadata
     dictionary for a single message in an LLM conversation. The role must
     be one of the valid roles: system, user, assistant, or tool.
 """
@@ -11,7 +11,7 @@ import json
 from automojo.agentkit.errors import SemanticError
 
 
-class LlmMessage:
+class LLMMessage:
     """
         Immutable message in a conversation with a role, content, and optional metadata.
 
@@ -91,13 +91,13 @@ class LlmMessage:
         return rtnval
 
     @classmethod
-    def from_dict(cls, data: dict) -> "LlmMessage":
+    def from_dict(cls, data: dict) -> "LLMMessage":
         """
-            Constructs an LlmMessage from a dictionary.
+            Constructs an LLMMessage from a dictionary.
 
             :param data: A dictionary with role, content, and optional metadata keys.
 
-            :returns: An LlmMessage instance.
+            :returns: An LLMMessage instance.
         """
         rtnval = cls(
             role=data["role"],
@@ -107,13 +107,13 @@ class LlmMessage:
         return rtnval
 
     @classmethod
-    def from_json(cls, json_str: str) -> "LlmMessage":
+    def from_json(cls, json_str: str) -> "LLMMessage":
         """
-            Deserializes a JSON string into an LlmMessage.
+            Deserializes a JSON string into an LLMMessage.
 
             :param json_str: A JSON string.
 
-            :returns: An LlmMessage instance.
+            :returns: An LLMMessage instance.
         """
         data = json.loads(json_str)
         rtnval = cls.from_dict(data)
@@ -149,7 +149,7 @@ class LlmMessage:
 
             :returns: True if all fields are equal, False otherwise.
         """
-        if not isinstance(other, LlmMessage):
+        if not isinstance(other, LLMMessage):
             return False
 
         rtnval = (self._role == other._role and

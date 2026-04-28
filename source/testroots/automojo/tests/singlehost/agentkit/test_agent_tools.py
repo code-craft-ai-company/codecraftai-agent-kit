@@ -12,7 +12,7 @@ import logging
 import os
 
 
-from automojo.testbase.properties import given, settings
+from automojo.testbase.properties import given
 from automojo.testbase.properties import strategies as st
 from automojo.agentkit.agent import Agent
 from automojo.agentkit.agentconfiguration import AgentConfiguration
@@ -183,7 +183,7 @@ def _create_named_tool(tool_name: str) -> Tool:
         max_size=20,
     ),
     input_value=st.text(min_size=1, max_size=50),
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_27_agent_tool_registration_and_execution(tool_name, input_value):
     """
@@ -226,7 +226,7 @@ def test_property_27_agent_tool_registration_and_execution(tool_name, input_valu
         min_size=1,
         max_size=20,
     ),
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_28_agent_execute_tool_raises_semantic_error_for_unknown(tool_name):
     """
@@ -264,7 +264,7 @@ def test_property_28_agent_execute_tool_raises_semantic_error_for_unknown(tool_n
 
 @given(
     tool_count=st.integers(min_value=1, max_value=5),
-    settings=settings(max_examples=100)
+    constraints={"max_examples": 100}
 )
 def test_property_29_agent_tool_registry_cleared_on_stop(tool_count):
     """
