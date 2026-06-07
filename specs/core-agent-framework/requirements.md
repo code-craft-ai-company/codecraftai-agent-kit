@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The Core Agent Framework provides the foundational building blocks for the `automojo-agent-kit` Python SDK. It defines the base Agent abstraction, agent identity and metadata, a declarative configuration system, a state machine governing agent lifecycle transitions, lifecycle hooks for extensibility, an agent registry for instance management, and hierarchical agent composition. The framework integrates with existing automojo ecosystem packages: `automojo-credentials` for credential management, `automojo-dataprofiles` for data profile management, `automojo-this-app` for settings and directory-based app presence, `automojo-extension` for plugin extensibility, and `automojo-arcli` for command line interface.
+The Core Agent Framework provides the foundational building blocks for the `codecraftai-agent-kit` Python SDK. It defines the base Agent abstraction, agent identity and metadata, a declarative configuration system, a state machine governing agent lifecycle transitions, lifecycle hooks for extensibility, an agent registry for instance management, and hierarchical agent composition. The framework integrates with existing ccai ecosystem packages: `codecraftai-credentials` for credential management, `codecraftai-dataprofiles` for data profile management, `codecraftai-this-app` for settings and directory-based app presence, `codecraftai-extension` for plugin extensibility, and `codecraftai-arcli` for command line interface.
 
 ## Glossary
 
@@ -18,10 +18,10 @@ The Core Agent Framework provides the foundational building blocks for the `auto
 - **AgentAddress**: An immutable object representing the network-addressable identity of an Agent, containing the agent identifier, transport name, and protocol-specific endpoint information.
 - **ConcurrencyModel**: An enum representing the supported concurrency models for agents: ASYNCIO, THREAD, and THREAD_POOL.
 - **AsyncAgent**: An abstract base class extending Agent that runs lifecycle methods as async coroutines on an asyncio event loop.
-- **ExtensionPoint**: An integration surface provided by `automojo-extension` that allows external plugins to register additional capabilities, hooks, or tools with an Agent.
-- **CredentialReference**: A named reference resolved through `automojo-credentials` that provides secure access to secrets and credentials required by an Agent.
-- **DataProfileReference**: A named reference resolved through `automojo-dataprofiles` that provides data profile configuration to an Agent.
-- **AppContext**: The application context provided by `automojo-this-app` that supplies settings, environment variables, and directory-based presence for loading agent configurations.
+- **ExtensionPoint**: An integration surface provided by `codecraftai-extension` that allows external plugins to register additional capabilities, hooks, or tools with an Agent.
+- **CredentialReference**: A named reference resolved through `codecraftai-credentials` that provides secure access to secrets and credentials required by an Agent.
+- **DataProfileReference**: A named reference resolved through `codecraftai-dataprofiles` that provides data profile configuration to an Agent.
+- **AppContext**: The application context provided by `codecraftai-this-app` that supplies settings, environment variables, and directory-based presence for loading agent configurations.
 - **ConfigurationError**: An exception raised for configuration-related problems, inherited from AgentKitError.
 - **SemanticError**: An exception raised for API misuse, inherited from AgentKitError.
 - **LifecycleError**: An exception raised for errors that occur during lifecycle transitions, inherited from AgentKitError.
@@ -199,31 +199,31 @@ The Core Agent Framework provides the foundational building blocks for the `auto
 
 ### Requirement 11: Credential Integration
 
-**User Story:** As a developer, I want agents to securely resolve credential references through `automojo-credentials`, so that secrets are managed centrally and not embedded in agent configuration files.
+**User Story:** As a developer, I want agents to securely resolve credential references through `codecraftai-credentials`, so that secrets are managed centrally and not embedded in agent configuration files.
 
 #### Acceptance Criteria
 
-1. WHEN the AgentConfiguration contains CredentialReference entries, THE AgentConfiguration SHALL resolve each CredentialReference through the `automojo-credentials` package during initialization.
+1. WHEN the AgentConfiguration contains CredentialReference entries, THE AgentConfiguration SHALL resolve each CredentialReference through the `codecraftai-credentials` package during initialization.
 2. IF a CredentialReference cannot be resolved, THEN THE AgentConfiguration SHALL raise a ConfigurationError that identifies the unresolvable credential name.
 3. THE AgentConfiguration SHALL NOT include resolved credential values in the output of the as_dict, to_json, or to_yaml serialization methods.
 
 ### Requirement 12: Data Profile Integration
 
-**User Story:** As a developer, I want agents to resolve data profile references through `automojo-dataprofiles`, so that agents can access managed data profiles for their operational context.
+**User Story:** As a developer, I want agents to resolve data profile references through `codecraftai-dataprofiles`, so that agents can access managed data profiles for their operational context.
 
 #### Acceptance Criteria
 
-1. WHEN the AgentConfiguration contains DataProfileReference entries, THE AgentConfiguration SHALL resolve each DataProfileReference through the `automojo-dataprofiles` package during initialization.
+1. WHEN the AgentConfiguration contains DataProfileReference entries, THE AgentConfiguration SHALL resolve each DataProfileReference through the `codecraftai-dataprofiles` package during initialization.
 2. IF a DataProfileReference cannot be resolved, THEN THE AgentConfiguration SHALL raise a ConfigurationError that identifies the unresolvable data profile name.
 
 ### Requirement 13: Extension Point Integration
 
-**User Story:** As a developer, I want the agent framework to support extensibility through `automojo-extension`, so that plugins can register additional capabilities, hooks, and tools with agents.
+**User Story:** As a developer, I want the agent framework to support extensibility through `codecraftai-extension`, so that plugins can register additional capabilities, hooks, and tools with agents.
 
 #### Acceptance Criteria
 
-1. THE Agent base class SHALL integrate with the `automojo-extension` PluginManager for discovering and loading extensions during initialization.
-2. WHEN an Agent is initialized, THE Agent base class SHALL discover and load all registered extensions from `automojo-extension` that target the Agent's ExtensionPoint entries.
+1. THE Agent base class SHALL integrate with the `codecraftai-extension` PluginManager for discovering and loading extensions during initialization.
+2. WHEN an Agent is initialized, THE Agent base class SHALL discover and load all registered extensions from `codecraftai-extension` that target the Agent's ExtensionPoint entries.
 3. THE Agent base class SHALL expose a read-only property that returns the list of loaded extensions for the Agent.
 4. IF a plugin fails to load during initialization, THEN THE Agent base class SHALL log the failure at WARNING level including the plugin name and the error detail, and continue loading remaining plugins.
 
@@ -247,14 +247,14 @@ The Core Agent Framework provides the foundational building blocks for the `auto
 
 #### Acceptance Criteria
 
-1. THE framework SHALL use the Python standard logging module with a logger hierarchy rooted at `automojo.agentkit`.
+1. THE framework SHALL use the Python standard logging module with a logger hierarchy rooted at `ccai.agentkit`.
 2. WHEN a lifecycle state transition occurs, THE framework SHALL log the transition at INFO level, including the agent identifier, the previous state, and the new state.
 3. WHEN a LifecycleHook callback raises an exception, THE framework SHALL log the exception at WARNING level, including the agent identifier and the transition point.
-4. THE Agent base class SHALL provide a get_logger method that returns a logger instance scoped to the agent's identity, using the naming pattern `automojo.agentkit.agent.<agent_identifier>`.
+4. THE Agent base class SHALL provide a get_logger method that returns a logger instance scoped to the agent's identity, using the naming pattern `ccai.agentkit.agent.<agent_identifier>`.
 
 ### Requirement 16: App Context Integration
 
-**User Story:** As a developer, I want the agent framework to integrate with `automojo-this-app` for settings and environment configuration, so that agents can load configuration from a well-defined directory-based presence.
+**User Story:** As a developer, I want the agent framework to integrate with `codecraftai-this-app` for settings and environment configuration, so that agents can load configuration from a well-defined directory-based presence.
 
 #### Acceptance Criteria
 

@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The Tool & Capability System extends the Core Agent Framework of the `automojo-agent-kit` SDK with a structured mechanism for defining, registering, discovering, validating, executing, chaining, and composing tools that agents use to perform work. A tool is a discrete, reusable unit of functionality with a declared input schema, output schema, and execution logic. The system provides a tool registry for discovery, an executor for validated invocation, a chaining mechanism for composing tool pipelines, a set of built-in tools for common operations (file I/O, HTTP, shell), and a custom tool development API. The system integrates with the Agent base class so agents can register and invoke tools, with `automojo-extension` so tool plugins can be discovered and loaded, and with `automojo-credentials` so tools can securely access credentials when needed.
+The Tool & Capability System extends the Core Agent Framework of the `codecraftai-agent-kit` SDK with a structured mechanism for defining, registering, discovering, validating, executing, chaining, and composing tools that agents use to perform work. A tool is a discrete, reusable unit of functionality with a declared input schema, output schema, and execution logic. The system provides a tool registry for discovery, an executor for validated invocation, a chaining mechanism for composing tool pipelines, a set of built-in tools for common operations (file I/O, HTTP, shell), and a custom tool development API. The system integrates with the Agent base class so agents can register and invoke tools, with `codecraftai-extension` so tool plugins can be discovered and loaded, and with `codecraftai-credentials` so tools can securely access credentials when needed.
 
 ## Glossary
 
@@ -15,10 +15,10 @@ The Tool & Capability System extends the Core Agent Framework of the `automojo-a
 - **ToolChain**: An ordered sequence of Tool references with optional input-output mappings that defines a pipeline where the output of one Tool feeds as input to the next Tool.
 - **ToolChainExecutor**: The component responsible for executing a ToolChain by running each Tool in sequence, passing mapped outputs to subsequent inputs, and returning a ToolChainResult.
 - **ToolChainResult**: An immutable object that encapsulates the outcome of a ToolChain execution, containing the final output value, the list of individual ToolResult objects for each step, overall execution status, and total execution duration.
-- **ToolPlugin**: A tool implementation discovered and loaded through the `automojo-extension` ExtensionPoint mechanism, allowing external packages to contribute tools to an Agent's ToolRegistry.
+- **ToolPlugin**: A tool implementation discovered and loaded through the `codecraftai-extension` ExtensionPoint mechanism, allowing external packages to contribute tools to an Agent's ToolRegistry.
 - **Agent**: The base agent class defined in the Core Agent Framework that owns a ToolRegistry and uses the ToolExecutor to invoke tools.
-- **ExtensionPoint**: An integration surface provided by `automojo-extension` that allows external plugins to register Tool implementations with an Agent.
-- **CredentialReference**: A named reference resolved through `automojo-credentials` that provides secure access to secrets required by a Tool during execution.
+- **ExtensionPoint**: An integration surface provided by `codecraftai-extension` that allows external plugins to register Tool implementations with an Agent.
+- **CredentialReference**: A named reference resolved through `codecraftai-credentials` that provides secure access to secrets required by a Tool during execution.
 - **ConfigurationError**: An exception raised for configuration-related problems, inherited from AgentKitError.
 - **SemanticError**: An exception raised for API misuse, inherited from AgentKitError.
 - **ToolExecutionError**: An exception raised when a Tool's execute method fails due to a runtime error during execution.
@@ -104,7 +104,7 @@ The Tool & Capability System extends the Core Agent Framework of the `automojo-a
 6. WHEN output validation succeeds, THE ToolExecutor SHALL return a ToolResult with a success status, the output value, and the execution duration.
 7. IF the Tool's execute method raises an exception, THEN THE ToolExecutor SHALL return a ToolResult with a failure status, the exception information, and the execution duration.
 8. THE ToolExecutor SHALL log each tool execution at INFO level, including the tool name, execution status, and execution duration.
-9. THE ToolExecutor SHALL resolve any CredentialReference names declared by the Tool through `automojo-credentials` before invoking the execute method, passing resolved credentials as a dictionary to the execute method.
+9. THE ToolExecutor SHALL resolve any CredentialReference names declared by the Tool through `codecraftai-credentials` before invoking the execute method, passing resolved credentials as a dictionary to the execute method.
 10. IF a CredentialReference declared by the Tool cannot be resolved, THEN THE ToolExecutor SHALL raise a ConfigurationError that identifies the unresolvable credential name and the tool name.
 
 ### Requirement 6: Tool Result
@@ -176,7 +176,7 @@ The Tool & Capability System extends the Core Agent Framework of the `automojo-a
 2. WHEN the HttpRequestTool is executed with a valid URL and method, THE HttpRequestTool SHALL return an output containing the response status code as an integer, the response headers as a dictionary, and the response body as a string.
 3. IF the HTTP request times out, THEN THE HttpRequestTool SHALL raise a ToolExecutionError that includes the URL, method, and timeout duration.
 4. IF the HTTP request fails due to a connection error, THEN THE HttpRequestTool SHALL raise a ToolExecutionError that includes the URL and the connection error detail.
-5. THE HttpRequestTool SHALL support resolving CredentialReference names for authentication headers through `automojo-credentials`.
+5. THE HttpRequestTool SHALL support resolving CredentialReference names for authentication headers through `codecraftai-credentials`.
 
 ### Requirement 11: Built-in Shell Tool
 
@@ -214,18 +214,18 @@ The Tool & Capability System extends the Core Agent Framework of the `automojo-a
 2. THE Agent base class SHALL provide a register_tool method that accepts a Tool instance and registers the Tool with the Agent's ToolRegistry.
 3. THE Agent base class SHALL provide an execute_tool method that accepts a tool name and an input dictionary, looks up the Tool in the Agent's ToolRegistry, and executes the Tool through the ToolExecutor, returning a ToolResult.
 4. IF the requested tool name is not found in the Agent's ToolRegistry, THEN THE execute_tool method SHALL raise a SemanticError that includes the requested tool name and the agent identity.
-5. WHEN an Agent transitions to the INITIALIZED state, THE Agent SHALL discover and register all ToolPlugin instances from `automojo-extension` ExtensionPoint entries targeting the Agent.
+5. WHEN an Agent transitions to the INITIALIZED state, THE Agent SHALL discover and register all ToolPlugin instances from `codecraftai-extension` ExtensionPoint entries targeting the Agent.
 6. THE Agent base class SHALL provide an execute_chain method that accepts a ToolChain and an initial input dictionary, executes the chain through the ToolChainExecutor, and returns a ToolChainResult.
 7. WHEN an Agent transitions to the STOPPED state, THE Agent's ToolRegistry SHALL be cleared of all registered tools.
 
 ### Requirement 14: Tool Plugin Integration
 
-**User Story:** As a developer, I want to distribute tools as plugins through `automojo-extension`, so that tool packages can be installed and discovered automatically by agents.
+**User Story:** As a developer, I want to distribute tools as plugins through `codecraftai-extension`, so that tool packages can be installed and discovered automatically by agents.
 
 #### Acceptance Criteria
 
-1. THE framework SHALL define an ExtensionPoint named "automojo.agentkit.tools" through `automojo-extension` for registering ToolPlugin implementations.
-2. WHEN an Agent is initialized, THE Agent SHALL query the "automojo.agentkit.tools" ExtensionPoint and register all discovered Tool instances with the Agent's ToolRegistry.
+1. THE framework SHALL define an ExtensionPoint named "ccai.agentkit.tools" through `codecraftai-extension` for registering ToolPlugin implementations.
+2. WHEN an Agent is initialized, THE Agent SHALL query the "ccai.agentkit.tools" ExtensionPoint and register all discovered Tool instances with the Agent's ToolRegistry.
 3. IF a ToolPlugin fails to load, THEN THE Agent SHALL log the failure at WARNING level including the plugin name and the error detail, and continue loading remaining plugins.
 4. IF a ToolPlugin provides a Tool with a name that conflicts with an already registered Tool, THEN THE Agent SHALL log the conflict at WARNING level including both tool names and skip the conflicting plugin tool.
 
@@ -260,7 +260,7 @@ The Tool & Capability System extends the Core Agent Framework of the `automojo-a
 
 #### Acceptance Criteria
 
-1. THE ToolExecutor SHALL use the Python standard logging module with a logger hierarchy under `automojo.agentkit.tools`.
+1. THE ToolExecutor SHALL use the Python standard logging module with a logger hierarchy under `ccai.agentkit.tools`.
 2. WHEN a tool execution begins, THE ToolExecutor SHALL log at INFO level including the tool name and the agent identifier.
 3. WHEN a tool execution completes successfully, THE ToolExecutor SHALL log at INFO level including the tool name, execution duration, and success status.
 4. WHEN a tool execution fails, THE ToolExecutor SHALL log at WARNING level including the tool name, execution duration, and error detail.

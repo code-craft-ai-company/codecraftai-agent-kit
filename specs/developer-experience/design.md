@@ -2,9 +2,9 @@
 
 ## Overview
 
-The Developer Experience feature extends the `automojo-agent-kit` SDK with developer-facing tools and utilities organized into five interconnected subsystems:
+The Developer Experience feature extends the `codecraftai-agent-kit` SDK with developer-facing tools and utilities organized into five interconnected subsystems:
 
-1. **Scaffold CLI & Commands** — Command-line interface built on `automojo-arcli` for scaffolding agents, tools, workflows, serializers, and other SDK components from templates via `ScaffoldCli`, `ScaffoldCommand`, `ScaffoldTemplate`, `ScaffoldTemplateRegistry`, `ScaffoldContext`, and `ScaffoldResult`
+1. **Scaffold CLI & Commands** — Command-line interface built on `codecraftai-arcli` for scaffolding agents, tools, workflows, serializers, and other SDK components from templates via `ScaffoldCli`, `ScaffoldCommand`, `ScaffoldTemplate`, `ScaffoldTemplateRegistry`, `ScaffoldContext`, and `ScaffoldResult`
 2. **Agent REPL** — Interactive read-eval-print loop for real-time agent interaction, tool invocation, state inspection, and behavior debugging via `AgentRepl`, `ReplCommand`, `ReplCommandRegistry`, `ReplSession`, `ReplResult`, and `ReplFormatter`
 3. **Documentation System** — API reference generation, inline help, and example code management via `DocGenerator`, `DocEntry`, `DocRegistry`, `InlineHelpProvider`, `ExampleCode`, and `ExampleRegistry`
 4. **Type Annotation & Checking** — Type annotation validation and optional runtime type checking in debug mode via `TypeAnnotationValidator`, `RuntimeTypeChecker`, and `TypeCheckConfiguration`
@@ -12,7 +12,7 @@ The Developer Experience feature extends the `automojo-agent-kit` SDK with devel
 
 A unified `DevExConfiguration` object controls all subsystem settings. A `NamingConvention` utility provides naming style conversions used across scaffolding and validation.
 
-All classes live under `source/packages/automojo/agentkit/` with filenames in all-lowercase (no underscores), following the project naming conventions. The system integrates with:
+All classes live under `source/packages/ccai/agentkit/` with filenames in all-lowercase (no underscores), following the project naming conventions. The system integrates with:
 
 - Core Agent Framework — `Agent` base class, `AgentConfiguration`, `AgentIdentity`, `LifecycleState` for REPL interaction and scaffolding
 - Tool & Capability System — `ToolRegistry`, `ToolDescriptor`, `ToolResult` for REPL tool invocation and scaffolding
@@ -23,12 +23,12 @@ All classes live under `source/packages/automojo/agentkit/` with filenames in al
 - Observability & Debugging — `StructuredLogger`, `CorrelationContext`, `DebugSession`, `DebugInspector` for REPL debugging integration
 - Configuration & Extensibility — `ConfigurationManager`, `FeatureFlag` for scaffolding configuration and debug mode toggling
 - Error Handling & Resilience — Error diagnostics surfaced in the REPL
-- `automojo-arcli` — CLI framework for all command-line operations
-- `automojo-extension` — `ExtensionPoint` for plugin discovery of CLI commands, REPL commands, scaffolding templates, and examples
-- `automojo-configuration` — Scaffolding template configuration management
-- `automojo-credentials` — `CredentialReference` for credential management during interactive sessions
-- `automojo-dataprofiles` — `DataProfileReference` for data profile management
-- `automojo-this-app` — `AppContext` for settings, environment, and directory-based project presence
+- `codecraftai-arcli` — CLI framework for all command-line operations
+- `codecraftai-extension` — `ExtensionPoint` for plugin discovery of CLI commands, REPL commands, scaffolding templates, and examples
+- `codecraftai-configuration` — Scaffolding template configuration management
+- `codecraftai-credentials` — `CredentialReference` for credential management during interactive sessions
+- `codecraftai-dataprofiles` — `DataProfileReference` for data profile management
+- `codecraftai-this-app` — `AppContext` for settings, environment, and directory-based project presence
 
 The design prioritizes debuggability over performance and readability over conciseness, per the project coding standards.
 
@@ -36,7 +36,7 @@ The design prioritizes debuggability over performance and readability over conci
 
 ```mermaid
 graph TD
-    subgraph "automojo.agentkit - Developer Experience"
+    subgraph "ccai.agentkit - Developer Experience"
         subgraph "Scaffold CLI & Commands"
             ScaffoldCli[ScaffoldCli]
             ScaffoldCommand[ScaffoldCommand ABC]
@@ -109,10 +109,10 @@ graph TD
     end
 
     subgraph "External Packages"
-        ArcCli[automojo-arcli]
-        Extension[automojo-extension]
-        AppContext[automojo-this-app]
-        Credentials[automojo-credentials]
+        ArcCli[codecraftai-arcli]
+        Extension[codecraftai-extension]
+        AppContext[codecraftai-this-app]
+        Credentials[codecraftai-credentials]
     end
 
     ScaffoldCli --> ArcCli
@@ -244,7 +244,7 @@ sequenceDiagram
 
 ### Design Decisions
 
-1. **ScaffoldCli built on `automojo-arcli`** — uses the existing CLI framework for command registration, argument parsing, and help generation. Consistent with how other SDK tools integrate with `automojo-arcli`.
+1. **ScaffoldCli built on `codecraftai-arcli`** — uses the existing CLI framework for command registration, argument parsing, and help generation. Consistent with how other SDK tools integrate with `codecraftai-arcli`.
 2. **ScaffoldCommand as abstract base class using `abc.ABC`** — consistent with `Tool`, `InputSanitizer`, `OutputFilter`, `HealthCheck`, and other pluggable abstractions in the SDK. Allows external plugins to contribute scaffold commands.
 3. **ScaffoldTemplate as an immutable value object** — templates are data, not behavior. Immutability prevents accidental modification after registration. Placeholder rendering is a pure function of the template content and variable dictionary.
 4. **NamingConvention as a utility class with class methods** — stateless conversion functions that don't require instantiation. Class methods allow direct invocation without creating an instance, consistent with utility patterns in the SDK.
@@ -262,7 +262,7 @@ sequenceDiagram
 16. **All `__repr__` and `__str__` methods follow the established pattern** — `__repr__` includes class name and key identifying fields, `__str__` returns a human-readable summary.
 17. **Developer experience errors inherit from AgentKitError** — `ScaffoldError`, `ReplError`, `TypeCheckError`, and `ApiSurfaceError` all inherit from `AgentKitError`, consistent with the error hierarchy used across the SDK.
 18. **Extension points for developer experience plugins** — four extension points for scaffold commands, scaffold templates, REPL commands, and examples follow the same pattern as other agentkit extension points.
-19. **Structured logging under `automojo.agentkit.devex`** — uses Python standard logging module with a dedicated logger hierarchy, consistent with other subsystems using `automojo.agentkit.security`, `automojo.agentkit.resilience`, etc.
+19. **Structured logging under `ccai.agentkit.devex`** — uses Python standard logging module with a dedicated logger hierarchy, consistent with other subsystems using `ccai.agentkit.security`, `ccai.agentkit.resilience`, etc.
 20. **Separate registries for templates, commands, docs, and examples** — each registry manages a single concern. Cross-cutting lookup (e.g., InlineHelpProvider searching DocRegistry) is handled by composition, not inheritance.
 
 ## Components and Interfaces
@@ -280,7 +280,7 @@ sequenceDiagram
 | toolscaffoldcommand.py | ToolScaffoldCommand | Scaffold command for generating Tool subclasses |
 | workflowscaffoldcommand.py | WorkflowScaffoldCommand | Scaffold command for generating WorkflowDefinition files |
 | serializerscaffoldcommand.py | SerializerScaffoldCommand | Scaffold command for generating MessageSerializer subclasses |
-| scaffoldcli.py | ScaffoldCli | Top-level CLI application built on automojo-arcli |
+| scaffoldcli.py | ScaffoldCli | Top-level CLI application built on codecraftai-arcli |
 | namingconvention.py | NamingConvention | Utility for naming style conversions and validation |
 | replresult.py | ReplResult | Immutable REPL command outcome |
 | replsession.py | ReplSession | Mutable REPL session state carrier |
@@ -421,7 +421,7 @@ class ScaffoldTemplateRegistry:
     """
         Registry that tracks all available ScaffoldTemplate instances.
         Provides lookup by name, lookup by component type, and
-        enumeration. Supports loading templates from automojo-extension
+        enumeration. Supports loading templates from codecraftai-extension
         plugins.
     """
 
@@ -499,7 +499,7 @@ class ScaffoldTemplateRegistry:
     def load_extensions(self) -> None:
         """
             Discovers and loads ScaffoldTemplate plugins through the
-            automojo-extension ExtensionPoint mechanism.
+            codecraftai-extension ExtensionPoint mechanism.
         """
         ...
 
@@ -782,16 +782,16 @@ import logging
 
 class ScaffoldCli:
     """
-        Top-level CLI application built on automojo-arcli that provides
+        Top-level CLI application built on codecraftai-arcli that provides
         commands for scaffolding SDK components from templates. Discovers
-        and loads ScaffoldCommand plugins through automojo-extension at
+        and loads ScaffoldCommand plugins through codecraftai-extension at
         startup. Resolves the target project directory from AppContext.
     """
 
     def __init__(self, template_registry: "ScaffoldTemplateRegistry" = None):
         self._template_registry = template_registry if template_registry is not None else ScaffoldTemplateRegistry()
         self._commands = {}  # name -> ScaffoldCommand
-        self._logger = logging.getLogger("automojo.agentkit.devex.cli")
+        self._logger = logging.getLogger("ccai.agentkit.devex.cli")
         return
 
     @property
@@ -816,7 +816,7 @@ class ScaffoldCli:
     def load_extensions(self) -> None:
         """
             Discovers and loads ScaffoldCommand plugins through the
-            automojo-extension ExtensionPoint mechanism.
+            codecraftai-extension ExtensionPoint mechanism.
         """
         ...
 
@@ -1106,7 +1106,7 @@ class ReplCommandRegistry:
     def load_extensions(self) -> None:
         """
             Discovers and loads ReplCommand plugins through the
-            automojo-extension ExtensionPoint mechanism.
+            codecraftai-extension ExtensionPoint mechanism.
         """
         ...
 
@@ -1227,7 +1227,7 @@ class AgentRepl:
         self._command_registry = ReplCommandRegistry()
         self._session = None
         self._formatter = formatter if formatter is not None else PlainTextReplFormatter()
-        self._logger = logging.getLogger("automojo.agentkit.devex.repl")
+        self._logger = logging.getLogger("ccai.agentkit.devex.repl")
         return
 
     @property
@@ -1447,7 +1447,7 @@ class DocGenerator:
         self._module_paths = list(module_paths) if module_paths is not None else []
         self._modules_processed = 0
         self._entries_generated = 0
-        self._logger = logging.getLogger("automojo.agentkit.devex.docs")
+        self._logger = logging.getLogger("ccai.agentkit.devex.docs")
         return
 
     @property
@@ -1680,7 +1680,7 @@ class ExampleRegistry:
     def load_extensions(self) -> None:
         """
             Discovers and loads ExampleCode plugins through the
-            automojo-extension ExtensionPoint mechanism.
+            codecraftai-extension ExtensionPoint mechanism.
         """
         ...
 
@@ -1772,7 +1772,7 @@ class TypeAnnotationValidator:
     def __init__(self, module_paths: list = None):
         self._module_paths = list(module_paths) if module_paths is not None else []
         self._warnings = []
-        self._logger = logging.getLogger("automojo.agentkit.devex.types")
+        self._logger = logging.getLogger("ccai.agentkit.devex.types")
         return
 
     @property
@@ -1823,7 +1823,7 @@ class RuntimeTypeChecker:
 
     def __init__(self, configuration: "TypeCheckConfiguration"):
         self._configuration = configuration
-        self._logger = logging.getLogger("automojo.agentkit.devex.types")
+        self._logger = logging.getLogger("ccai.agentkit.devex.types")
         return
 
     @property
@@ -2025,7 +2025,7 @@ class ApiSurfaceValidator:
 
     def __init__(self, module_paths: list = None):
         self._module_paths = list(module_paths) if module_paths is not None else []
-        self._logger = logging.getLogger("automojo.agentkit.devex.api")
+        self._logger = logging.getLogger("ccai.agentkit.devex.api")
         return
 
     @property
@@ -2205,10 +2205,10 @@ class ApiSurfaceError(AgentKitError):
 {
     "name": "default-agent",
     "component_type": "agent",
-    "path_pattern": "source/packages/automojo/agentkit/{file_name}.py",
+    "path_pattern": "source/packages/ccai/agentkit/{file_name}.py",
     "content": "import abc\n\nclass {class_name}(Agent):\n    ...\n",
     "defaults": {
-        "module_name": "automojo.agentkit"
+        "module_name": "ccai.agentkit"
     }
 }
 ```
@@ -2254,7 +2254,7 @@ class ApiSurfaceError(AgentKitError):
 
 | Field | Type | Required | Default | Description |
 |---|---|---|---|---|
-| qualified_name | str | Yes | — | Fully qualified name (e.g., "automojo.agentkit.ScaffoldTemplate.render") |
+| qualified_name | str | Yes | — | Fully qualified name (e.g., "ccai.agentkit.ScaffoldTemplate.render") |
 | signature | str | Yes | — | Method/function signature string |
 | docstring | str | Yes | — | Documentation string |
 | parameter_descriptions | list[str] | No | [] | Parameter description strings |
@@ -2265,7 +2265,7 @@ class ApiSurfaceError(AgentKitError):
 
 ```json
 {
-    "qualified_name": "automojo.agentkit.ScaffoldTemplate.render",
+    "qualified_name": "ccai.agentkit.ScaffoldTemplate.render",
     "signature": "render(self, variables: dict = None) -> str",
     "docstring": "Renders the template content string...",
     "parameter_descriptions": ["variables: Dictionary of variable values to merge with defaults."],
@@ -2309,7 +2309,7 @@ class ApiSurfaceError(AgentKitError):
 ```json
 {
     "enabled": true,
-    "module_paths": ["automojo.agentkit"],
+    "module_paths": ["ccai.agentkit"],
     "raise_on_mismatch": false
 }
 ```
@@ -2327,7 +2327,7 @@ class ApiSurfaceError(AgentKitError):
 
 ```json
 {
-    "module_path": "automojo.agentkit.scaffoldtemplate",
+    "module_path": "ccai.agentkit.scaffoldtemplate",
     "warnings": ["Missing docstring on ScaffoldTemplate.defaults"],
     "errors": [],
     "compliance_score": 0.95
@@ -2406,7 +2406,7 @@ Raised when API surface validation detects a critical compliance violation:
 
 ### Structured Logging
 
-All developer experience operations log through the Python standard logging module under the `automojo.agentkit.devex` logger hierarchy:
+All developer experience operations log through the Python standard logging module under the `ccai.agentkit.devex` logger hierarchy:
 
 | Event | Level | Fields |
 |---|---|---|
@@ -2427,7 +2427,7 @@ All developer experience operations log through the Python standard logging modu
 ## Testing Strategy
 
 ### Testing Framework
-Tests use testbase and reside under `source/testroots/automojo/tests/singlehost/agentkit/`, mirroring the source hierarchy:
+Tests use testbase and reside under `source/testroots/ccai/tests/singlehost/agentkit/`, mirroring the source hierarchy:
 
 | Source File | Test File |
 |---|---|
@@ -2470,7 +2470,7 @@ Tests use testbase and reside under `source/testroots/automojo/tests/singlehost/
 - Property-based tests: universal properties across randomly generated inputs
 
 ### Property-Based Testing Configuration
-- Library: automojo.testbase.properties (built-in testbase property testing engine)
+- Library: ccai.testbase.properties (built-in testbase property testing engine)
 - Minimum 100 iterations per property test
 - Each test tagged: `Feature: developer-experience, Property N: title`
 - Each correctness property implemented by a single property-based test
@@ -2479,7 +2479,7 @@ Tests use testbase and reside under `source/testroots/automojo/tests/singlehost/
 ### Unit Test Focus Areas
 - Structural checks (abstract method enforcement on ScaffoldCommand, ReplCommand, ReplFormatter)
 - Read-only property enforcement on immutable objects (ScaffoldTemplate, ScaffoldResult, ReplResult, DocEntry, ExampleCode, TypeCheckConfiguration, ApiSurfaceReport, DevExConfiguration)
-- External package integration via `testbase.mocking.Mock` (automojo-arcli, automojo-extension, automojo-this-app, automojo-credentials)
+- External package integration via `testbase.mocking.Mock` (codecraftai-arcli, codecraftai-extension, codecraftai-this-app, codecraftai-credentials)
 - ScaffoldTemplate placeholder rendering with all supported variables ({class_name}, {file_name}, {module_name}, {component_name})
 - ScaffoldTemplate missing variable error with descriptive ScaffoldError message
 - ScaffoldTemplateRegistry duplicate name detection with SemanticError
@@ -2512,5 +2512,5 @@ Tests use testbase and reside under `source/testroots/automojo/tests/singlehost/
 ### Running Tests
 ```bash
 source .venv/bin/activate
-testbase testing run --root source/testroots/automojo --includes=automojo.tests.singlehost.agentkit --output=./.output
+testbase testing run --root source/testroots/ccai --includes=ccai.tests.singlehost.agentkit --output=./.output
 ```

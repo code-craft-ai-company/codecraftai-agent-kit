@@ -2,11 +2,11 @@
 
 ## Introduction
 
-The Security & Access Control feature extends the `automojo-agent-kit` SDK with a comprehensive system for securing agent operations, managing credentials, controlling access to tools and resources, sanitizing inputs and outputs, auditing agent actions, and executing tools in sandboxed environments. It defines a credential manager for secure secret injection and rotation, a role-based access control (RBAC) system with policies governing tool and resource access, an input sanitization and output filtering pipeline for preventing injection attacks and data leakage, an audit logger that records all agent actions with tamper-evident entries, and a sandboxed tool execution environment that isolates tool execution from the host system. The system integrates with the Agent base class so agents enforce security policies throughout their lifecycle, with the Tool & Capability System so tool execution is governed by access policies and sandboxing, with the LLM Integration system so LLM requests are subject to input sanitization and output filtering, with the Memory & Context Management system so memory operations are audited and access-controlled, with the Communication & Messaging system so message exchanges are audited and credential-secured, with the Workflow & Orchestration system so workflow steps are subject to access control and audit logging, with the Observability & Debugging system so security events are traced and metered, with `automojo-extension` so security plugins can be discovered and loaded, with `automojo-credentials` for underlying credential storage and retrieval, with `automojo-dataprofiles` for data profile management, and with `automojo-this-app` for settings and environment configuration.
+The Security & Access Control feature extends the `codecraftai-agent-kit` SDK with a comprehensive system for securing agent operations, managing credentials, controlling access to tools and resources, sanitizing inputs and outputs, auditing agent actions, and executing tools in sandboxed environments. It defines a credential manager for secure secret injection and rotation, a role-based access control (RBAC) system with policies governing tool and resource access, an input sanitization and output filtering pipeline for preventing injection attacks and data leakage, an audit logger that records all agent actions with tamper-evident entries, and a sandboxed tool execution environment that isolates tool execution from the host system. The system integrates with the Agent base class so agents enforce security policies throughout their lifecycle, with the Tool & Capability System so tool execution is governed by access policies and sandboxing, with the LLM Integration system so LLM requests are subject to input sanitization and output filtering, with the Memory & Context Management system so memory operations are audited and access-controlled, with the Communication & Messaging system so message exchanges are audited and credential-secured, with the Workflow & Orchestration system so workflow steps are subject to access control and audit logging, with the Observability & Debugging system so security events are traced and metered, with `codecraftai-extension` so security plugins can be discovered and loaded, with `codecraftai-credentials` for underlying credential storage and retrieval, with `codecraftai-dataprofiles` for data profile management, and with `codecraftai-this-app` for settings and environment configuration.
 
 ## Glossary
 
-- **CredentialManager**: A component that manages the lifecycle of credentials for an Agent, providing secure retrieval, caching, rotation, and injection of secrets into tools, transports, LLM providers, and memory backends. The CredentialManager delegates storage and retrieval to `automojo-credentials` and adds lifecycle management on top.
+- **CredentialManager**: A component that manages the lifecycle of credentials for an Agent, providing secure retrieval, caching, rotation, and injection of secrets into tools, transports, LLM providers, and memory backends. The CredentialManager delegates storage and retrieval to `codecraftai-credentials` and adds lifecycle management on top.
 - **CredentialEntry**: An immutable object representing a resolved credential, containing a credential name, a credential type string (one of "api_key", "password", "token", "certificate", "secret"), a creation timestamp, an optional expiration timestamp, and metadata. The CredentialEntry does not expose the secret value directly; the value is accessed only through the CredentialManager.
 - **CredentialRotationPolicy**: A configuration object defining how and when credentials are rotated, including the rotation interval in seconds, a rotation callback for obtaining new credential values, and whether automatic rotation is enabled.
 - **AccessPolicy**: An immutable object representing a single access control rule, containing a policy name, a principal pattern string (agent identifier or role), a resource pattern string (tool name, memory store name, or resource identifier), a list of permitted action strings (e.g., "execute", "read", "write", "delete"), and an effect string (one of "allow", "deny").
@@ -30,7 +30,7 @@ The Security & Access Control feature extends the `automojo-agent-kit` SDK with 
 - **SandboxViolation**: An immutable object representing a security violation detected during sandboxed execution, containing the violation type string (one of "file_access", "network_access", "timeout", "memory_limit", "environment_access"), the violating resource identifier, and a description.
 - **SecurityConfiguration**: A configuration object that defines the security settings for an Agent, including access control enablement, audit logging enablement, input sanitization enablement, output filtering enablement, sandbox enablement, default SandboxPolicy, credential rotation settings, and security plugin settings.
 - **SecurityPipeline**: A component that coordinates the CredentialManager, AccessEnforcer, SanitizationPipeline, AuditLogger, and SandboxExecutor for an Agent, routing security operations through the configured components.
-- **SecurityPlugin**: A security component implementation (InputSanitizer, OutputFilter, or AuditStore) discovered and loaded through the `automojo-extension` ExtensionPoint mechanism, allowing external packages to contribute security components.
+- **SecurityPlugin**: A security component implementation (InputSanitizer, OutputFilter, or AuditStore) discovered and loaded through the `codecraftai-extension` ExtensionPoint mechanism, allowing external packages to contribute security components.
 - **Agent**: The base agent class defined in the Core Agent Framework that owns a SecurityPipeline and enforces security policies throughout its lifecycle.
 - **ToolExecutor**: The tool executor defined in the Tool & Capability System, wrapped by the SandboxExecutor for isolated tool execution.
 - **ToolResult**: The tool result object defined in the Tool & Capability System, returned by tool execution.
@@ -39,8 +39,8 @@ The Security & Access Control feature extends the `automojo-agent-kit` SDK with 
 - **StructuredLogger**: The structured logger defined in the Observability & Debugging feature, used by the AuditLogger for structured log output.
 - **TraceSpan**: The trace span defined in the Observability & Debugging feature, used for tracing security operations.
 - **MetricsCollector**: The metrics collector defined in the Observability & Debugging feature, used for recording security metrics.
-- **ExtensionPoint**: An integration surface provided by `automojo-extension` that allows external plugins to register security component implementations with an Agent.
-- **CredentialReference**: A named reference resolved through `automojo-credentials` that provides secure access to secrets required by the security system.
+- **ExtensionPoint**: An integration surface provided by `codecraftai-extension` that allows external plugins to register security component implementations with an Agent.
+- **CredentialReference**: A named reference resolved through `codecraftai-credentials` that provides secure access to secrets required by the security system.
 - **ConfigurationError**: An exception raised for configuration-related problems, inherited from AgentKitError.
 - **SemanticError**: An exception raised for API misuse, inherited from AgentKitError.
 - **AccessDeniedError**: An exception raised when an access control evaluation results in a deny decision, inherited from AgentKitError.
@@ -57,9 +57,9 @@ The Security & Access Control feature extends the `automojo-agent-kit` SDK with 
 #### Acceptance Criteria
 
 1. THE CredentialManager SHALL accept an agent identifier string and an optional CredentialRotationPolicy at construction time.
-2. THE CredentialManager SHALL provide a get_credential method that accepts a credential name string and returns a CredentialEntry, resolving the credential through `automojo-credentials` on first access and caching the resolved entry for subsequent requests.
-3. THE CredentialManager SHALL provide a get_credential_value method that accepts a credential name string and returns the secret value as a string, resolving through `automojo-credentials`.
-4. IF a credential name cannot be resolved through `automojo-credentials`, THEN THE CredentialManager SHALL raise a ConfigurationError that identifies the unresolvable credential name and the agent identifier.
+2. THE CredentialManager SHALL provide a get_credential method that accepts a credential name string and returns a CredentialEntry, resolving the credential through `codecraftai-credentials` on first access and caching the resolved entry for subsequent requests.
+3. THE CredentialManager SHALL provide a get_credential_value method that accepts a credential name string and returns the secret value as a string, resolving through `codecraftai-credentials`.
+4. IF a credential name cannot be resolved through `codecraftai-credentials`, THEN THE CredentialManager SHALL raise a ConfigurationError that identifies the unresolvable credential name and the agent identifier.
 5. THE CredentialManager SHALL provide an invalidate method that accepts a credential name string and removes the cached CredentialEntry, forcing re-resolution on the next access.
 6. THE CredentialManager SHALL provide an invalidate_all method that removes all cached CredentialEntry objects.
 7. WHEN a CredentialRotationPolicy is configured with automatic rotation enabled, THE CredentialManager SHALL re-resolve credentials whose age exceeds the rotation interval, replacing the cached entry with the newly resolved entry.
@@ -138,7 +138,7 @@ The Security & Access Control feature extends the `automojo-agent-kit` SDK with 
 7. THE AccessPolicyRegistry SHALL provide a has_policy method that accepts a policy name and returns a boolean indicating whether an AccessPolicy with the given name is registered.
 8. THE AccessPolicyRegistry SHALL support loading AccessPolicy definitions from a JSON file path.
 9. THE AccessPolicyRegistry SHALL support loading AccessPolicy definitions from a YAML file path.
-10. WHEN a configuration file path is provided, THE AccessPolicyRegistry SHALL resolve the file path relative to the AppContext directory provided by `automojo-this-app`.
+10. WHEN a configuration file path is provided, THE AccessPolicyRegistry SHALL resolve the file path relative to the AppContext directory provided by `codecraftai-this-app`.
 11. THE AccessPolicyRegistry SHALL provide a __repr__ method that includes the class name and the count of registered policies.
 12. THE AccessPolicyRegistry SHALL provide a __str__ method that returns a human-readable summary listing the registered policy names and effects.
 
@@ -330,7 +330,7 @@ The Security & Access Control feature extends the `automojo-agent-kit` SDK with 
 4. THE AuditStore base class SHALL enforce append-only semantics; the AuditStore SHALL NOT provide methods for updating or deleting individual AuditEntry objects.
 5. THE framework SHALL provide an InMemoryAuditStore that stores AuditEntry objects in process memory using list-based storage.
 6. THE framework SHALL provide a FileAuditStore that persists AuditEntry objects as JSON lines to a specified file path.
-7. WHEN the FileAuditStore is constructed with a file path, THE FileAuditStore SHALL resolve the file path relative to the AppContext directory provided by `automojo-this-app`.
+7. WHEN the FileAuditStore is constructed with a file path, THE FileAuditStore SHALL resolve the file path relative to the AppContext directory provided by `codecraftai-this-app`.
 8. IF a file read or write operation fails in the FileAuditStore, THEN THE FileAuditStore SHALL raise an AuditStoreError that includes the file path and the underlying I/O error detail.
 9. FOR ALL AuditEntry objects stored in the FileAuditStore, writing the entry to the file and then reading the entry back SHALL produce an equivalent AuditEntry object (round-trip property).
 10. THE AuditStore base class SHALL provide a __repr__ method that includes the class name, store name, and entry count.
@@ -423,9 +423,9 @@ The Security & Access Control feature extends the `automojo-agent-kit` SDK with 
 2. THE SecurityConfiguration SHALL support loading configuration from a Python dictionary.
 3. THE SecurityConfiguration SHALL support loading configuration from a JSON file path.
 4. THE SecurityConfiguration SHALL support loading configuration from a YAML file path.
-5. WHEN a configuration file path is provided, THE SecurityConfiguration SHALL resolve the file path relative to the AppContext directory provided by `automojo-this-app`.
+5. WHEN a configuration file path is provided, THE SecurityConfiguration SHALL resolve the file path relative to the AppContext directory provided by `codecraftai-this-app`.
 6. THE SecurityConfiguration SHALL validate all required fields are present during loading and raise a ConfigurationError when required fields are missing.
-7. THE SecurityConfiguration SHALL support CredentialReference entries for security backend authentication that are resolved through `automojo-credentials` at initialization time.
+7. THE SecurityConfiguration SHALL support CredentialReference entries for security backend authentication that are resolved through `codecraftai-credentials` at initialization time.
 8. IF a CredentialReference cannot be resolved, THEN THE SecurityConfiguration SHALL raise a ConfigurationError that identifies the unresolvable credential name.
 9. THE SecurityConfiguration SHALL provide an as_dict method that returns a dictionary representation of the configuration, excluding resolved credential values.
 10. THE SecurityConfiguration SHALL provide a to_json method that returns a JSON string representation of the configuration, excluding resolved credential values.
@@ -469,7 +469,7 @@ The Security & Access Control feature extends the `automojo-agent-kit` SDK with 
 1. THE Agent base class SHALL expose a read-only security property that returns the Agent's SecurityPipeline instance.
 2. THE Agent base class SHALL expose a read-only credential_manager property that returns the Agent's CredentialManager instance from the SecurityPipeline.
 3. WHEN an Agent transitions to the INITIALIZED state, THE Agent SHALL construct the SecurityPipeline from the Agent's SecurityConfiguration.
-4. WHEN an Agent transitions to the INITIALIZED state, THE Agent SHALL discover and register all SecurityPlugin instances from `automojo-extension` ExtensionPoint entries targeting the Agent.
+4. WHEN an Agent transitions to the INITIALIZED state, THE Agent SHALL discover and register all SecurityPlugin instances from `codecraftai-extension` ExtensionPoint entries targeting the Agent.
 5. WHEN a tool execution is requested through the Agent, THE SecurityPipeline SHALL evaluate the access request through the AccessEnforcer before executing the tool.
 6. IF the AccessEnforcer returns a deny decision for a tool execution request, THEN THE Agent SHALL raise an AccessDeniedError that includes the agent identifier, tool name, and the AccessDecision.
 7. WHEN a tool execution is requested and access is allowed, THE SecurityPipeline SHALL sanitize the tool input through the SanitizationPipeline before execution.
@@ -500,13 +500,13 @@ The Security & Access Control feature extends the `automojo-agent-kit` SDK with 
 
 ### Requirement 25: Security Plugin Integration
 
-**User Story:** As a developer, I want to distribute security components as plugins through `automojo-extension`, so that custom sanitizers, filters, and audit stores can be installed and discovered automatically by agents.
+**User Story:** As a developer, I want to distribute security components as plugins through `codecraftai-extension`, so that custom sanitizers, filters, and audit stores can be installed and discovered automatically by agents.
 
 #### Acceptance Criteria
 
-1. THE framework SHALL define an ExtensionPoint named "automojo.agentkit.input_sanitizers" through `automojo-extension` for registering InputSanitizer plugin implementations.
-2. THE framework SHALL define an ExtensionPoint named "automojo.agentkit.output_filters" through `automojo-extension` for registering OutputFilter plugin implementations.
-3. THE framework SHALL define an ExtensionPoint named "automojo.agentkit.audit_stores" through `automojo-extension` for registering AuditStore plugin implementations.
+1. THE framework SHALL define an ExtensionPoint named "ccai.agentkit.input_sanitizers" through `codecraftai-extension` for registering InputSanitizer plugin implementations.
+2. THE framework SHALL define an ExtensionPoint named "ccai.agentkit.output_filters" through `codecraftai-extension` for registering OutputFilter plugin implementations.
+3. THE framework SHALL define an ExtensionPoint named "ccai.agentkit.audit_stores" through `codecraftai-extension` for registering AuditStore plugin implementations.
 4. WHEN an Agent is initialized, THE Agent SHALL query the security ExtensionPoints and register all discovered plugin instances with the Agent's SecurityPipeline.
 5. IF a SecurityPlugin fails to load, THEN THE Agent SHALL log the failure at WARNING level including the plugin name and the error detail, and continue loading remaining plugins.
 6. IF a SecurityPlugin provides a component that conflicts with an already registered component of the same type and name, THEN THE Agent SHALL log the conflict at WARNING level and skip the conflicting plugin component.
@@ -536,7 +536,7 @@ The Security & Access Control feature extends the `automojo-agent-kit` SDK with 
 
 #### Acceptance Criteria
 
-1. THE framework SHALL use the Python standard logging module with a logger hierarchy under `automojo.agentkit.security`.
+1. THE framework SHALL use the Python standard logging module with a logger hierarchy under `ccai.agentkit.security`.
 2. WHEN an access decision is made, THE framework SHALL log at INFO level including the principal, resource, action, and decision.
 3. WHEN an access request is denied, THE framework SHALL log at WARNING level including the principal, resource, action, and the matching deny policy name.
 4. WHEN a sanitization rule is applied to input, THE framework SHALL log at DEBUG level including the sanitizer name and rule name.

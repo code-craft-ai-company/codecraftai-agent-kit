@@ -2,15 +2,15 @@
 
 ## Overview
 
-The Core Agent Framework provides the foundational building blocks for the `automojo-agent-kit` Python SDK. It defines the base `Agent` abstraction, agent identity and metadata (`AgentIdentity`), a declarative configuration system (`AgentConfiguration`), a state machine governing agent lifecycle transitions (`AgentStateMachine`), lifecycle hooks for extensibility, an agent registry for instance management (`AgentRegistry`), hierarchical agent composition with cycle detection, an immutable agent address (`AgentAddress`), concurrency model support (`ConcurrencyModel`, `AsyncAgent`), and a well-defined exception hierarchy.
+The Core Agent Framework provides the foundational building blocks for the `codecraftai-agent-kit` Python SDK. It defines the base `Agent` abstraction, agent identity and metadata (`AgentIdentity`), a declarative configuration system (`AgentConfiguration`), a state machine governing agent lifecycle transitions (`AgentStateMachine`), lifecycle hooks for extensibility, an agent registry for instance management (`AgentRegistry`), hierarchical agent composition with cycle detection, an immutable agent address (`AgentAddress`), concurrency model support (`ConcurrencyModel`, `AsyncAgent`), and a well-defined exception hierarchy.
 
-All classes live under `source/packages/automojo/agentkit/` with filenames in all-lowercase, following the project naming conventions. The framework integrates with:
+All classes live under `source/packages/ccai/agentkit/` with filenames in all-lowercase, following the project naming conventions. The framework integrates with:
 
-- `automojo-credentials` — Credential resolution for `AgentConfiguration`
-- `automojo-dataprofiles` — Data profile resolution for `AgentConfiguration`
-- `automojo-this-app` — AppContext for settings, environment, and directory-based presence
-- `automojo-extension` — PluginManager and ExtensionPoint for plugin discovery
-- `automojo-arcli` — CLI scaffolding for agents
+- `codecraftai-credentials` — Credential resolution for `AgentConfiguration`
+- `codecraftai-dataprofiles` — Data profile resolution for `AgentConfiguration`
+- `codecraftai-this-app` — AppContext for settings, environment, and directory-based presence
+- `codecraftai-extension` — PluginManager and ExtensionPoint for plugin discovery
+- `codecraftai-arcli` — CLI scaffolding for agents
 
 The design prioritizes debuggability over performance and readability over conciseness, per the project coding standards.
 
@@ -18,7 +18,7 @@ The design prioritizes debuggability over performance and readability over conci
 
 ```mermaid
 graph TD
-    subgraph automojo.agentkit - Core Framework
+    subgraph ccai.agentkit - Core Framework
         Agent[Agent base class]
         AgentIdentity[AgentIdentity]
         AgentConfiguration[AgentConfiguration]
@@ -34,10 +34,10 @@ graph TD
     end
 
     subgraph External Packages
-        Credentials[automojo-credentials]
-        DataProfiles[automojo-dataprofiles]
-        ThisApp[automojo-this-app]
-        Extension[automojo-extension]
+        Credentials[codecraftai-credentials]
+        DataProfiles[codecraftai-dataprofiles]
+        ThisApp[codecraftai-this-app]
+        Extension[codecraftai-extension]
     end
 
     Agent --> AgentIdentity
@@ -425,7 +425,7 @@ class Agent(abc.ABC):
         # Creates AgentStateMachine (initial state: CREATED)
         # Registers with AgentRegistry.instance()
         # Initializes hooks dict for all transition points
-        # Creates scoped logger: automojo.agentkit.agent.<identifier>
+        # Creates scoped logger: ccai.agentkit.agent.<identifier>
         ...
 
     @property
@@ -754,7 +754,7 @@ class AsyncAgent(Agent):
 
 ### Property 25: Agent logger scoped to identity
 
-*For any* Agent, `get_logger()` shall return a logger whose name follows the pattern `automojo.agentkit.agent.<agent_identifier>`.
+*For any* Agent, `get_logger()` shall return a logger whose name follows the pattern `ccai.agentkit.agent.<agent_identifier>`.
 
 **Validates: Requirements 15.4**
 
@@ -820,7 +820,7 @@ When a sub-agent transitions to ERROR:
 
 ### Testing Framework
 
-Tests use testbase and reside under `source/testroots/automojo/tests/singlehost/agentkit/`, mirroring the source hierarchy:
+Tests use testbase and reside under `source/testroots/ccai/tests/singlehost/agentkit/`, mirroring the source hierarchy:
 
 | Source File | Unit Test File | Property Test File |
 |---|---|---|
@@ -838,14 +838,14 @@ Tests use testbase and reside under `source/testroots/automojo/tests/singlehost/
 
 ### Dual Testing Approach
 
-- **Unit tests**: Verify specific examples, edge cases, error conditions, structural checks (abstract method enforcement, read-only properties), and integration with external packages (using `automojo.testbase.mocking.Mock`)
+- **Unit tests**: Verify specific examples, edge cases, error conditions, structural checks (abstract method enforcement, read-only properties), and integration with external packages (using `ccai.testbase.mocking.Mock`)
 - **Property-based tests**: Verify universal properties across randomly generated inputs
 
 Both are complementary and necessary for comprehensive coverage. Unit tests catch concrete bugs and verify specific behaviors; property tests verify general correctness across the input space.
 
 ### Property-Based Testing Configuration
 
-- **Library**: automojo.testbase.properties (built-in testbase property testing engine)
+- **Library**: ccai.testbase.properties (built-in testbase property testing engine)
 - **Minimum 100 iterations** per property test (due to randomization)
 - Each test tagged with a comment: **Feature: core-agent-framework, Property N: title**
 - Each correctness property implemented by a **single** property-based test
@@ -862,7 +862,7 @@ Both are complementary and necessary for comprehensive coverage. Unit tests catc
 
 - **Structural checks**: Abstract method enforcement on Agent and AsyncAgent, read-only properties on AgentIdentity/AgentAddress/TransitionRecord, LifecycleState enum values, ConcurrencyModel enum values
 - **Error conditions**: Missing required config fields, invalid identity type, duplicate registry registration, invalid state transitions, circular sub-agent relationships, self-addition as sub-agent, invalid hook transition points
-- **Integration**: Credential resolution with mocked `automojo-credentials`, data profile resolution with mocked `automojo-dataprofiles`, plugin discovery with mocked `automojo-extension`, AppContext integration with mocked `automojo-this-app`
+- **Integration**: Credential resolution with mocked `codecraftai-credentials`, data profile resolution with mocked `codecraftai-dataprofiles`, plugin discovery with mocked `codecraftai-extension`, AppContext integration with mocked `codecraftai-this-app`
 - **Edge cases**: Agent with no tags, AgentAddress with empty endpoint, TransitionRecord with no metadata, AgentConfiguration with no settings/credentials/data_profiles, deregistering non-existent agent from registry
 - **Logging**: Verify log output at correct levels using log capture (INFO for transitions, WARNING for hook exceptions)
 - **File I/O**: AgentConfiguration from_json_file and from_yaml_file with real temp files
@@ -872,5 +872,5 @@ Both are complementary and necessary for comprehensive coverage. Unit tests catc
 
 ```bash
 source .venv/bin/activate
-testbase testing run --root source/testroots/automojo --includes=automojo.tests.singlehost.agentkit --output=./.output
+testbase testing run --root source/testroots/ccai --includes=ccai.tests.singlehost.agentkit --output=./.output
 ```

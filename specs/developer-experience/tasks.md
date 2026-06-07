@@ -2,7 +2,7 @@
 
 ## Overview
 
-Implement the Developer Experience feature for the `automojo-agent-kit` SDK. The implementation follows a bottom-up approach: error types and naming utility first, then immutable data models (ScaffoldTemplate, ScaffoldResult, ReplResult, DocEntry, ExampleCode, TypeCheckConfiguration, ApiSurfaceReport, DevExConfiguration), then registries, then abstract base classes and concrete implementations, then the coordination layers (ScaffoldCli, AgentRepl, DocGenerator, TypeAnnotationValidator, RuntimeTypeChecker, ApiSurfaceValidator). All source files go under `source/packages/automojo/agentkit/` with lowercase filenames (no underscores). Tests go under `source/testroots/automojo/tests/singlehost/agentkit/`.
+Implement the Developer Experience feature for the `codecraftai-agent-kit` SDK. The implementation follows a bottom-up approach: error types and naming utility first, then immutable data models (ScaffoldTemplate, ScaffoldResult, ReplResult, DocEntry, ExampleCode, TypeCheckConfiguration, ApiSurfaceReport, DevExConfiguration), then registries, then abstract base classes and concrete implementations, then the coordination layers (ScaffoldCli, AgentRepl, DocGenerator, TypeAnnotationValidator, RuntimeTypeChecker, ApiSurfaceValidator). All source files go under `source/packages/ccai/agentkit/` with lowercase filenames (no underscores). Tests go under `source/testroots/ccai/tests/singlehost/agentkit/`.
 
 ## Tasks
 
@@ -71,7 +71,7 @@ Implement the Developer Experience feature for the `automojo-agent-kit` SDK. The
   - [ ] 5.1 Create `scaffoldtemplateregistry.py` with ScaffoldTemplateRegistry class
     - Support register, deregister, lookup by name, lookup_by_type, list_all, has_template, count property
     - Raise SemanticError on duplicate template name registration
-    - Implement load_extensions for automojo-extension plugin discovery
+    - Implement load_extensions for codecraftai-extension plugin discovery
     - Implement __repr__ and __str__ methods
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 4.10, 4.11_
 
@@ -117,19 +117,19 @@ Implement the Developer Experience feature for the `automojo-agent-kit` SDK. The
 
 - [ ] 7. Implement ScaffoldCli
   - [ ] 7.1 Create `scaffoldcli.py` with ScaffoldCli class
-    - Built on automojo-arcli framework with top-level `agentkit` command group
+    - Built on codecraftai-arcli framework with top-level `agentkit` command group
     - Register scaffold commands, support register_command, load_extensions, execute methods
-    - Resolve target directory from AppContext via automojo-this-app, default to cwd
+    - Resolve target directory from AppContext via codecraftai-this-app, default to cwd
     - Support --dry-run and --force options on all subcommands
     - Display summary of generated files on success, descriptive error on failure with non-zero exit
-    - Log at INFO level under `automojo.agentkit.devex.cli`
+    - Log at INFO level under `ccai.agentkit.devex.cli`
     - Implement command_count property, __repr__ and __str__ methods
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 1.10, 1.11_
 
   - [ ]* 7.2 Write unit tests for ScaffoldCli
     - Create `test_scaffoldcli.py` testing command registration, duplicate command SemanticError, execute dispatch
     - Test dry_run and force option propagation
-    - Mock automojo-arcli and automojo-extension using testbase.mocking.Mock
+    - Mock codecraftai-arcli and codecraftai-extension using testbase.mocking.Mock
     - _Requirements: 1.1–1.11_
 
 - [ ] 8. Checkpoint - Ensure all tests pass
@@ -165,7 +165,7 @@ Implement the Developer Experience feature for the `automojo-agent-kit` SDK. The
     - Support register (with alias registration), deregister (removing aliases), lookup by name or alias
     - Support list_all (excluding alias duplicates), has_command, count property
     - Raise SemanticError on duplicate name or alias
-    - Implement load_extensions for automojo-extension plugin discovery
+    - Implement load_extensions for codecraftai-extension plugin discovery
     - Implement __repr__ and __str__ methods
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9, 9.10, 9.11_
 
@@ -199,13 +199,13 @@ Implement the Developer Experience feature for the `automojo-agent-kit` SDK. The
   - [ ] 12.1 Create `agentrepl.py` with AgentRepl class
     - Accept optional Agent, AgentConfiguration, and ReplFormatter at construction
     - Create ReplSession at startup with CorrelationContext
-    - Discover and load ReplCommand plugins via automojo-extension
+    - Discover and load ReplCommand plugins via codecraftai-extension
     - Implement execute_command parsing command name and arguments, looking up in registry, executing, formatting output
     - Handle unknown commands and command exceptions gracefully, continuing the REPL loop
     - Support command completion using registered command names and aliases
     - Provide built-in help and quit commands
     - Display prompt with agent name and LifecycleState when agent active
-    - Log at DEBUG level under `automojo.agentkit.devex.repl`
+    - Log at DEBUG level under `ccai.agentkit.devex.repl`
     - Implement session and command_registry properties, __repr__ and __str__ methods
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9, 7.10, 7.11, 7.12, 7.13_
 
@@ -259,7 +259,7 @@ Implement the Developer Experience feature for the `automojo-agent-kit` SDK. The
     - Extract signatures, type hints, docstrings; skip private members except __init__, __repr__, __str__
     - Populate DocRegistry with generated DocEntry instances
     - Track modules_processed and entries_generated counts
-    - Log at INFO level under `automojo.agentkit.devex.docs`
+    - Log at INFO level under `ccai.agentkit.devex.docs`
     - Implement __repr__ and __str__ methods
     - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6, 12.7, 12.8, 12.9_
 
@@ -290,7 +290,7 @@ Implement the Developer Experience feature for the `automojo-agent-kit` SDK. The
     - Check parameter type hints and return type hints on all public methods
     - Check __init__ parameter type hints; skip private members except __init__, __repr__, __str__
     - Track warnings list and module_count
-    - Log at INFO level under `automojo.agentkit.devex.types`
+    - Log at INFO level under `ccai.agentkit.devex.types`
     - Implement __repr__ and __str__ methods
     - _Requirements: 16.1, 16.2, 16.3, 16.4, 16.5, 16.6, 16.7, 16.8, 16.9, 16.10, 16.11_
 
@@ -302,7 +302,7 @@ Implement the Developer Experience feature for the `automojo-agent-kit` SDK. The
     - Implement checked decorator wrapping functions for automatic type validation
     - Skip all validation when configuration has runtime checking disabled
     - Raise TypeCheckError or log warning based on raise_on_mismatch setting
-    - Log at WARNING level under `automojo.agentkit.devex.types`
+    - Log at WARNING level under `ccai.agentkit.devex.types`
     - Implement enabled property, __repr__ and __str__ methods
     - _Requirements: 17.1, 17.2, 17.3, 17.4, 17.5, 17.6, 17.7, 17.8, 17.9, 17.10_
 
@@ -330,7 +330,7 @@ Implement the Developer Experience feature for the `automojo-agent-kit` SDK. The
   - [ ] 19.3 Create `apisurfacevalidator.py` with ApiSurfaceValidator class
     - Accept list of module paths, validate each module returning ApiSurfaceReport per module
     - Check for missing __all__, undocumented public classes and methods, missing type hints, inconsistent parameter names
-    - Log at INFO level under `automojo.agentkit.devex.api`
+    - Log at INFO level under `ccai.agentkit.devex.api`
     - Implement module_count property, __repr__ and __str__ methods
     - _Requirements: 20.1, 20.2, 20.3, 20.4, 20.5, 20.6, 20.7, 20.8, 20.9, 20.10_
 
@@ -364,16 +364,16 @@ Implement the Developer Experience feature for the `automojo-agent-kit` SDK. The
 
   - [ ]* 22.2 Write unit tests for extension point integration
     - Test that each registry and coordination class calls load_extensions during initialization
-    - Mock automojo-extension using testbase.mocking.Mock
+    - Mock codecraftai-extension using testbase.mocking.Mock
     - _Requirements: 23.1–23.8_
 
 - [ ] 23. Wire structured logging across all components
   - [ ] 23.1 Verify structured logging integration across all components
-    - Ensure ScaffoldCli logs under `automojo.agentkit.devex.cli` at INFO level for operations
-    - Ensure AgentRepl logs under `automojo.agentkit.devex.repl` at DEBUG level for commands
-    - Ensure DocGenerator logs under `automojo.agentkit.devex.docs` at INFO level for generation
-    - Ensure TypeAnnotationValidator and RuntimeTypeChecker log under `automojo.agentkit.devex.types`
-    - Ensure ApiSurfaceValidator logs under `automojo.agentkit.devex.api` at INFO level for validation
+    - Ensure ScaffoldCli logs under `ccai.agentkit.devex.cli` at INFO level for operations
+    - Ensure AgentRepl logs under `ccai.agentkit.devex.repl` at DEBUG level for commands
+    - Ensure DocGenerator logs under `ccai.agentkit.devex.docs` at INFO level for generation
+    - Ensure TypeAnnotationValidator and RuntimeTypeChecker log under `ccai.agentkit.devex.types`
+    - Ensure ApiSurfaceValidator logs under `ccai.agentkit.devex.api` at INFO level for validation
     - _Requirements: 25.1, 25.2, 25.3, 25.4, 25.5, 25.6, 25.7, 25.8, 25.9, 25.10_
 
   - [ ]* 23.2 Write unit tests for structured logging
@@ -390,4 +390,4 @@ Implement the Developer Experience feature for the `automojo-agent-kit` SDK. The
 - Checkpoints ensure incremental validation
 - All source files use lowercase filenames with no underscores per project conventions
 - Tests use the testbase framework with test_ prefixed functions
-- External package integrations (automojo-arcli, automojo-extension, automojo-this-app, automojo-credentials) are mocked in tests using testbase.mocking.Mock
+- External package integrations (codecraftai-arcli, codecraftai-extension, codecraftai-this-app, codecraftai-credentials) are mocked in tests using testbase.mocking.Mock

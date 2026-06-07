@@ -2,9 +2,9 @@
 
 ## Overview
 
-The Testing & Quality feature provides a comprehensive testing infrastructure for the `automojo-agent-kit` SDK. It enables developers to write agent behavior tests with mock dependencies, record and replay agent execution traces for deterministic debugging, verify agent invariants through property-based testing with automojo.testbase.properties, and integration test platform adapters against simulated cloud environments.
+The Testing & Quality feature provides a comprehensive testing infrastructure for the `codecraftai-agent-kit` SDK. It enables developers to write agent behavior tests with mock dependencies, record and replay agent execution traces for deterministic debugging, verify agent invariants through property-based testing with ccai.testbase.properties, and integration test platform adapters against simulated cloud environments.
 
-All classes live under `source/packages/automojo/agentkit/testing/` with filenames in all-lowercase (no underscores), following the project naming conventions. The testing module is organized into four sub-packages:
+All classes live under `source/packages/ccai/agentkit/testing/` with filenames in all-lowercase (no underscores), following the project naming conventions. The testing module is organized into four sub-packages:
 
 - `testing/` — Core test fixtures, context, assertions, configuration, and errors
 - `testing/mocks/` — Mock provider implementations (LLM, tool, transport, memory, credential, data profile, embedding)
@@ -14,19 +14,19 @@ All classes live under `source/packages/automojo/agentkit/testing/` with filenam
 
 The framework integrates with:
 
-- `automojo.agentkit` — Agent, AgentConfiguration, AgentIdentity, AgentStateMachine, LifecycleState
-- `automojo.agentkit.llm` — LlmProvider, LlmConversation, LlmResponse, LlmMessage, TokenUsage
-- `automojo.agentkit.tools` — ToolExecutor, ToolResult, ToolDescriptor, ToolSchema
-- `automojo.agentkit.communication` — Transport, Message
-- `automojo.agentkit.memory` — MemoryStore, MemoryEntry, MemoryQuery, EmbeddingProvider
-- `automojo.agentkit.workflow` — WorkflowDefinition, WorkflowResult
-- `automojo.agentkit.observability` — ExecutionRecording, ExecutionRecord
-- `automojo-this-app` — AppContext for test isolation via temporary directories
-- `automojo-credentials` — CredentialReference resolution (mocked in tests)
-- `automojo-dataprofiles` — DataProfileReference resolution (mocked in tests)
-- `automojo-extension` — ExtensionPoint for plugin-based test harness and invariant discovery
+- `ccai.agentkit` — Agent, AgentConfiguration, AgentIdentity, AgentStateMachine, LifecycleState
+- `ccai.agentkit.llm` — LlmProvider, LlmConversation, LlmResponse, LlmMessage, TokenUsage
+- `ccai.agentkit.tools` — ToolExecutor, ToolResult, ToolDescriptor, ToolSchema
+- `ccai.agentkit.communication` — Transport, Message
+- `ccai.agentkit.memory` — MemoryStore, MemoryEntry, MemoryQuery, EmbeddingProvider
+- `ccai.agentkit.workflow` — WorkflowDefinition, WorkflowResult
+- `ccai.agentkit.observability` — ExecutionRecording, ExecutionRecord
+- `codecraftai-this-app` — AppContext for test isolation via temporary directories
+- `codecraftai-credentials` — CredentialReference resolution (mocked in tests)
+- `codecraftai-dataprofiles` — DataProfileReference resolution (mocked in tests)
+- `codecraftai-extension` — ExtensionPoint for plugin-based test harness and invariant discovery
 - `testbase` — Test framework for resource factories and assertions
-- `automojo.testbase.mocking` — Mock, create_module_patch, create_instance_patch
+- `ccai.testbase.mocking` — Mock, create_module_patch, create_instance_patch
 - `hypothesis` — Property-based testing library for invariant verification
 
 The design prioritizes debuggability over performance and readability over conciseness, per the project coding standards.
@@ -35,7 +35,7 @@ The design prioritizes debuggability over performance and readability over conci
 
 ```mermaid
 graph TD
-    subgraph automojo.agentkit.testing
+    subgraph ccai.agentkit.testing
         ATF[AgentTestFixture]
         ATC[AgentTestContext]
         AA[AgentAssertions]
@@ -43,7 +43,7 @@ graph TD
         TC[TestingConfiguration]
         TE[TestingError / ReplayMismatchError / InvariantViolationError]
     end
-    subgraph automojo.agentkit.testing.mocks
+    subgraph ccai.agentkit.testing.mocks
         MLLM[MockLlmProvider]
         MTE[MockToolExecutor]
         MT[MockTransport]
@@ -52,14 +52,14 @@ graph TD
         MDP[MockDataProfileProvider]
         MEP[MockEmbeddingProvider]
     end
-    subgraph automojo.agentkit.testing.replay
+    subgraph ccai.agentkit.testing.replay
         ETR[ExecutionTraceRecorder]
         ET[ExecutionTrace]
         ETE[ExecutionTraceEvent]
         ETRP[ExecutionTraceReplayer]
         RC[ReplayConfiguration]
     end
-    subgraph automojo.agentkit.testing.invariants
+    subgraph ccai.agentkit.testing.invariants
         AI[AgentInvariant base]
         SMTI[StateMachineTransitionInvariant]
         CRTI[ConfigurationRoundTripInvariant]
@@ -71,7 +71,7 @@ graph TD
         ITR[InvariantTestRunner]
         IR[InvariantResult]
     end
-    subgraph automojo.agentkit.testing.platform
+    subgraph ccai.agentkit.testing.platform
         PTH[PlatformTestHarness base]
         AWS[AwsTestHarness]
         AZ[AzureTestHarness]
@@ -80,7 +80,7 @@ graph TD
         SPS[SimulatedPlatformService base]
         PTC[PlatformTestContext]
     end
-    subgraph External: automojo.agentkit
+    subgraph External: ccai.agentkit
         Agent[Agent]
         AgentConfig[AgentConfiguration]
         AgentId[AgentIdentity]
@@ -95,10 +95,10 @@ graph TD
         EmbedIf[EmbeddingProvider]
     end
     subgraph External Packages
-        AppCtx[automojo-this-app]
-        Creds[automojo-credentials]
-        DProf[automojo-dataprofiles]
-        Ext[automojo-extension]
+        AppCtx[codecraftai-this-app]
+        Creds[codecraftai-credentials]
+        DProf[codecraftai-dataprofiles]
+        Ext[codecraftai-extension]
     end
 
     ATF --> ATC
@@ -140,13 +140,13 @@ graph TD
 ### Design Decisions
 
 1. AgentTestFixture implemented as a `testbase` resource factory function (not a class) that yields an AgentTestContext, following testbase conventions for resource lifecycle management.
-2. All mock providers are standalone classes that implement the corresponding subsystem interfaces, rather than using `automojo.testbase.mocking.Mock` directly. This provides type-safe, purpose-built mocks with recording and assertion capabilities.
+2. All mock providers are standalone classes that implement the corresponding subsystem interfaces, rather than using `ccai.testbase.mocking.Mock` directly. This provides type-safe, purpose-built mocks with recording and assertion capabilities.
 3. ExecutionTrace and ExecutionTraceEvent are immutable data objects with serialization round-trip support (as_dict, to_json, from_dict, from_json), following the naming conventions for conversion and encoding methods.
-4. The invariant system uses automojo.testbase.properties as the property-based testing library, with InvariantStrategy providing reusable testbase property strategies for generating agent-related data.
+4. The invariant system uses ccai.testbase.properties as the property-based testing library, with InvariantStrategy providing reusable testbase property strategies for generating agent-related data.
 5. Platform test harnesses use an abstract base class pattern with concrete implementations for AWS, Azure, GCP, and local environments, each providing simulated compute, storage, and messaging services.
 6. TestingError hierarchy inherits from AgentKitError, with ReplayMismatchError and InvariantViolationError as specialized subclasses.
-7. Structured logging uses the Python standard logging module under the `automojo.agentkit.testing` logger hierarchy.
-8. Extension points for test harnesses and invariants integrate with `automojo-extension` for plugin discovery.
+7. Structured logging uses the Python standard logging module under the `ccai.agentkit.testing` logger hierarchy.
+8. Extension points for test harnesses and invariants integrate with `codecraftai-extension` for plugin discovery.
 9. All classes provide `__repr__` and `__str__` methods for debuggability, per Requirement 27.
 10. Serialization follows naming conventions: `as_dict` for type conversion, `to_json`/`from_json` for encoding/decoding.
 
@@ -181,8 +181,8 @@ graph TD
 | testing/invariants/agentinvariant.py | AgentInvariant | Abstract base class for invariant definitions |
 | testing/invariants/statemachineinvariant.py | StateMachineTransitionInvariant | State machine transition invariant |
 | testing/invariants/roundtripinvariants.py | ConfigurationRoundTripInvariant, IdentityRoundTripInvariant, ToolSchemaRoundTripInvariant, MemoryEntryRoundTripInvariant, MessageRoundTripInvariant | Serialization round-trip invariants |
-| testing/invariants/invariantstrategy.py | InvariantStrategy | automojo.testbase.properties strategies for agent data generation |
-| testing/invariants/invarianttestrunner.py | InvariantTestRunner | Executes invariants via automojo.testbase.properties |
+| testing/invariants/invariantstrategy.py | InvariantStrategy | ccai.testbase.properties strategies for agent data generation |
+| testing/invariants/invarianttestrunner.py | InvariantTestRunner | Executes invariants via ccai.testbase.properties |
 | testing/invariants/invariantresult.py | InvariantResult | Immutable invariant test result |
 | testing/platform/__init__.py | — | Platform package init |
 | testing/platform/platformtestharness.py | PlatformTestHarness | Abstract base for platform harnesses |
@@ -557,7 +557,7 @@ class MockMemoryStore:
 class MockCredentialProvider:
     """
         Mock credential provider that supplies test credentials without requiring
-        automojo-credentials infrastructure.
+        codecraftai-credentials infrastructure.
     """
 
     def __init__(self, credentials: Dict[str, str] = None):
@@ -592,7 +592,7 @@ class MockCredentialProvider:
 class MockDataProfileProvider:
     """
         Mock data profile provider that supplies test data profiles without requiring
-        automojo-dataprofiles infrastructure.
+        codecraftai-dataprofiles infrastructure.
     """
 
     def __init__(self, profiles: Dict[str, dict] = None):
@@ -956,9 +956,9 @@ class AgentInvariant(abc.ABC):
     @abc.abstractmethod
     def strategy(self):
         """
-            Returns a Strategy from automojo.testbase.properties.strategies for generating test inputs.
+            Returns a Strategy from ccai.testbase.properties.strategies for generating test inputs.
 
-            :returns: A Strategy from automojo.testbase.properties.strategies.
+            :returns: A Strategy from ccai.testbase.properties.strategies.
         """
         ...
 
@@ -1039,7 +1039,7 @@ class InvariantStrategy:
     @staticmethod
     def agent_configurations() -> "SearchStrategy":
         """
-            automojo.testbase.properties strategy for valid AgentConfiguration dictionaries.
+            ccai.testbase.properties strategy for valid AgentConfiguration dictionaries.
 
             :returns: A SearchStrategy yielding dict objects.
         """
@@ -1048,7 +1048,7 @@ class InvariantStrategy:
     @staticmethod
     def agent_identities() -> "SearchStrategy":
         """
-            automojo.testbase.properties strategy for valid AgentIdentity instances.
+            ccai.testbase.properties strategy for valid AgentIdentity instances.
 
             :returns: A SearchStrategy yielding AgentIdentity objects.
         """
@@ -1057,7 +1057,7 @@ class InvariantStrategy:
     @staticmethod
     def lifecycle_state_sequences() -> "SearchStrategy":
         """
-            automojo.testbase.properties strategy for valid LifecycleState transition sequences
+            ccai.testbase.properties strategy for valid LifecycleState transition sequences
             that follow AgentStateMachine transition rules.
 
             :returns: A SearchStrategy yielding lists of LifecycleState.
@@ -1067,7 +1067,7 @@ class InvariantStrategy:
     @staticmethod
     def tool_schemas() -> "SearchStrategy":
         """
-            automojo.testbase.properties strategy for valid ToolSchema definitions.
+            ccai.testbase.properties strategy for valid ToolSchema definitions.
 
             :returns: A SearchStrategy yielding ToolSchema objects.
         """
@@ -1076,7 +1076,7 @@ class InvariantStrategy:
     @staticmethod
     def llm_messages() -> "SearchStrategy":
         """
-            automojo.testbase.properties strategy for valid LlmMessage instances.
+            ccai.testbase.properties strategy for valid LlmMessage instances.
 
             :returns: A SearchStrategy yielding LlmMessage objects.
         """
@@ -1085,7 +1085,7 @@ class InvariantStrategy:
     @staticmethod
     def llm_conversations() -> "SearchStrategy":
         """
-            automojo.testbase.properties strategy for valid LlmConversation instances.
+            ccai.testbase.properties strategy for valid LlmConversation instances.
 
             :returns: A SearchStrategy yielding LlmConversation objects.
         """
@@ -1094,7 +1094,7 @@ class InvariantStrategy:
     @staticmethod
     def memory_entries() -> "SearchStrategy":
         """
-            automojo.testbase.properties strategy for valid MemoryEntry instances.
+            ccai.testbase.properties strategy for valid MemoryEntry instances.
 
             :returns: A SearchStrategy yielding MemoryEntry objects.
         """
@@ -1103,7 +1103,7 @@ class InvariantStrategy:
     @staticmethod
     def messages() -> "SearchStrategy":
         """
-            automojo.testbase.properties strategy for valid Message instances.
+            ccai.testbase.properties strategy for valid Message instances.
 
             :returns: A SearchStrategy yielding Message objects.
         """
@@ -1115,7 +1115,7 @@ class InvariantStrategy:
 ```python
 class InvariantTestRunner:
     """
-        Executes AgentInvariant definitions using the automojo.testbase.properties engine,
+        Executes AgentInvariant definitions using the ccai.testbase.properties engine,
         generating random inputs and verifying invariants hold for all cases.
     """
 
@@ -1123,7 +1123,7 @@ class InvariantTestRunner:
                  max_examples: int = 100):
         self._invariants = list(invariants)
         self._max_examples = max_examples
-        self._logger = logging.getLogger("automojo.agentkit.testing")
+        self._logger = logging.getLogger("ccai.agentkit.testing")
         return
 
     def run(self) -> List["InvariantResult"]:
@@ -1131,7 +1131,7 @@ class InvariantTestRunner:
             Executes all configured invariants and returns results.
 
             Discovers additional invariants from the
-            "automojo.agentkit.testing.invariants" ExtensionPoint.
+            "ccai.agentkit.testing.invariants" ExtensionPoint.
 
             :returns: A list of InvariantResult objects.
         """
@@ -1751,7 +1751,7 @@ When a testing plugin fails to load from an ExtensionPoint:
 
 ### Structured Logging
 
-All testing infrastructure operations produce structured log entries using the Python standard logging module under the `automojo.agentkit.testing` logger hierarchy:
+All testing infrastructure operations produce structured log entries using the Python standard logging module under the `ccai.agentkit.testing` logger hierarchy:
 
 | Event | Level | Content |
 |---|---|---|
@@ -1767,7 +1767,7 @@ All testing infrastructure operations produce structured log entries using the P
 ## Testing Strategy
 
 ### Testing Framework
-Tests use `testbase` and reside under `source/testroots/automojo/tests/singlehost/agentkit/testing/`, mirroring the source hierarchy:
+Tests use `testbase` and reside under `source/testroots/ccai/tests/singlehost/agentkit/testing/`, mirroring the source hierarchy:
 
 | Source File | Test File |
 |---|---|
@@ -1804,11 +1804,11 @@ Tests use `testbase` and reside under `source/testroots/automojo/tests/singlehos
 | testing/platform/localtestharness.py | testing/platform/test_localtestharness.py |
 
 ### Dual Testing Approach
-- Unit tests: specific examples, edge cases, error conditions, integration with external packages (using `automojo.testbase.mocking.Mock`)
-- Property-based tests: universal properties across randomly generated inputs using automojo.testbase.properties
+- Unit tests: specific examples, edge cases, error conditions, integration with external packages (using `ccai.testbase.mocking.Mock`)
+- Property-based tests: universal properties across randomly generated inputs using ccai.testbase.properties
 
 ### Property-Based Testing Configuration
-- Library: automojo.testbase.properties (built-in testbase property testing engine)
+- Library: ccai.testbase.properties (built-in testbase property testing engine)
 - Minimum 100 iterations per property test
 - Each test tagged: `Feature: testing-quality, Property N: title`
 - Each correctness property implemented by a single property-based test
@@ -1838,5 +1838,5 @@ Tests use `testbase` and reside under `source/testroots/automojo/tests/singlehos
 ### Running Tests
 ```bash
 source .venv/bin/activate
-testbase testing run --root source/testroots/automojo --includes=automojo.tests.singlehost.agentkit.testing --output=./.output
+testbase testing run --root source/testroots/ccai --includes=ccai.tests.singlehost.agentkit.testing --output=./.output
 ```

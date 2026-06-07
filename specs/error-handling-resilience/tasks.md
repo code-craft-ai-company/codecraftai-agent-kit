@@ -2,7 +2,7 @@
 
 ## Overview
 
-Implement the Error Handling & Resilience feature for the `automojo-agent-kit` SDK. The implementation follows a bottom-up approach: data models and enums first, then core components (retry, circuit breaker, degradation, dead letter, health), then the coordination layer (ResiliencePipeline), and finally Agent integration. All source files go under `source/packages/automojo/agentkit/` with lowercase filenames. Tests go under `source/testroots/automojo/tests/singlehost/agentkit/resilience/`.
+Implement the Error Handling & Resilience feature for the `codecraftai-agent-kit` SDK. The implementation follows a bottom-up approach: data models and enums first, then core components (retry, circuit breaker, degradation, dead letter, health), then the coordination layer (ResiliencePipeline), and finally Agent integration. All source files go under `source/packages/ccai/agentkit/` with lowercase filenames. Tests go under `source/testroots/ccai/tests/singlehost/agentkit/resilience/`.
 
 ## Tasks
 
@@ -73,7 +73,7 @@ Implement the Error Handling & Resilience feature for the `automojo-agent-kit` S
     - Accept RetryPolicy at construction, expose as read-only property
     - Implement execute method: invoke callable, retry on retryable exceptions with delay, raise non-retryable immediately
     - Record RetryAttempt for each failed attempt, return RetryResult with success/failure outcome
-    - Log each retry attempt at INFO level under `automojo.agentkit.resilience`
+    - Log each retry attempt at INFO level under `ccai.agentkit.resilience`
     - Implement __repr__ and __str__ methods
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 1.10, 1.11, 27.1, 27.2_
 
@@ -128,7 +128,7 @@ Implement the Error Handling & Resilience feature for the `automojo-agent-kit` S
     - Implement execute method: evaluate state, execute or reject, track success/failure, trigger transitions
     - Record CircuitBreakerEvent for each state transition
     - Implement reset method to return to CLOSED and clear counters/events
-    - Log state transitions at WARNING level under `automojo.agentkit.resilience`
+    - Log state transitions at WARNING level under `ccai.agentkit.resilience`
     - Implement __repr__ and __str__ methods
     - _Requirements: 3.1–3.20, 27.3, 27.4_
 
@@ -217,7 +217,7 @@ Implement the Error Handling & Resilience feature for the `automojo-agent-kit` S
     - Implement register_policy, deregister_policy, report_failure, report_recovery methods
     - Track per-dependency DegradationLevel, compute overall_level as maximum across all dependencies
     - Support DegradationChangeListener registration and notification (catch listener exceptions, log at WARNING)
-    - Log degradation level changes at WARNING level under `automojo.agentkit.resilience`
+    - Log degradation level changes at WARNING level under `ccai.agentkit.resilience`
     - Implement __repr__ and __str__ methods
     - _Requirements: 9.1–9.13, 27.5, 27.6_
 
@@ -286,7 +286,7 @@ Implement the Error Handling & Resilience feature for the `automojo-agent-kit` S
     - Accept DeadLetterStore at construction
     - Implement enqueue (creates DeadLetterEntry and stores), query, get_entry, replay, purge methods
     - Replay: retrieve entry, invoke callable with payload, remove on success, update metadata on failure
-    - Log enqueue at WARNING level under `automojo.agentkit.resilience`
+    - Log enqueue at WARNING level under `ccai.agentkit.resilience`
     - Implement entry_count property, __repr__ and __str__ methods
     - _Requirements: 11.1–11.12, 27.7, 27.8_
 
@@ -501,7 +501,7 @@ Implement the Error Handling & Resilience feature for the `automojo-agent-kit` S
     - Wire ResiliencePipeline initialization into Agent.initialize() (INITIALIZED state transition)
     - Wire HealthMonitor start into Agent.start() (RUNNING state transition)
     - Wire HealthMonitor stop and resource release into Agent.stop() (STOPPED state transition)
-    - Discover and register ResiliencePlugin instances from ExtensionPoint "automojo.agentkit.resilience" during initialization
+    - Discover and register ResiliencePlugin instances from ExtensionPoint "ccai.agentkit.resilience" during initialization
     - _Requirements: 23.1–23.9, 24.1–24.4_
 
   - [x] 19.2 Write unit tests for Agent resilience integration
@@ -532,7 +532,7 @@ Implement the Error Handling & Resilience feature for the `automojo-agent-kit` S
 - Checkpoints ensure incremental validation
 - Property tests validate universal correctness properties from the design document
 - Unit tests validate specific examples, edge cases, and error conditions
-- All source files use lowercase filenames with no underscores under `source/packages/automojo/agentkit/`
-- All test files go under `source/testroots/automojo/tests/singlehost/agentkit/resilience/`
-- Tests use the `testbase` framework and `automojo.testbase.mocking` for mocks
-- Run tests with: `source .venv/bin/activate && testbase testing run --root source/testroots/automojo --includes=automojo.tests.singlehost.agentkit.resilience --output=./.output`
+- All source files use lowercase filenames with no underscores under `source/packages/ccai/agentkit/`
+- All test files go under `source/testroots/ccai/tests/singlehost/agentkit/resilience/`
+- Tests use the `testbase` framework and `ccai.testbase.mocking` for mocks
+- Run tests with: `source .venv/bin/activate && testbase testing run --root source/testroots/ccai --includes=ccai.tests.singlehost.agentkit.resilience --output=./.output`

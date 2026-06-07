@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Error Handling & Resilience feature extends the `automojo-agent-kit` SDK with a cross-cutting system for handling failures, recovering from transient errors, and maintaining system health across all agent subsystems. The system provides:
+The Error Handling & Resilience feature extends the `codecraftai-agent-kit` SDK with a cross-cutting system for handling failures, recovering from transient errors, and maintaining system health across all agent subsystems. The system provides:
 
 - A `RetryExecutor` that applies `RetryPolicy`-based retry logic to any callable operation, producing structured `RetryAttempt` and `RetryResult` objects for inspection and debugging
 - A `CircuitBreaker` that monitors failure rates for external services and transitions between CLOSED, OPEN, and HALF_OPEN states to prevent cascading failures, managed through a `CircuitBreakerRegistry`
@@ -12,7 +12,7 @@ The Error Handling & Resilience feature extends the `automojo-agent-kit` SDK wit
 - A `ResiliencePipeline` that coordinates all resilience components for an Agent, providing a unified `execute_with_resilience` method
 - A `ResilienceConfiguration` for declarative configuration of all resilience settings with JSON and YAML serialization support
 
-All classes live under `source/packages/automojo/agentkit/` with filenames in all-lowercase (no underscores), following the project naming conventions. The system integrates with:
+All classes live under `source/packages/ccai/agentkit/` with filenames in all-lowercase (no underscores), following the project naming conventions. The system integrates with:
 
 - Core Agent Framework — `Agent` base class, `AgentConfiguration`, `LifecycleState`, `AgentStateMachine`
 - LLM Integration — `RetryPolicy` (reused as the unified retry configuration), `FallbackChain`
@@ -23,10 +23,10 @@ All classes live under `source/packages/automojo/agentkit/` with filenames in al
 - Observability & Debugging — `StructuredLogger`, `CorrelationContext`, `MetricsCollector`, `Tracer`
 - Security & Access Control — `AuditLogger` for auditing resilience events
 - Configuration & Extensibility — `ConfigurationManager`, `FeatureFlagRegistry` for configuration and feature toggles
-- `automojo-extension` — `ExtensionPoint` for plugin discovery and registration
-- `automojo-credentials` — `CredentialReference` for secret access
-- `automojo-this-app` — `AppContext` for settings, environment, and directory resolution
-- `automojo-dataprofiles` — `DataProfileReference` for data profile management
+- `codecraftai-extension` — `ExtensionPoint` for plugin discovery and registration
+- `codecraftai-credentials` — `CredentialReference` for secret access
+- `codecraftai-this-app` — `AppContext` for settings, environment, and directory resolution
+- `codecraftai-dataprofiles` — `DataProfileReference` for data profile management
 
 The design prioritizes debuggability over performance and readability over conciseness, per the project coding standards.
 
@@ -34,7 +34,7 @@ The design prioritizes debuggability over performance and readability over conci
 
 ```mermaid
 graph TD
-    subgraph "automojo.agentkit - Error Handling & Resilience"
+    subgraph "ccai.agentkit - Error Handling & Resilience"
         RetryExecutor[RetryExecutor]
         RetryAttempt[RetryAttempt]
         RetryResult[RetryResult]
@@ -88,9 +88,9 @@ graph TD
     end
 
     subgraph "External Packages"
-        Extension[automojo-extension]
-        Credentials[automojo-credentials]
-        AppContext[automojo-this-app]
+        Extension[codecraftai-extension]
+        Credentials[codecraftai-credentials]
+        AppContext[codecraftai-this-app]
     end
 
     Agent --> ResiliencePipeline
@@ -265,7 +265,7 @@ sequenceDiagram
 12. **All `__repr__` and `__str__` methods follow the established pattern** — `__repr__` includes class name and key identifying fields, `__str__` returns a human-readable summary.
 13. **Thread-safe CircuitBreaker** — uses `threading.Lock` for state transitions and counter updates, since agents may execute operations concurrently across threads.
 14. **CircuitBreakerOpenError and ResilienceError inherit from AgentKitError** — consistent with the Core Agent Framework and Tool & Capability System exception hierarchies.
-15. **Extension point "automojo.agentkit.resilience"** — follows the same pattern as other agentkit extension points, allowing external packages to contribute HealthCheck, DegradationStrategy, SelfHealingAction, and DeadLetterStore implementations.
+15. **Extension point "ccai.agentkit.resilience"** — follows the same pattern as other agentkit extension points, allowing external packages to contribute HealthCheck, DegradationStrategy, SelfHealingAction, and DeadLetterStore implementations.
 
 ## Components and Interfaces
 
@@ -481,7 +481,7 @@ class RetryExecutor:
 
     def __init__(self, retry_policy):
         self._retry_policy = retry_policy
-        self._logger = logging.getLogger("automojo.agentkit.resilience")
+        self._logger = logging.getLogger("ccai.agentkit.resilience")
         return
 
     @property
@@ -649,7 +649,7 @@ class CircuitBreaker:
         self._open_timestamp = None
         self._events = []
         self._lock = threading.Lock()
-        self._logger = logging.getLogger("automojo.agentkit.resilience")
+        self._logger = logging.getLogger("ccai.agentkit.resilience")
         return
 
     @property
@@ -953,7 +953,7 @@ class DegradationManager:
         self._policies = {}
         self._dependency_levels = {}
         self._change_listeners = []
-        self._logger = logging.getLogger("automojo.agentkit.resilience")
+        self._logger = logging.getLogger("ccai.agentkit.resilience")
         return
 
     @property
@@ -1229,7 +1229,7 @@ class DeadLetterQueue:
 
     def __init__(self, store: DeadLetterStore):
         self._store = store
-        self._logger = logging.getLogger("automojo.agentkit.resilience")
+        self._logger = logging.getLogger("ccai.agentkit.resilience")
         return
 
     @property
@@ -1478,7 +1478,7 @@ class HealthMonitor:
         self._healing_policies = {}
         self._healing_attempt_counts = {}
         self._healing_cooldown_timestamps = {}
-        self._logger = logging.getLogger("automojo.agentkit.resilience")
+        self._logger = logging.getLogger("ccai.agentkit.resilience")
         return
 
     @property
@@ -1761,7 +1761,7 @@ class ResiliencePipeline:
         self._degradation_manager = None
         self._dead_letter_queue = None
         self._health_monitor = None
-        self._logger = logging.getLogger("automojo.agentkit.resilience")
+        self._logger = logging.getLogger("ccai.agentkit.resilience")
         # Initialize components based on configuration enablement flags
         return
 
@@ -2034,7 +2034,7 @@ def execute_resilient(self, callable_op, operation_name: str = None,
 During `Agent.initialize()` (transition to INITIALIZED):
 1. Load ResilienceConfiguration from AgentConfiguration
 2. Initialize ResiliencePipeline with the loaded configuration
-3. Discover and register all ResiliencePlugin instances from `automojo-extension` ExtensionPoint "automojo.agentkit.resilience"
+3. Discover and register all ResiliencePlugin instances from `codecraftai-extension` ExtensionPoint "ccai.agentkit.resilience"
 4. Register discovered HealthCheck, DegradationStrategy, SelfHealingAction, and DeadLetterStore instances with the appropriate pipeline components
 
 During `Agent.start()` (transition to RUNNING):
@@ -2259,7 +2259,7 @@ The Error Handling & Resilience feature uses both unit tests and property-based 
 
 ### Test Organization
 
-Tests are located under `source/testroots/automojo/tests/singlehost/agentkit/resilience/`, mirroring the source hierarchy:
+Tests are located under `source/testroots/ccai/tests/singlehost/agentkit/resilience/`, mirroring the source hierarchy:
 
 | Test File | Tests For |
 |---|---|
@@ -2314,5 +2314,5 @@ Tests are located under `source/testroots/automojo/tests/singlehost/agentkit/res
 ```bash
 source .venv/bin/activate
 
-testbase testing run --root source/testroots/automojo --includes=automojo.tests.singlehost.agentkit.resilience --output=./.output
+testbase testing run --root source/testroots/ccai --includes=ccai.tests.singlehost.agentkit.resilience --output=./.output
 ```

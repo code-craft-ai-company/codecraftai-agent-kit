@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The Communication & Messaging feature extends the `automojo-agent-kit` SDK with a unified system for agent-to-agent communication and message exchange. It defines a pluggable transport layer abstraction with a common interface supporting multiple protocols (HTTP, WebSocket, gRPC, message queues), an agent-to-agent communication protocol with addressing and routing, pub/sub messaging for event-driven communication, request/response and fire-and-forget messaging patterns, and message serialization/deserialization across multiple formats (JSON, Protobuf, MessagePack). The system integrates with the Agent base class so agents can send and receive messages, with the AgentRegistry for agent address resolution, with `automojo-extension` so transport and serializer plugins can be discovered and loaded, with `automojo-credentials` for transport authentication, with `automojo-dataprofiles` for data profile management, and with `automojo-this-app` for settings and environment configuration.
+The Communication & Messaging feature extends the `codecraftai-agent-kit` SDK with a unified system for agent-to-agent communication and message exchange. It defines a pluggable transport layer abstraction with a common interface supporting multiple protocols (HTTP, WebSocket, gRPC, message queues), an agent-to-agent communication protocol with addressing and routing, pub/sub messaging for event-driven communication, request/response and fire-and-forget messaging patterns, and message serialization/deserialization across multiple formats (JSON, Protobuf, MessagePack). The system integrates with the Agent base class so agents can send and receive messages, with the AgentRegistry for agent address resolution, with `codecraftai-extension` so transport and serializer plugins can be discovered and loaded, with `codecraftai-credentials` for transport authentication, with `codecraftai-dataprofiles` for data profile management, and with `codecraftai-this-app` for settings and environment configuration.
 
 ## Glossary
 
@@ -24,8 +24,8 @@ The Communication & Messaging feature extends the `automojo-agent-kit` SDK with 
 - **MessagingConfiguration**: A configuration object that defines the default transport, serialization format, request timeout, and pub/sub settings for an Agent's messaging system.
 - **Agent**: The base agent class defined in the Core Agent Framework that owns a TransportRegistry, MessageRouter, and PubSubBroker for communication.
 - **AgentRegistry**: The singleton registry defined in the Core Agent Framework that tracks all Agent instances, used by the AddressResolver for agent lookup.
-- **ExtensionPoint**: An integration surface provided by `automojo-extension` that allows external plugins to register Transport and MessageSerializer implementations with an Agent.
-- **CredentialReference**: A named reference resolved through `automojo-credentials` that provides secure access to secrets required by a Transport (TLS certificates, API keys, authentication tokens).
+- **ExtensionPoint**: An integration surface provided by `codecraftai-extension` that allows external plugins to register Transport and MessageSerializer implementations with an Agent.
+- **CredentialReference**: A named reference resolved through `codecraftai-credentials` that provides secure access to secrets required by a Transport (TLS certificates, API keys, authentication tokens).
 - **ConfigurationError**: An exception raised for configuration-related problems, inherited from AgentKitError.
 - **SemanticError**: An exception raised for API misuse, inherited from AgentKitError.
 - **TransportError**: An exception raised when a Transport operation fails due to a connection, send, or receive error.
@@ -63,9 +63,9 @@ The Communication & Messaging feature extends the `automojo-agent-kit` SDK with 
 2. THE TransportConfiguration SHALL support loading configuration from a Python dictionary.
 3. THE TransportConfiguration SHALL support loading configuration from a JSON file path.
 4. THE TransportConfiguration SHALL support loading configuration from a YAML file path.
-5. WHEN a configuration file path is provided, THE TransportConfiguration SHALL resolve the file path relative to the AppContext directory provided by `automojo-this-app`.
+5. WHEN a configuration file path is provided, THE TransportConfiguration SHALL resolve the file path relative to the AppContext directory provided by `codecraftai-this-app`.
 6. THE TransportConfiguration SHALL validate all required fields are present during loading and raise a ConfigurationError when required fields are missing.
-7. THE TransportConfiguration SHALL support CredentialReference entries for transport authentication that are resolved through `automojo-credentials` at initialization time.
+7. THE TransportConfiguration SHALL support CredentialReference entries for transport authentication that are resolved through `codecraftai-credentials` at initialization time.
 8. IF a CredentialReference cannot be resolved, THEN THE TransportConfiguration SHALL raise a ConfigurationError that identifies the unresolvable credential name.
 9. IF an invalid protocol type is provided, THEN THE TransportConfiguration SHALL raise a ConfigurationError identifying the invalid protocol type and listing the valid protocol types.
 10. THE TransportConfiguration SHALL provide an as_dict method that returns a dictionary representation of the configuration, excluding resolved credential values.
@@ -296,7 +296,7 @@ The Communication & Messaging feature extends the `automojo-agent-kit` SDK with 
 2. THE HttpTransport SHALL support sending messages as HTTP POST requests with the serialized message payload as the request body.
 3. THE HttpTransport SHALL support configurable HTTP headers from the TransportConfiguration headers dictionary.
 4. THE HttpTransport SHALL support TLS connections when the TransportConfiguration specifies HTTPS.
-5. THE HttpTransport SHALL resolve CredentialReference names for authentication headers (Bearer tokens, API keys) through `automojo-credentials`.
+5. THE HttpTransport SHALL resolve CredentialReference names for authentication headers (Bearer tokens, API keys) through `codecraftai-credentials`.
 6. IF an HTTP request fails due to a connection error, THEN THE HttpTransport SHALL raise a TransportError that includes the target URL and the connection error detail.
 7. IF an HTTP request fails due to a timeout, THEN THE HttpTransport SHALL raise a TransportError that includes the target URL and the timeout duration.
 8. IF an HTTP response has a status code indicating a server error (5xx), THEN THE HttpTransport SHALL raise a TransportError that includes the target URL, the status code, and the response body.
@@ -327,7 +327,7 @@ The Communication & Messaging feature extends the `automojo-agent-kit` SDK with 
 3. WHEN the disconnect method is called, THE GrpcTransport SHALL close the gRPC channel gracefully.
 4. THE GrpcTransport SHALL support sending messages as gRPC unary calls with the serialized message payload.
 5. THE GrpcTransport SHALL support TLS connections when the TransportConfiguration specifies secure gRPC.
-6. THE GrpcTransport SHALL resolve CredentialReference names for channel credentials through `automojo-credentials`.
+6. THE GrpcTransport SHALL resolve CredentialReference names for channel credentials through `codecraftai-credentials`.
 7. IF a gRPC call fails due to a connection error, THEN THE GrpcTransport SHALL raise a TransportError that includes the target endpoint and the gRPC status code.
 8. IF a gRPC call fails due to a deadline exceeded, THEN THE GrpcTransport SHALL raise a TransportError that includes the target endpoint and the timeout duration.
 
@@ -343,7 +343,7 @@ The Communication & Messaging feature extends the `automojo-agent-kit` SDK with 
 4. THE MessageQueueTransport SHALL support sending messages by publishing to a named queue.
 5. THE MessageQueueTransport SHALL support receiving messages by consuming from a named queue.
 6. THE MessageQueueTransport SHALL support configurable queue names from the TransportConfiguration options dictionary.
-7. THE MessageQueueTransport SHALL resolve CredentialReference names for broker authentication through `automojo-credentials`.
+7. THE MessageQueueTransport SHALL resolve CredentialReference names for broker authentication through `codecraftai-credentials`.
 8. IF a message queue operation fails due to a connection error, THEN THE MessageQueueTransport SHALL raise a TransportError that includes the broker endpoint and the connection error detail.
 9. IF a message queue operation fails due to a queue not found error, THEN THE MessageQueueTransport SHALL raise a TransportError that includes the queue name.
 
@@ -357,9 +357,9 @@ The Communication & Messaging feature extends the `automojo-agent-kit` SDK with 
 2. THE MessagingConfiguration SHALL support loading configuration from a Python dictionary.
 3. THE MessagingConfiguration SHALL support loading configuration from a JSON file path.
 4. THE MessagingConfiguration SHALL support loading configuration from a YAML file path.
-5. WHEN a configuration file path is provided, THE MessagingConfiguration SHALL resolve the file path relative to the AppContext directory provided by `automojo-this-app`.
+5. WHEN a configuration file path is provided, THE MessagingConfiguration SHALL resolve the file path relative to the AppContext directory provided by `codecraftai-this-app`.
 6. THE MessagingConfiguration SHALL validate all required fields are present during loading and raise a ConfigurationError when required fields are missing.
-7. THE MessagingConfiguration SHALL support CredentialReference entries that are resolved through `automojo-credentials` at initialization time.
+7. THE MessagingConfiguration SHALL support CredentialReference entries that are resolved through `codecraftai-credentials` at initialization time.
 8. IF a CredentialReference cannot be resolved, THEN THE MessagingConfiguration SHALL raise a ConfigurationError that identifies the unresolvable credential name.
 9. THE MessagingConfiguration SHALL provide an as_dict method that returns a dictionary representation of the configuration, excluding resolved credential values.
 10. THE MessagingConfiguration SHALL provide a to_json method that returns a JSON string representation of the configuration, excluding resolved credential values.
@@ -386,21 +386,21 @@ The Communication & Messaging feature extends the `automojo-agent-kit` SDK with 
 9. THE Agent base class SHALL provide a subscribe method that accepts a topic string and a MessageHandler callback, and registers a subscription with the PubSubBroker.
 10. IF the requested transport name is not found in the Agent's TransportRegistry, THEN THE send_message method SHALL raise a SemanticError that includes the requested transport name and the agent identity.
 11. WHEN an Agent transitions to the INITIALIZED state, THE Agent SHALL construct the TransportRegistry, MessageRouter, PubSubBroker, AddressResolver, and RequestResponseHandler from the Agent's MessagingConfiguration.
-12. WHEN an Agent transitions to the INITIALIZED state, THE Agent SHALL discover and register all Transport and MessageSerializer plugins from `automojo-extension` ExtensionPoint entries targeting the Agent.
+12. WHEN an Agent transitions to the INITIALIZED state, THE Agent SHALL discover and register all Transport and MessageSerializer plugins from `codecraftai-extension` ExtensionPoint entries targeting the Agent.
 13. WHEN an Agent transitions to the STOPPED state, THE Agent SHALL disconnect all connected Transports and clear the TransportRegistry.
 14. WHEN an Agent transitions to the STOPPED state, THE Agent's PubSubBroker SHALL remove all subscriptions.
 15. IF the Agent's MessagingConfiguration is not provided, THEN THE Agent SHALL default to a JsonMessageSerializer and no registered transports.
 
 ### Requirement 22: Transport Plugin Integration
 
-**User Story:** As a developer, I want to distribute transports as plugins through `automojo-extension`, so that transport packages can be installed and discovered automatically by agents.
+**User Story:** As a developer, I want to distribute transports as plugins through `codecraftai-extension`, so that transport packages can be installed and discovered automatically by agents.
 
 #### Acceptance Criteria
 
-1. THE framework SHALL define an ExtensionPoint named "automojo.agentkit.transports" through `automojo-extension` for registering Transport plugin implementations.
-2. THE framework SHALL define an ExtensionPoint named "automojo.agentkit.message_serializers" through `automojo-extension` for registering MessageSerializer plugin implementations.
-3. WHEN an Agent is initialized, THE Agent SHALL query the "automojo.agentkit.transports" ExtensionPoint and register all discovered Transport instances with the Agent's TransportRegistry.
-4. WHEN an Agent is initialized, THE Agent SHALL query the "automojo.agentkit.message_serializers" ExtensionPoint and register all discovered MessageSerializer instances with the Agent's MessageSerializerRegistry.
+1. THE framework SHALL define an ExtensionPoint named "ccai.agentkit.transports" through `codecraftai-extension` for registering Transport plugin implementations.
+2. THE framework SHALL define an ExtensionPoint named "ccai.agentkit.message_serializers" through `codecraftai-extension` for registering MessageSerializer plugin implementations.
+3. WHEN an Agent is initialized, THE Agent SHALL query the "ccai.agentkit.transports" ExtensionPoint and register all discovered Transport instances with the Agent's TransportRegistry.
+4. WHEN an Agent is initialized, THE Agent SHALL query the "ccai.agentkit.message_serializers" ExtensionPoint and register all discovered MessageSerializer instances with the Agent's MessageSerializerRegistry.
 5. IF a Transport plugin fails to load, THEN THE Agent SHALL log the failure at WARNING level including the plugin name and the error detail, and continue loading remaining plugins.
 6. IF a Transport plugin provides a Transport with a name that conflicts with an already registered Transport, THEN THE Agent SHALL log the conflict at WARNING level including both transport names and skip the conflicting plugin transport.
 7. IF a MessageSerializer plugin fails to load, THEN THE Agent SHALL log the failure at WARNING level including the plugin name and the error detail, and continue loading remaining plugins.
@@ -447,7 +447,7 @@ The Communication & Messaging feature extends the `automojo-agent-kit` SDK with 
 
 #### Acceptance Criteria
 
-1. THE framework SHALL use the Python standard logging module with a logger hierarchy under `automojo.agentkit.messaging`.
+1. THE framework SHALL use the Python standard logging module with a logger hierarchy under `ccai.agentkit.messaging`.
 2. WHEN a Transport connects, THE Transport SHALL log at INFO level including the transport name, protocol type, and endpoint.
 3. WHEN a Transport disconnects, THE Transport SHALL log at INFO level including the transport name and protocol type.
 4. WHEN a message is sent, THE framework SHALL log at INFO level including the message identifier, sender address, recipient address, transport name, and pattern.

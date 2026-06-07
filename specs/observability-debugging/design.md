@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Observability & Debugging feature extends the `automojo-agent-kit` SDK with a comprehensive system for monitoring, tracing, measuring, recording, and debugging agent execution. It provides five interconnected subsystems:
+The Observability & Debugging feature extends the `codecraftai-agent-kit` SDK with a comprehensive system for monitoring, tracing, measuring, recording, and debugging agent execution. It provides five interconnected subsystems:
 
 1. **Structured Logging** — Correlation-enriched log entries with pluggable formatters and exporters
 2. **Distributed Tracing** — W3C Trace Context compatible spans with configurable sampling and pluggable exporters
@@ -10,12 +10,12 @@ The Observability & Debugging feature extends the `automojo-agent-kit` SDK with 
 4. **Execution Recording & Replay** — Ordered event capture with serialization and step-through replay
 5. **Debug Mode** — Breakpoint-driven step-through execution with read-only state inspection
 
-All classes live under `source/packages/automojo/agentkit/` with filenames in all-lowercase (no underscores), following the project naming conventions. The framework integrates with four external automojo packages:
+All classes live under `source/packages/ccai/agentkit/` with filenames in all-lowercase (no underscores), following the project naming conventions. The framework integrates with four external ccai packages:
 
-- `automojo-this-app` — AppContext for settings, environment variables, and directory-based file path resolution
-- `automojo-credentials` — CredentialReference resolution for exporter authentication
-- `automojo-dataprofiles` — DataProfileReference resolution
-- `automojo-extension` — ExtensionPoint registration and plugin discovery for exporter plugins
+- `codecraftai-this-app` — AppContext for settings, environment variables, and directory-based file path resolution
+- `codecraftai-credentials` — CredentialReference resolution for exporter authentication
+- `codecraftai-dataprofiles` — DataProfileReference resolution
+- `codecraftai-extension` — ExtensionPoint registration and plugin discovery for exporter plugins
 
 The design prioritizes debuggability over performance and readability over conciseness, per the project coding standards.
 
@@ -81,9 +81,9 @@ graph TD
     end
 
     subgraph External Packages
-        AppContext[automojo-this-app]
-        Credentials[automojo-credentials]
-        Extension[automojo-extension]
+        AppContext[codecraftai-this-app]
+        Credentials[codecraftai-credentials]
+        Extension[codecraftai-extension]
         Agent[Agent base class]
     end
 
@@ -206,7 +206,7 @@ flowchart LR
 3. **Abstract base classes for formatters and exporters using abc.ABC** — Enables pluggable backends while enforcing a consistent interface contract.
 4. **ObservabilityPipeline as the single coordination point** — All subsystems are owned and coordinated by the pipeline, simplifying agent integration to a single property.
 5. **No-op behavior when subsystems are disabled** — When tracing, metrics, or recording are disabled in configuration, the respective components operate as no-ops rather than being absent, avoiding null checks throughout agent code.
-6. **Exporter plugin discovery via automojo-extension** — External packages contribute exporters through ExtensionPoint registration, following the same pattern as the core agent framework.
+6. **Exporter plugin discovery via codecraftai-extension** — External packages contribute exporters through ExtensionPoint registration, following the same pattern as the core agent framework.
 7. **Sampling at the root span level** — When a root span is sampled, all child spans within the same trace are also sampled, maintaining trace completeness.
 8. **Serialization follows naming conventions** — as_dict for dictionary conversion, to_json/to_yaml for serialization, from_dict/from_json/from_yaml for deserialization.
 9. **SemanticError for API misuse, ConfigurationError for configuration problems, ObservabilityError for operational failures** — Consistent with the core agent framework error hierarchy.
@@ -339,7 +339,7 @@ class StructuredLogger:
     def __init__(self, agent_id: str, correlation_context: CorrelationContext):
         self._agent_id = agent_id
         self._correlation_context = correlation_context
-        self._logger_name = "automojo.agentkit.observability"
+        self._logger_name = "ccai.agentkit.observability"
         self._logger = logging.getLogger(self._logger_name)
         return
 
@@ -461,7 +461,7 @@ class ConsoleLogExporter(LogExporter):
 class FileLogExporter(LogExporter):
     """
         Writes formatted log entries to a specified file path, resolved relative
-        to the AppContext directory provided by automojo-this-app.
+        to the AppContext directory provided by codecraftai-this-app.
     """
 
     def __init__(self, formatter: LogFormatter, file_path: str, app_context=None):
@@ -686,7 +686,7 @@ class ConsoleTraceExporter(TraceExporter):
 class FileTraceExporter(TraceExporter):
     """
         Writes completed TraceSpan objects as JSON lines to a specified file path,
-        resolved relative to the AppContext directory provided by automojo-this-app.
+        resolved relative to the AppContext directory provided by codecraftai-this-app.
     """
 
     def __init__(self, file_path: str, app_context=None):
@@ -924,7 +924,7 @@ class ConsoleMetricsExporter(MetricsExporter):
 class FileMetricsExporter(MetricsExporter):
     """
         Writes MetricMeasurement objects as JSON lines to a specified file path,
-        resolved relative to the AppContext directory provided by automojo-this-app.
+        resolved relative to the AppContext directory provided by codecraftai-this-app.
     """
 
     def __init__(self, file_path: str, app_context=None):
@@ -1640,7 +1640,7 @@ Raised for configuration problems:
 - Invalid log format (identifies the invalid value and lists valid formats)
 - Sampling rate outside 0.0–1.0 range (indicates the valid range)
 - Unresolvable CredentialReference (identifies the credential name)
-- Missing AppContext for file path resolution (indicates automojo-this-app must be initialized)
+- Missing AppContext for file path resolution (indicates codecraftai-this-app must be initialized)
 
 ### Exporter Error Handling
 When a LogExporter, TraceExporter, or MetricsExporter export operation fails:
@@ -1661,7 +1661,7 @@ When an ObservabilityExporterPlugin conflicts with an already registered exporte
 ## Testing Strategy
 
 ### Testing Framework
-Tests use testbase and reside under source/testroots/automojo/tests/singlehost/agentkit/, mirroring the source hierarchy:
+Tests use testbase and reside under source/testroots/ccai/tests/singlehost/agentkit/, mirroring the source hierarchy:
 
 | Source File | Test File |
 |---|---|
@@ -1699,7 +1699,7 @@ Tests use testbase and reside under source/testroots/automojo/tests/singlehost/a
 - Property-based tests: universal properties across randomly generated inputs
 
 ### Property-Based Testing Configuration
-- Library: automojo.testbase.properties (built-in testbase property testing engine)
+- Library: ccai.testbase.properties (built-in testbase property testing engine)
 - Minimum 100 iterations per property test
 - Each test tagged: Feature: observability-debugging, Property N: title
 - Each correctness property implemented by a single property-based test
@@ -1720,5 +1720,5 @@ Tests use testbase and reside under source/testroots/automojo/tests/singlehost/a
 ### Running Tests
 ```bash
 source .venv/bin/activate
-testbase testing run --root source/testroots/automojo --includes=automojo.tests.singlehost.agentkit --output=./.output
+testbase testing run --root source/testroots/ccai --includes=ccai.tests.singlehost.agentkit --output=./.output
 ```

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Cross-Platform Runtime feature extends the `automojo-agent-kit` SDK with a platform abstraction layer that enables agents to run across cloud providers (AWS, Azure, GCP) and local environments through a unified API surface. It provides:
+The Cross-Platform Runtime feature extends the `codecraftai-agent-kit` SDK with a platform abstraction layer that enables agents to run across cloud providers (AWS, Azure, GCP) and local environments through a unified API surface. It provides:
 
 1. **Platform Type & Detection** — `PlatformType` enumeration and `PlatformDetector` for environment-based platform identification
 2. **Platform Configuration** — `PlatformConfiguration` for declarative platform-specific settings with JSON/YAML serialization
@@ -15,7 +15,7 @@ The Cross-Platform Runtime feature extends the `automojo-agent-kit` SDK with a p
 9. **Exception Hierarchy** — `PlatformError` and subtypes for precise error classification
 10. **Extension & Logging** — Plugin-based adapter registration and structured logging
 
-All classes live under `source/packages/automojo/agentkit/` with filenames in all-lowercase (no underscores), following the project naming conventions. The platform module is organized into sub-packages:
+All classes live under `source/packages/ccai/agentkit/` with filenames in all-lowercase (no underscores), following the project naming conventions. The platform module is organized into sub-packages:
 
 - `platform/` — Core platform abstractions, configuration, detection, runtime, registry, errors
 - `platform/services/` — Abstract service base classes and data transfer objects
@@ -25,9 +25,9 @@ All classes live under `source/packages/automojo/agentkit/` with filenames in al
 The system integrates with:
 
 - Core Agent Framework — `Agent` base class, `AgentConfiguration`, `LifecycleState`
-- `automojo-this-app` — `AppContext` for settings, environment variables, and directory-based presence
-- `automojo-credentials` — `CredentialReference` for cloud provider authentication
-- `automojo-extension` — `ExtensionPoint` for platform adapter plugin discovery
+- `codecraftai-this-app` — `AppContext` for settings, environment variables, and directory-based presence
+- `codecraftai-credentials` — `CredentialReference` for cloud provider authentication
+- `codecraftai-extension` — `ExtensionPoint` for platform adapter plugin discovery
 - Testing & Quality — `PlatformTestHarness` and `SimulatedPlatformService` simulate the abstractions defined here
 
 The design prioritizes debuggability over performance and readability over conciseness, per the project coding standards.
@@ -36,7 +36,7 @@ The design prioritizes debuggability over performance and readability over conci
 
 ```mermaid
 graph TD
-    subgraph "automojo.agentkit.platform"
+    subgraph "ccai.agentkit.platform"
         PlatformType[PlatformType enum]
         PlatformDetector[PlatformDetector]
         PlatformConfiguration[PlatformConfiguration]
@@ -45,7 +45,7 @@ graph TD
         PlatformErrors[PlatformError / PlatformDetectionError / StorageError / ComputeError / MessagingError / DeploymentDescriptorError]
     end
 
-    subgraph "automojo.agentkit.platform.services"
+    subgraph "ccai.agentkit.platform.services"
         PlatformService[PlatformService ABC]
         ComputeService[ComputeService ABC]
         StorageService[StorageService ABC]
@@ -55,7 +55,7 @@ graph TD
         InvocationResult[InvocationResult]
     end
 
-    subgraph "automojo.agentkit.platform.adapters"
+    subgraph "ccai.agentkit.platform.adapters"
         PlatformAdapter[PlatformAdapter ABC]
         AwsAdapter[AwsPlatformAdapter]
         AzureAdapter[AzurePlatformAdapter]
@@ -63,7 +63,7 @@ graph TD
         LocalAdapter[LocalPlatformAdapter]
     end
 
-    subgraph "automojo.agentkit.platform.deployment"
+    subgraph "ccai.agentkit.platform.deployment"
         DeploymentDescriptor[DeploymentDescriptor]
         DeploymentDescriptorParser[DeploymentDescriptorParser]
         DeploymentDescriptorPrinter[DeploymentDescriptorPrinter]
@@ -76,9 +76,9 @@ graph TD
     end
 
     subgraph "External Packages"
-        AppContext[automojo-this-app]
-        Credentials[automojo-credentials]
-        Extension[automojo-extension]
+        AppContext[codecraftai-this-app]
+        Credentials[codecraftai-credentials]
+        Extension[codecraftai-extension]
     end
 
     PlatformRuntime --> PlatformConfiguration
@@ -174,11 +174,11 @@ flowchart TD
 
 7. **Adapter bundles all services** — Each `PlatformAdapter` provides compute, storage, and messaging as a unit. Swapping platforms means swapping one adapter, not three services.
 
-8. **Extension point for custom adapters** — Third-party platforms can register adapters via `automojo-extension` without modifying the core codebase.
+8. **Extension point for custom adapters** — Third-party platforms can register adapters via `codecraftai-extension` without modifying the core codebase.
 
 9. **Credential resolution at configuration time** — `PlatformConfiguration` resolves `CredentialReference` entries during initialization, failing fast if credentials are unavailable.
 
-10. **Structured logging via Python standard logging** — All platform components log to the `automojo.agentkit.platform` logger hierarchy, consistent with the observability design.
+10. **Structured logging via Python standard logging** — All platform components log to the `ccai.agentkit.platform` logger hierarchy, consistent with the observability design.
 
 
 ## Components and Interfaces
@@ -268,7 +268,7 @@ class PlatformType(enum.Enum):
 import logging
 import os
 
-logger = logging.getLogger("automojo.agentkit.platform")
+logger = logging.getLogger("ccai.agentkit.platform")
 
 class PlatformDetector:
     """
@@ -1694,14 +1694,14 @@ class PlatformRuntime:
                                        configuration: PlatformConfiguration) -> PlatformAdapter:
         """
             Discovers and loads PlatformAdapter implementations from the
-            automojo.agentkit.platform.adapters extension point.
+            ccai.agentkit.platform.adapters extension point.
 
             :param platform_type: The target PlatformType.
             :param configuration: The PlatformConfiguration.
 
             :returns: A PlatformAdapter instance or None.
         """
-        # Integration with automojo-extension ExtensionPoint
+        # Integration with codecraftai-extension ExtensionPoint
         # Returns None if no plugin adapter matches the platform type
         ...
 
@@ -2236,7 +2236,7 @@ class DeploymentDescriptorError(PlatformError):
 
 ### Extension Point Integration (Requirement 23)
 
-The framework defines an `ExtensionPoint` named `"automojo.agentkit.platform.adapters"` through `automojo-extension` for registering `PlatformAdapter` implementations.
+The framework defines an `ExtensionPoint` named `"ccai.agentkit.platform.adapters"` through `codecraftai-extension` for registering `PlatformAdapter` implementations.
 
 - During `PlatformRuntime.create_auto`, the runtime discovers all registered adapters from the extension point
 - If a plugin provides an adapter matching the detected `PlatformType`, the plugin adapter is used
@@ -2245,16 +2245,16 @@ The framework defines an `ExtensionPoint` named `"automojo.agentkit.platform.ada
 
 ### Structured Logging (Requirement 24)
 
-All platform components use the Python standard `logging` module with a logger hierarchy rooted at `automojo.agentkit.platform`:
+All platform components use the Python standard `logging` module with a logger hierarchy rooted at `ccai.agentkit.platform`:
 
 | Logger Name | Component |
 |---|---|
-| `automojo.agentkit.platform` | Root platform logger |
-| `automojo.agentkit.platform.detector` | PlatformDetector |
-| `automojo.agentkit.platform.runtime` | PlatformRuntime |
-| `automojo.agentkit.platform.services` | PlatformService subclasses |
-| `automojo.agentkit.platform.adapters` | PlatformAdapter subclasses |
-| `automojo.agentkit.platform.deployment` | DeploymentDescriptor parsing/printing |
+| `ccai.agentkit.platform` | Root platform logger |
+| `ccai.agentkit.platform.detector` | PlatformDetector |
+| `ccai.agentkit.platform.runtime` | PlatformRuntime |
+| `ccai.agentkit.platform.services` | PlatformService subclasses |
+| `ccai.agentkit.platform.adapters` | PlatformAdapter subclasses |
+| `ccai.agentkit.platform.deployment` | DeploymentDescriptor parsing/printing |
 
 Logging levels:
 - **INFO** — Platform detection results, runtime initialization, health check results
@@ -2400,7 +2400,7 @@ Error messages follow the multi-line formation pattern: build a list of lines, j
 
 ### Testing Framework
 
-Tests use `testbase` and reside under `source/testroots/automojo/tests/singlehost/agentkit/platform/`, mirroring the source hierarchy:
+Tests use `testbase` and reside under `source/testroots/ccai/tests/singlehost/agentkit/platform/`, mirroring the source hierarchy:
 
 | Source File | Test File |
 |---|---|
@@ -2420,12 +2420,12 @@ Tests use `testbase` and reside under `source/testroots/automojo/tests/singlehos
 
 ### Dual Testing Approach
 
-- **Unit tests**: Specific examples, edge cases, error conditions, integration with external packages (using `automojo.testbase.mocking.Mock`)
-- **Property-based tests**: Universal properties across randomly generated inputs using automojo.testbase.properties
+- **Unit tests**: Specific examples, edge cases, error conditions, integration with external packages (using `ccai.testbase.mocking.Mock`)
+- **Property-based tests**: Universal properties across randomly generated inputs using ccai.testbase.properties
 
 ### Property-Based Testing Configuration
 
-- Library: automojo.testbase.properties (built-in testbase property testing engine)
+- Library: ccai.testbase.properties (built-in testbase property testing engine)
 - Minimum 100 iterations per property test
 - Each test tagged: `Feature: cross-platform-runtime, Property N: title`
 - Each correctness property implemented by a single property-based test
@@ -2434,7 +2434,7 @@ Tests use `testbase` and reside under `source/testroots/automojo/tests/singlehos
 ### Unit Test Focus Areas
 
 - `PlatformType.from_string` with valid and invalid inputs
-- `PlatformDetector` with mocked environment variables (using `automojo.testbase.mocking.create_module_patch` on `os.environ`)
+- `PlatformDetector` with mocked environment variables (using `ccai.testbase.mocking.create_module_patch` on `os.environ`)
 - `PlatformConfiguration` loading from dict, JSON, YAML with valid and invalid data
 - `PlatformServiceRegistry` registration, deregistration, lookup, duplicate detection
 - `PlatformRuntime` initialization, service access, auto-configuration with mocked detector and adapters
@@ -2446,10 +2446,10 @@ Tests use `testbase` and reside under `source/testroots/automojo/tests/singlehos
 
 ### Mocking Strategy
 
-Cloud platform adapters (AWS, Azure, GCP) are tested using `automojo.testbase.mocking.Mock` to simulate SDK clients:
+Cloud platform adapters (AWS, Azure, GCP) are tested using `ccai.testbase.mocking.Mock` to simulate SDK clients:
 
 ```python
-from automojo.testbase.mocking import Mock
+from ccai.testbase.mocking import Mock
 
 # Example: Mock AWS S3 client for AwsStorageService testing
 mock_s3_client = Mock()
@@ -2464,5 +2464,5 @@ The `LocalPlatformAdapter` is tested with real file system operations (using tem
 
 ```bash
 source .venv/bin/activate
-testbase testing run --root source/testroots/automojo --includes=automojo.tests.singlehost.agentkit.platform --output=./.output
+testbase testing run --root source/testroots/ccai --includes=ccai.tests.singlehost.agentkit.platform --output=./.output
 ```

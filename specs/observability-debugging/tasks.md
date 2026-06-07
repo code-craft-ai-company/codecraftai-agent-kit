@@ -2,7 +2,7 @@
 
 ## Overview
 
-Implement the Observability & Debugging feature for the `automojo-agent-kit` SDK. The implementation follows a bottom-up approach: shared types and error first, then data models (log entries, trace contexts, metric definitions, execution records, breakpoints), then active components (loggers, tracers, collectors, recorders, debug sessions), then exporters, then the coordination layer (ObservabilityPipeline, ObservabilityConfiguration), and finally Agent integration. All source files go under `source/packages/automojo/agentkit/` with lowercase filenames. Tests go under `source/testroots/automojo/tests/singlehost/agentkit/`.
+Implement the Observability & Debugging feature for the `codecraftai-agent-kit` SDK. The implementation follows a bottom-up approach: shared types and error first, then data models (log entries, trace contexts, metric definitions, execution records, breakpoints), then active components (loggers, tracers, collectors, recorders, debug sessions), then exporters, then the coordination layer (ObservabilityPipeline, ObservabilityConfiguration), and finally Agent integration. All source files go under `source/packages/ccai/agentkit/` with lowercase filenames. Tests go under `source/testroots/ccai/tests/singlehost/agentkit/`.
 
 ## Tasks
 
@@ -68,7 +68,7 @@ Implement the Observability & Debugging feature for the `automojo-agent-kit` SDK
 - [x] 3. Implement StructuredLogger and LogExporter
   - [x] 3.1 Create `structuredlogger.py` with StructuredLogger class
     - Accept agent_id and CorrelationContext at construction
-    - Delegate to Python standard logging under `automojo.agentkit.observability`
+    - Delegate to Python standard logging under `ccai.agentkit.observability`
     - Provide debug, info, warning, error, critical methods creating StructuredLogEntry with current timestamp, correlation_id, agent_id, and metadata kwargs
     - Provide set_correlation_context method and read-only correlation_context property
     - Implement __repr__ and __str__
@@ -397,7 +397,7 @@ Implement the Observability & Debugging feature for the `automojo-agent-kit` SDK
   - [x] 14.1 Create `observabilityconfiguration.py` with ObservabilityConfiguration class
     - Accept log_level, log_format, tracing_enabled, metrics_enabled, recording_enabled, debug_mode_enabled, sampling_rate, exporter_settings
     - Validate log_level against VALID_LOG_LEVELS, log_format against VALID_LOG_FORMATS, sampling_rate in 0.0–1.0; raise ConfigurationError on invalid values
-    - Support CredentialReference entries resolved through automojo-credentials
+    - Support CredentialReference entries resolved through codecraftai-credentials
     - Implement as_dict (excluding credential secrets), to_json, to_yaml, from_dict, from_json, from_yaml, from_json_file, from_yaml_file
     - File paths resolved relative to AppContext directory
     - Implement __repr__, __str__
@@ -459,7 +459,7 @@ Implement the Observability & Debugging feature for the `automojo-agent-kit` SDK
     - _Requirements: 27.1, 27.2, 27.3, 27.4, 27.5, 27.6, 27.7, 27.8, 27.9, 27.10, 17.2, 17.3, 17.4, 17.5, 17.6_
 
   - [x] 17.2 Implement exporter plugin discovery integration
-    - Define ExtensionPoints: "automojo.agentkit.log_exporters", "automojo.agentkit.trace_exporters", "automojo.agentkit.metrics_exporters"
+    - Define ExtensionPoints: "ccai.agentkit.log_exporters", "ccai.agentkit.trace_exporters", "ccai.agentkit.metrics_exporters"
     - Query ExtensionPoints during Agent initialization and register discovered exporters
     - Log plugin loading failures at WARNING and continue; log conflicts at WARNING and skip
     - _Requirements: 28.1, 28.2, 28.3, 28.4, 28.5, 28.6_
@@ -478,7 +478,7 @@ Implement the Observability & Debugging feature for the `automojo-agent-kit` SDK
 - Checkpoints ensure incremental validation
 - Property tests validate universal correctness properties from the design document
 - Unit tests validate specific examples, edge cases, and error conditions
-- All source files use lowercase filenames with no underscores under `source/packages/automojo/agentkit/`
-- All test files go under `source/testroots/automojo/tests/singlehost/agentkit/` mirroring the source hierarchy
-- Tests use the `testbase` framework and `automojo.testbase.mocking` for mocks
-- Run tests with: `source .venv/bin/activate && testbase testing run --root source/testroots/automojo --includes=automojo.tests.singlehost.agentkit --output=./.output`
+- All source files use lowercase filenames with no underscores under `source/packages/ccai/agentkit/`
+- All test files go under `source/testroots/ccai/tests/singlehost/agentkit/` mirroring the source hierarchy
+- Tests use the `testbase` framework and `ccai.testbase.mocking` for mocks
+- Run tests with: `source .venv/bin/activate && testbase testing run --root source/testroots/ccai --includes=ccai.tests.singlehost.agentkit --output=./.output`

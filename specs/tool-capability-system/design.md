@@ -15,13 +15,13 @@ The system provides:
 - `ToolResult` and `ToolChainResult` for structured execution outcomes
 - Built-in tools: `FileReadTool`, `FileWriteTool`, `HttpRequestTool`, `ShellCommandTool`
 - A `create_tool` factory function for quick tool creation without subclassing
-- Plugin integration via `automojo-extension` ExtensionPoint
+- Plugin integration via `codecraftai-extension` ExtensionPoint
 
-All classes live under `source/packages/automojo/agentkit/` with filenames in all-lowercase (no underscores), following the project naming conventions. The system integrates with:
+All classes live under `source/packages/ccai/agentkit/` with filenames in all-lowercase (no underscores), following the project naming conventions. The system integrates with:
 
 - Core Agent Framework — `Agent` base class, `AgentConfiguration`, `AgentIdentity`, `AgentRegistry`
-- `automojo-extension` — `ExtensionPoint` for tool plugin discovery
-- `automojo-credentials` — `CredentialReference` resolution for tools requiring secrets
+- `codecraftai-extension` — `ExtensionPoint` for tool plugin discovery
+- `codecraftai-credentials` — `CredentialReference` resolution for tools requiring secrets
 
 The design prioritizes debuggability over performance and readability over conciseness, per the project coding standards.
 
@@ -29,7 +29,7 @@ The design prioritizes debuggability over performance and readability over conci
 
 ```mermaid
 graph TD
-    subgraph automojo.agentkit - Tool System
+    subgraph ccai.agentkit - Tool System
         Tool[Tool base class]
         ToolDescriptor[ToolDescriptor]
         ToolSchema[ToolSchema]
@@ -55,8 +55,8 @@ graph TD
     end
 
     subgraph External Packages
-        Extension[automojo-extension]
-        Credentials[automojo-credentials]
+        Extension[codecraftai-extension]
+        Credentials[codecraftai-credentials]
     end
 
     Agent --> ToolRegistry
@@ -87,7 +87,7 @@ sequenceDiagram
     participant ToolSchema as Input Schema
     participant Tool
     participant OutputSchema as Output Schema
-    participant Credentials as automojo-credentials
+    participant Credentials as codecraftai-credentials
 
     Agent->>ToolExecutor: execute(tool_name, inputs)
     ToolExecutor->>ToolSchema: validate(inputs)
@@ -462,7 +462,7 @@ class ToolExecutor:
 
     def __init__(self, credential_resolver=None):
         self._credential_resolver = credential_resolver
-        self._logger = logging.getLogger("automojo.agentkit.tools")
+        self._logger = logging.getLogger("ccai.agentkit.tools")
         return
 
     def execute(self, tool: Tool, inputs: dict, agent_identifier: str = None) -> ToolResult:
@@ -804,7 +804,7 @@ def execute_chain(self, chain: ToolChain, inputs: dict) -> ToolChainResult:
     ...
 ```
 
-During `Agent.initialize()`, the agent discovers and registers `ToolPlugin` instances from the `automojo.agentkit.tools` ExtensionPoint. During `Agent.stop()`, the agent's `ToolRegistry` is cleared.
+During `Agent.initialize()`, the agent discovers and registers `ToolPlugin` instances from the `ccai.agentkit.tools` ExtensionPoint. During `Agent.stop()`, the agent's `ToolRegistry` is cleared.
 
 ## Data Models
 
@@ -1134,7 +1134,7 @@ When a ToolPlugin provides a Tool with a conflicting name:
 
 ### Logging
 
-The ToolExecutor uses the Python standard logging module with a logger hierarchy under `automojo.agentkit.tools`:
+The ToolExecutor uses the Python standard logging module with a logger hierarchy under `ccai.agentkit.tools`:
 - INFO: Tool execution begin (tool name, agent identifier)
 - INFO: Tool execution success (tool name, duration, status)
 - WARNING: Tool execution failure (tool name, duration, error detail)
@@ -1144,7 +1144,7 @@ The ToolExecutor uses the Python standard logging module with a logger hierarchy
 
 ### Testing Framework
 
-Tests use testbase and reside under `source/testroots/automojo/tests/singlehost/agentkit/`, mirroring the source hierarchy:
+Tests use testbase and reside under `source/testroots/ccai/tests/singlehost/agentkit/`, mirroring the source hierarchy:
 
 | Source File | Test File |
 |---|---|
@@ -1166,14 +1166,14 @@ Tests use testbase and reside under `source/testroots/automojo/tests/singlehost/
 
 ### Dual Testing Approach
 
-- **Unit tests**: Verify specific examples, edge cases, error conditions, and integration with external packages (using `automojo.testbase.mocking.Mock`)
+- **Unit tests**: Verify specific examples, edge cases, error conditions, and integration with external packages (using `ccai.testbase.mocking.Mock`)
 - **Property-based tests**: Verify universal properties across randomly generated inputs
 
 Both are complementary and necessary for comprehensive coverage. Unit tests catch concrete bugs and verify specific behaviors; property tests verify general correctness across the input space.
 
 ### Property-Based Testing Configuration
 
-- **Library**: automojo.testbase.properties (built-in testbase property testing engine)
+- **Library**: ccai.testbase.properties (built-in testbase property testing engine)
 - **Minimum 100 iterations** per property test (due to randomization)
 - Each test tagged with a comment: **Feature: tool-capability-system, Property N: title**
 - Each correctness property implemented by a **single** property-based test
@@ -1193,9 +1193,9 @@ Both are complementary and necessary for comprehensive coverage. Unit tests catc
 
 - **Structural checks**: Abstract method enforcement on Tool, read-only properties on ToolDescriptor/ToolResult/ToolChainResult
 - **Error conditions**: Tool without name raises SemanticError, duplicate registration, invalid schema dictionaries
-- **Built-in tools**: FileReadTool/FileWriteTool with real temp files, HttpRequestTool with mocked HTTP (using `automojo.testbase.mocking.Mock`), ShellCommandTool with simple commands
+- **Built-in tools**: FileReadTool/FileWriteTool with real temp files, HttpRequestTool with mocked HTTP (using `ccai.testbase.mocking.Mock`), ShellCommandTool with simple commands
 - **Edge cases**: Empty ToolSchema validates any input, ToolChain with single step, ToolResult with None output
-- **Integration**: Agent tool registration/execution with mocked ToolExecutor, ToolPlugin discovery with mocked ExtensionPoint, credential resolution with mocked automojo-credentials
+- **Integration**: Agent tool registration/execution with mocked ToolExecutor, ToolPlugin discovery with mocked ExtensionPoint, credential resolution with mocked codecraftai-credentials
 - **Logging**: Verify log output at correct levels using log capture
 - **Error messages**: Verify error messages follow multi-line formation pattern and include required context
 
@@ -1203,5 +1203,5 @@ Both are complementary and necessary for comprehensive coverage. Unit tests catc
 
 ```bash
 source .venv/bin/activate
-testbase testing run --root source/testroots/automojo --includes=automojo.tests.singlehost.agentkit --output=./.output
+testbase testing run --root source/testroots/ccai --includes=ccai.tests.singlehost.agentkit --output=./.output
 ```

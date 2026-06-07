@@ -2,7 +2,7 @@
 
 ## Overview
 
-Incremental implementation of the Communication & Messaging feature for the `automojo-agent-kit` SDK. Tasks build bottom-up: foundational data types first (enums, addresses, messages), then configuration and registries, then serializers, then transport abstraction and built-in transports, then routing and pub/sub, then request/response, and finally agent integration and extension points. All source files go under `source/packages/automojo/agentkit/` with all-lowercase filenames (no underscores). Tests go under `source/testroots/testbase/agentkit/` mirroring the source hierarchy, using the `testbase` framework.
+Incremental implementation of the Communication & Messaging feature for the `codecraftai-agent-kit` SDK. Tasks build bottom-up: foundational data types first (enums, addresses, messages), then configuration and registries, then serializers, then transport abstraction and built-in transports, then routing and pub/sub, then request/response, and finally agent integration and extension points. All source files go under `source/packages/ccai/agentkit/` with all-lowercase filenames (no underscores). Tests go under `source/testroots/testbase/agentkit/` mirroring the source hierarchy, using the `testbase` framework.
 
 ## Tasks
 
@@ -70,10 +70,10 @@ con  - [x] 2.3 Write unit tests for AgentAddress
   - [x] 5.1 Create `transportconfiguration.py` with the TransportConfiguration class
     - Validate required fields (protocol_type, host, port) and valid protocol types
     - Raise ConfigurationError for missing fields or invalid protocol type
-    - Support credential_references resolution through automojo-credentials
+    - Support credential_references resolution through codecraftai-credentials
     - Implement as_dict, to_json, to_yaml (exclude credential values)
     - Implement from_dict, from_json, from_json_file, from_yaml, from_yaml_file class methods
-    - File path resolution relative to AppContext from automojo-this-app
+    - File path resolution relative to AppContext from codecraftai-this-app
     - Implement __repr__, __str__
     - _Requirements: 2.1–2.19, 26.21, 26.22_
   - [x] 5.2 Write property test for TransportConfiguration JSON round-trip
@@ -95,7 +95,7 @@ con  - [x] 2.3 Write unit tests for AgentAddress
     - Abstract methods: connect, disconnect, send, receive
     - Concrete: is_connected, name, protocol_type, configuration, tags, credential_names properties
     - Raise SemanticError if name or protocol_type is missing/empty
-    - Structured logging under `automojo.agentkit.messaging.transport`
+    - Structured logging under `ccai.agentkit.messaging.transport`
     - Implement __repr__, __str__
     - _Requirements: 1.1–1.11, 26.1, 26.2_
   - [x] 6.2 Create `transportregistry.py` with the TransportRegistry class
@@ -199,7 +199,7 @@ con  - [x] 2.3 Write unit tests for AgentAddress
     - Invoke subscriber handlers in registration order
     - Log handler exceptions at WARNING and continue delivering to remaining subscribers
     - active_topics property, get_subscriber_count, get_subscriber_ids methods
-    - Structured logging under `automojo.agentkit.messaging.pubsub`
+    - Structured logging under `ccai.agentkit.messaging.pubsub`
     - Implement __repr__, __str__
     - _Requirements: 14.1–14.12, 26.15, 26.16_
   - [x] 10.3 Write property test for PubSubBroker wildcard topic matching
@@ -221,7 +221,7 @@ con  - [x] 2.3 Write unit tests for AgentAddress
     - Raise MessageTimeoutError on timeout
     - Support multiple concurrent pending requests
     - Read-only pending_count property
-    - Structured logging under `automojo.agentkit.messaging.requestresponse`
+    - Structured logging under `ccai.agentkit.messaging.requestresponse`
     - Implement __repr__, __str__
     - _Requirements: 12.1–12.10, 26.17, 26.18_
   - [x] 11.2 Write unit tests for RequestResponseHandler
@@ -238,9 +238,9 @@ con  - [x] 2.3 Write unit tests for AgentAddress
   - [x] 13.1 Create `messagingconfiguration.py` with the MessagingConfiguration class
     - Validate required fields (default_transport, default_serialization_format, default_request_timeout)
     - Raise ConfigurationError for missing required fields
-    - Support credential_references resolution through automojo-credentials
+    - Support credential_references resolution through codecraftai-credentials
     - Implement as_dict, to_json, from_dict, from_json, from_json_file, from_yaml, from_yaml_file
-    - File path resolution relative to AppContext from automojo-this-app
+    - File path resolution relative to AppContext from codecraftai-this-app
     - Implement __repr__, __str__
     - _Requirements: 20.1–20.15, 26.23, 26.24_
   - [x] 13.2 Write property test for MessagingConfiguration JSON round-trip
@@ -298,7 +298,7 @@ con  - [x] 2.3 Write unit tests for AgentAddress
     - _Requirements: 21.1–21.10_
   - [x] 16.2 Implement Agent lifecycle integration for messaging
     - On INITIALIZED: construct TransportRegistry, MessageRouter, PubSubBroker, AddressResolver, RequestResponseHandler from MessagingConfiguration
-    - On INITIALIZED: discover and register Transport and MessageSerializer plugins from automojo-extension
+    - On INITIALIZED: discover and register Transport and MessageSerializer plugins from codecraftai-extension
     - On STOPPED: disconnect all transports, clear TransportRegistry, remove all PubSubBroker subscriptions
     - Default to JsonMessageSerializer and no transports when no MessagingConfiguration provided
     - Handle plugin load failures (log WARNING, continue) and name conflicts (log WARNING, skip)
@@ -315,7 +315,7 @@ con  - [x] 2.3 Write unit tests for AgentAddress
     - _Requirements: 21.1–21.15, 22.1–22.8_
 
 - [x] 17. Wire module exports and create package __init__.py entries
-  - Update `source/packages/automojo/agentkit/__init__.py` to export all messaging classes
+  - Update `source/packages/ccai/agentkit/__init__.py` to export all messaging classes
   - Ensure all imports resolve correctly across the messaging module
   - _Requirements: All_
 
@@ -331,5 +331,5 @@ con  - [x] 2.3 Write unit tests for AgentAddress
 - Unit tests validate specific examples and edge cases
 - All filenames are all-lowercase with no underscores per project naming conventions
 - Tests use the `testbase` framework and `testbase.mocking` (not pytest or unittest.mock)
-- Source files: `source/packages/automojo/agentkit/`
+- Source files: `source/packages/ccai/agentkit/`
 - Test files: `source/testroots/testbase/agentkit/`

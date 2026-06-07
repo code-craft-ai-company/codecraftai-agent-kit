@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Security & Access Control feature extends the `automojo-agent-kit` SDK with a comprehensive system for securing agent operations. It provides six interconnected subsystems:
+The Security & Access Control feature extends the `codecraftai-agent-kit` SDK with a comprehensive system for securing agent operations. It provides six interconnected subsystems:
 
 1. **Credential Management** — Secure retrieval, caching, rotation, and injection of secrets via `CredentialManager`, `CredentialEntry`, and `CredentialRotationPolicy`
 2. **Access Control** — Role-based access control with deny-first evaluation via `AccessPolicy`, `AccessPolicyRegistry`, `AccessEnforcer`, `AccessDecision`, `Role`, and `RoleAssignment`
@@ -11,7 +11,7 @@ The Security & Access Control feature extends the `automojo-agent-kit` SDK with 
 5. **Sandboxed Execution** — Isolated tool execution with resource restrictions via `SandboxExecutor`, `SandboxPolicy`, and `SandboxViolation`
 6. **Security Pipeline** — Coordinating component that routes all security operations through the configured subsystems via `SecurityPipeline` and `SecurityConfiguration`
 
-All classes live under `source/packages/automojo/agentkit/` with filenames in all-lowercase (no underscores), following the project naming conventions. The system integrates with:
+All classes live under `source/packages/ccai/agentkit/` with filenames in all-lowercase (no underscores), following the project naming conventions. The system integrates with:
 
 - Core Agent Framework — `Agent` base class, `AgentConfiguration`, `LifecycleState`, `AgentStateMachine`
 - Tool & Capability System — `ToolExecutor`, `ToolResult`, `ToolDescriptor` for sandboxed tool execution and access control
@@ -21,10 +21,10 @@ All classes live under `source/packages/automojo/agentkit/` with filenames in al
 - Workflow & Orchestration — Workflow steps subject to access control and audit logging
 - Observability & Debugging — `StructuredLogger`, `CorrelationContext`, `MetricsCollector`, `MetricDefinition`, `MetricsRegistry` for security metrics and tracing
 - Error Handling & Resilience — `AuditLogger` used by resilience components
-- `automojo-extension` — `ExtensionPoint` for security plugin discovery and registration
-- `automojo-credentials` — `CredentialReference` for underlying credential storage and retrieval
-- `automojo-dataprofiles` — `DataProfileReference` for data profile management
-- `automojo-this-app` — `AppContext` for settings, environment, and directory resolution
+- `codecraftai-extension` — `ExtensionPoint` for security plugin discovery and registration
+- `codecraftai-credentials` — `CredentialReference` for underlying credential storage and retrieval
+- `codecraftai-dataprofiles` — `DataProfileReference` for data profile management
+- `codecraftai-this-app` — `AppContext` for settings, environment, and directory resolution
 
 The design prioritizes debuggability over performance and readability over conciseness, per the project coding standards.
 
@@ -32,7 +32,7 @@ The design prioritizes debuggability over performance and readability over conci
 
 ```mermaid
 graph TD
-    subgraph "automojo.agentkit - Security & Access Control"
+    subgraph "ccai.agentkit - Security & Access Control"
         SecurityPipeline[SecurityPipeline]
         SecurityConfiguration[SecurityConfiguration]
 
@@ -97,9 +97,9 @@ graph TD
     end
 
     subgraph "External Packages"
-        Extension[automojo-extension]
-        Credentials[automojo-credentials]
-        AppContext[automojo-this-app]
+        Extension[codecraftai-extension]
+        Credentials[codecraftai-credentials]
+        AppContext[codecraftai-this-app]
     end
 
     Agent --> SecurityPipeline
@@ -210,7 +210,7 @@ flowchart TD
 sequenceDiagram
     participant CM as CredentialManager
     participant Cache as Credential Cache
-    participant Creds as automojo-credentials
+    participant Creds as codecraftai-credentials
 
     Note over CM: get_credential(name) called
     CM->>Cache: lookup(name)
@@ -245,13 +245,13 @@ sequenceDiagram
 6. **FileAuditStore uses JSON lines format** — each AuditEntry is serialized as a single JSON line, enabling simple append operations and line-by-line reading without file locking.
 7. **AuditEntry integrity hash using SHA-256** — computed over all entry fields (excluding the hash itself) to provide tamper detection. The `verify_integrity` method recomputes and compares.
 8. **SandboxExecutor wraps ToolExecutor** — intercepts tool execution to apply resource restrictions before delegating to the standard ToolExecutor. This preserves the existing tool execution interface.
-9. **CredentialManager delegates to `automojo-credentials`** — adds caching, rotation lifecycle, and secret-safe serialization on top of the underlying credential storage. Never exposes secret values in `__repr__`, `__str__`, `as_dict`, or `to_json`.
+9. **CredentialManager delegates to `codecraftai-credentials`** — adds caching, rotation lifecycle, and secret-safe serialization on top of the underlying credential storage. Never exposes secret values in `__repr__`, `__str__`, `as_dict`, or `to_json`.
 10. **SecurityConfiguration supports JSON and YAML** — consistent with `AgentConfiguration`, `ResilienceConfiguration`, and `ObservabilityConfiguration` loading patterns. File paths resolved relative to `AppContext`.
 11. **All serialization follows naming conventions: `as_dict`, `to_json`, `from_json`, `from_dict`** — consistent with all other agentkit classes.
 12. **All `__repr__` and `__str__` methods follow the established pattern** — `__repr__` includes class name and key identifying fields, `__str__` returns a human-readable summary.
 13. **Security-specific errors inherit from AgentKitError** — `AccessDeniedError`, `SanitizationError`, `SandboxViolationError`, and `AuditStoreError` all inherit from `AgentKitError`, consistent with the error hierarchy used by Core Agent Framework, Tool & Capability System, and Error Handling & Resilience.
-14. **Extension points for security plugins** — three extension points (`automojo.agentkit.input_sanitizers`, `automojo.agentkit.output_filters`, `automojo.agentkit.audit_stores`) follow the same pattern as other agentkit extension points.
-15. **Structured logging under `automojo.agentkit.security`** — uses Python standard logging module with a dedicated logger hierarchy, consistent with other subsystems using `automojo.agentkit.resilience`, etc.
+14. **Extension points for security plugins** — three extension points (`ccai.agentkit.input_sanitizers`, `ccai.agentkit.output_filters`, `ccai.agentkit.audit_stores`) follow the same pattern as other agentkit extension points.
+15. **Structured logging under `ccai.agentkit.security`** — uses Python standard logging module with a dedicated logger hierarchy, consistent with other subsystems using `ccai.agentkit.resilience`, etc.
 16. **Built-in security metrics registered via MetricsRegistry** — six counter metrics for access decisions, sanitization, sandbox violations, credential rotations, and audit entries. Consistent with the observability integration pattern.
 
 ## Components and Interfaces
@@ -454,7 +454,7 @@ class CredentialManager:
     """
         Manages the lifecycle of credentials for an Agent. Provides secure
         retrieval, caching, rotation, and injection of secrets. Delegates
-        storage and retrieval to automojo-credentials and adds lifecycle
+        storage and retrieval to codecraftai-credentials and adds lifecycle
         management on top. Never exposes secret values in serialization
         or string representations.
     """
@@ -464,7 +464,7 @@ class CredentialManager:
         self._agent_identifier = agent_identifier
         self._rotation_policy = rotation_policy
         self._cache = {}  # name -> (CredentialEntry, resolved_time)
-        self._logger = logging.getLogger("automojo.agentkit.security")
+        self._logger = logging.getLogger("ccai.agentkit.security")
         return
 
     @property
@@ -482,7 +482,7 @@ class CredentialManager:
     def get_credential(self, name: str) -> "CredentialEntry":
         """
             Returns a CredentialEntry for the given name. Resolves through
-            automojo-credentials on first access and caches the result.
+            codecraftai-credentials on first access and caches the result.
             Applies rotation if the rotation policy is configured and the
             credential age exceeds the rotation interval.
 
@@ -496,7 +496,7 @@ class CredentialManager:
     def get_credential_value(self, name: str) -> str:
         """
             Returns the secret value for the given credential name.
-            Resolves through automojo-credentials.
+            Resolves through codecraftai-credentials.
 
             :param name: Credential name string.
 
@@ -834,7 +834,7 @@ class AccessEnforcer:
         self._policy_registry = policy_registry
         self._roles = {}  # role_name -> Role
         self._role_assignments = []  # list of RoleAssignment
-        self._logger = logging.getLogger("automojo.agentkit.security")
+        self._logger = logging.getLogger("ccai.agentkit.security")
         return
 
     @property
@@ -1563,7 +1563,7 @@ class AuditLogger:
         self._agent_identifier = agent_identifier
         self._audit_store = audit_store
         self._entry_count = 0
-        self._logger = logging.getLogger("automojo.agentkit.security")
+        self._logger = logging.getLogger("ccai.agentkit.security")
         return
 
     @property
@@ -1745,7 +1745,7 @@ class SandboxExecutor:
 
     def __init__(self, sandbox_policy: "SandboxPolicy"):
         self._sandbox_policy = sandbox_policy
-        self._logger = logging.getLogger("automojo.agentkit.security")
+        self._logger = logging.getLogger("ccai.agentkit.security")
         return
 
     @property
@@ -1906,7 +1906,7 @@ class SecurityPipeline:
         self._sanitization_pipeline = None
         self._audit_logger = None
         self._sandbox_executor = None
-        self._logger = logging.getLogger("automojo.agentkit.security")
+        self._logger = logging.getLogger("ccai.agentkit.security")
         self._initialize_components()
         return
 
@@ -2072,9 +2072,9 @@ Metrics are incremented with labels including the agent identifier and relevant 
 
 | Extension Point Name | Component Type | Purpose |
 |---|---|---|
-| automojo.agentkit.input_sanitizers | InputSanitizer | Custom input sanitizer plugins |
-| automojo.agentkit.output_filters | OutputFilter | Custom output filter plugins |
-| automojo.agentkit.audit_stores | AuditStore | Custom audit store backend plugins |
+| ccai.agentkit.input_sanitizers | InputSanitizer | Custom input sanitizer plugins |
+| ccai.agentkit.output_filters | OutputFilter | Custom output filter plugins |
+| ccai.agentkit.audit_stores | AuditStore | Custom audit store backend plugins |
 
 Plugins are discovered and registered during Agent initialization. Failed plugin loads are logged at WARNING level and skipped. Conflicting component names are logged at WARNING level and skipped.
 
@@ -2306,7 +2306,7 @@ Raised when an AuditStore operation fails due to a backend error:
 
 ### Structured Logging
 
-All security operations log through the Python standard logging module under the `automojo.agentkit.security` logger hierarchy:
+All security operations log through the Python standard logging module under the `ccai.agentkit.security` logger hierarchy:
 
 | Event | Level | Fields |
 |---|---|---|
@@ -2323,7 +2323,7 @@ All security operations log through the Python standard logging module under the
 ## Testing Strategy
 
 ### Testing Framework
-Tests use testbase and reside under `source/testroots/automojo/tests/singlehost/agentkit/`, mirroring the source hierarchy:
+Tests use testbase and reside under `source/testroots/ccai/tests/singlehost/agentkit/`, mirroring the source hierarchy:
 
 | Source File | Test File |
 |---|---|
@@ -2366,7 +2366,7 @@ Tests use testbase and reside under `source/testroots/automojo/tests/singlehost/
 - Property-based tests: universal properties across randomly generated inputs
 
 ### Property-Based Testing Configuration
-- Library: automojo.testbase.properties (built-in testbase property testing engine)
+- Library: ccai.testbase.properties (built-in testbase property testing engine)
 - Minimum 100 iterations per property test
 - Each test tagged: `Feature: security-access-control, Property N: title`
 - Each correctness property implemented by a single property-based test
@@ -2374,7 +2374,7 @@ Tests use testbase and reside under `source/testroots/automojo/tests/singlehost/
 
 ### Unit Test Focus Areas
 - Structural checks (abstract method enforcement, read-only properties)
-- External package integration via `testbase.mocking.Mock` (automojo-credentials, automojo-extension, automojo-this-app)
+- External package integration via `testbase.mocking.Mock` (codecraftai-credentials, codecraftai-extension, codecraftai-this-app)
 - Edge cases: expired credentials, expired role assignments, empty policy registries, wildcard-only patterns, empty sanitization pipelines
 - Error message content verification for all error types
 - Deny-first evaluation ordering in AccessEnforcer
@@ -2388,5 +2388,5 @@ Tests use testbase and reside under `source/testroots/automojo/tests/singlehost/
 ### Running Tests
 ```bash
 source .venv/bin/activate
-testbase testing run --root source/testroots/automojo --includes=automojo.tests.singlehost.agentkit --output=./.output
+testbase testing run --root source/testroots/ccai --includes=ccai.tests.singlehost.agentkit --output=./.output
 ```

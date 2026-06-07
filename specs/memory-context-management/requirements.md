@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The Memory & Context Management feature extends the `automojo-agent-kit` SDK with a unified system for storing, retrieving, and managing agent memory across short-term and long-term horizons. It defines a memory entry abstraction with metadata and tags, pluggable memory backends (in-memory, file-based, vector store, database), memory scoping (per-agent, shared, global), semantic similarity-based retrieval, context window management for fitting conversation history within LLM token limits, and memory lifecycle management (creation, update, expiration, cleanup). The system integrates with the Agent base class so agents own and manage memory stores, with the LLM Integration system so context window management feeds into LLM conversations, with `automojo-extension` so memory backend plugins can be discovered and loaded, with `automojo-credentials` for backend authentication, with `automojo-dataprofiles` for data profile management, and with `automojo-this-app` for settings and environment configuration.
+The Memory & Context Management feature extends the `codecraftai-agent-kit` SDK with a unified system for storing, retrieving, and managing agent memory across short-term and long-term horizons. It defines a memory entry abstraction with metadata and tags, pluggable memory backends (in-memory, file-based, vector store, database), memory scoping (per-agent, shared, global), semantic similarity-based retrieval, context window management for fitting conversation history within LLM token limits, and memory lifecycle management (creation, update, expiration, cleanup). The system integrates with the Agent base class so agents own and manage memory stores, with the LLM Integration system so context window management feeds into LLM conversations, with `codecraftai-extension` so memory backend plugins can be discovered and loaded, with `codecraftai-credentials` for backend authentication, with `codecraftai-dataprofiles` for data profile management, and with `codecraftai-this-app` for settings and environment configuration.
 
 ## Glossary
 
@@ -17,7 +17,7 @@ The Memory & Context Management feature extends the `automojo-agent-kit` SDK wit
 - **ContextWindow**: A component that manages the selection and arrangement of memory entries and conversation messages to fit within an LLM provider's token limit. The ContextWindow produces a trimmed LlmConversation suitable for completion requests.
 - **ContextWindowStrategy**: An enumeration defining the strategy for trimming context to fit within token limits: FIFO (remove oldest non-system messages first), RELEVANCE (remove least relevant entries first based on similarity scores), and SUMMARIZE (summarize older entries to reduce token count).
 - **ContextSummarizer**: A component that accepts a list of LlmMessage objects or MemoryEntry objects and produces a condensed summary, reducing token count while preserving key information. The ContextSummarizer uses an LlmProvider to generate summaries.
-- **MemoryBackendPlugin**: A MemoryStore implementation discovered and loaded through the `automojo-extension` ExtensionPoint mechanism, allowing external packages to contribute memory backends.
+- **MemoryBackendPlugin**: A MemoryStore implementation discovered and loaded through the `codecraftai-extension` ExtensionPoint mechanism, allowing external packages to contribute memory backends.
 - **InMemoryStore**: A built-in MemoryStore implementation that stores MemoryEntry objects in process memory using dictionary-based indexing. Suitable for development, testing, and short-lived agents.
 - **FileMemoryStore**: A built-in MemoryStore implementation that persists MemoryEntry objects to JSON files on the local file system. Suitable for single-agent local deployments.
 - **MemoryConfiguration**: A configuration object that defines the memory backend type, backend-specific connection parameters, default memory scope, expiration policies, and embedding provider settings for an Agent's memory system.
@@ -27,8 +27,8 @@ The Memory & Context Management feature extends the `automojo-agent-kit` SDK wit
 - **LlmConversation**: The conversation object defined in the LLM Integration feature that the ContextWindow produces as output.
 - **LlmMessage**: The message object defined in the LLM Integration feature used within conversations and context windows.
 - **TokenUsage**: The token usage object defined in the LLM Integration feature, used by the ContextWindow to track token consumption.
-- **ExtensionPoint**: An integration surface provided by `automojo-extension` that allows external plugins to register MemoryStore implementations with an Agent.
-- **CredentialReference**: A named reference resolved through `automojo-credentials` that provides secure access to secrets required by a MemoryStore backend (database passwords, API keys for vector store services).
+- **ExtensionPoint**: An integration surface provided by `codecraftai-extension` that allows external plugins to register MemoryStore implementations with an Agent.
+- **CredentialReference**: A named reference resolved through `codecraftai-credentials` that provides secure access to secrets required by a MemoryStore backend (database passwords, API keys for vector store services).
 - **ConfigurationError**: An exception raised for configuration-related problems, inherited from AgentKitError.
 - **SemanticError**: An exception raised for API misuse, inherited from AgentKitError.
 - **MemoryStoreError**: An exception raised when a MemoryStore operation fails due to a backend error (connection failure, write error, query error).
@@ -133,7 +133,7 @@ The Memory & Context Management feature extends the `automojo-agent-kit` SDK wit
 5. IF the configured directory does not exist, THEN THE FileMemoryStore SHALL create the directory at construction time.
 6. IF a file read or write operation fails, THEN THE FileMemoryStore SHALL raise a MemoryStoreError that includes the file path and the underlying I/O error detail.
 7. FOR ALL MemoryEntry objects stored in the FileMemoryStore, writing the entry to a JSON file and then reading the JSON file back SHALL produce an equivalent MemoryEntry object (round-trip property).
-8. THE FileMemoryStore SHALL resolve the directory path relative to the AppContext directory provided by `automojo-this-app`.
+8. THE FileMemoryStore SHALL resolve the directory path relative to the AppContext directory provided by `codecraftai-this-app`.
 
 ### Requirement 7: Embedding Provider Abstraction
 
@@ -221,10 +221,10 @@ The Memory & Context Management feature extends the `automojo-agent-kit` SDK wit
 2. THE MemoryConfiguration SHALL support loading configuration from a Python dictionary.
 3. THE MemoryConfiguration SHALL support loading configuration from a JSON file path.
 4. THE MemoryConfiguration SHALL support loading configuration from a YAML file path.
-5. WHEN a configuration file path is provided, THE MemoryConfiguration SHALL resolve the file path relative to the AppContext directory provided by `automojo-this-app`.
+5. WHEN a configuration file path is provided, THE MemoryConfiguration SHALL resolve the file path relative to the AppContext directory provided by `codecraftai-this-app`.
 6. THE MemoryConfiguration SHALL validate all required fields are present during loading and raise a ConfigurationError when required fields are missing.
 7. IF an invalid backend type is provided, THEN THE MemoryConfiguration SHALL raise a ConfigurationError identifying the invalid backend type.
-8. THE MemoryConfiguration SHALL support CredentialReference entries for backend authentication that are resolved through `automojo-credentials` at initialization time.
+8. THE MemoryConfiguration SHALL support CredentialReference entries for backend authentication that are resolved through `codecraftai-credentials` at initialization time.
 9. IF a CredentialReference cannot be resolved, THEN THE MemoryConfiguration SHALL raise a ConfigurationError that identifies the unresolvable credential name.
 10. THE MemoryConfiguration SHALL provide an as_dict method that returns a dictionary representation of the configuration, excluding resolved credential values.
 11. THE MemoryConfiguration SHALL provide a to_json method that returns a JSON string representation of the configuration, excluding resolved credential values.
@@ -266,18 +266,18 @@ The Memory & Context Management feature extends the `automojo-agent-kit` SDK wit
 6. THE Agent base class SHALL expose a read-only context_window property that returns the Agent's ContextWindow instance.
 7. THE Agent base class SHALL provide a build_context method that accepts an LlmConversation and optional MemoryQuery, retrieves relevant memory entries using the query, and returns a trimmed LlmConversation produced by the ContextWindow.
 8. WHEN an Agent transitions to the INITIALIZED state, THE Agent SHALL construct the MemoryStore and ContextWindow from the Agent's MemoryConfiguration.
-9. WHEN an Agent transitions to the INITIALIZED state, THE Agent SHALL discover and register all MemoryBackendPlugin instances from `automojo-extension` ExtensionPoint entries targeting the Agent.
+9. WHEN an Agent transitions to the INITIALIZED state, THE Agent SHALL discover and register all MemoryBackendPlugin instances from `codecraftai-extension` ExtensionPoint entries targeting the Agent.
 10. WHEN an Agent transitions to the STOPPED state, THE Agent's MemoryStoreRegistry SHALL be cleared of all registered stores.
 11. IF the Agent's MemoryConfiguration is not provided, THEN THE Agent SHALL default to an InMemoryStore with MemoryScope.AGENT and no expiration policy.
 
 ### Requirement 15: Memory Backend Plugin Integration
 
-**User Story:** As a developer, I want to distribute memory backends as plugins through `automojo-extension`, so that backend packages can be installed and discovered automatically by agents.
+**User Story:** As a developer, I want to distribute memory backends as plugins through `codecraftai-extension`, so that backend packages can be installed and discovered automatically by agents.
 
 #### Acceptance Criteria
 
-1. THE framework SHALL define an ExtensionPoint named "automojo.agentkit.memory_backends" through `automojo-extension` for registering MemoryBackendPlugin implementations.
-2. WHEN an Agent is initialized, THE Agent SHALL query the "automojo.agentkit.memory_backends" ExtensionPoint and register all discovered MemoryStore instances with the Agent's MemoryStoreRegistry.
+1. THE framework SHALL define an ExtensionPoint named "ccai.agentkit.memory_backends" through `codecraftai-extension` for registering MemoryBackendPlugin implementations.
+2. WHEN an Agent is initialized, THE Agent SHALL query the "ccai.agentkit.memory_backends" ExtensionPoint and register all discovered MemoryStore instances with the Agent's MemoryStoreRegistry.
 3. IF a MemoryBackendPlugin fails to load, THEN THE Agent SHALL log the failure at WARNING level including the plugin name and the error detail, and continue loading remaining plugins.
 4. IF a MemoryBackendPlugin provides a MemoryStore with a name that conflicts with an already registered MemoryStore, THEN THE Agent SHALL log the conflict at WARNING level including both store names and skip the conflicting plugin store.
 
@@ -315,7 +315,7 @@ The Memory & Context Management feature extends the `automojo-agent-kit` SDK wit
 
 #### Acceptance Criteria
 
-1. THE framework SHALL use the Python standard logging module with a logger hierarchy under `automojo.agentkit.memory`.
+1. THE framework SHALL use the Python standard logging module with a logger hierarchy under `ccai.agentkit.memory`.
 2. WHEN a MemoryEntry is stored, THE MemoryStore SHALL log at INFO level including the store name, entry identifier, and scope.
 3. WHEN a MemoryQuery is executed, THE MemoryStore SHALL log at INFO level including the store name and the count of matching entries.
 4. WHEN a MemoryEntry is deleted, THE MemoryStore SHALL log at INFO level including the store name and entry identifier.
