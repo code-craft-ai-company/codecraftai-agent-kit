@@ -1,1 +1,0 @@
-# automojo tests namespace

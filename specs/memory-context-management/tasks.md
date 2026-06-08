@@ -2,12 +2,12 @@
 
 ## Overview
 
-Incremental implementation of the Memory & Context Management feature for the `automojo-agent-kit` SDK. Tasks build bottom-up: error types and enumerations first, then foundational value objects (MemoryEntry, MemoryQuery, MemoryQueryResult, ExpirationPolicy), then internal indexing (MemoryIndex), then abstract base classes (EmbeddingProvider, MemoryStore), then concrete store implementations (InMemoryStore, FileMemoryStore), then registry (MemoryStoreRegistry), then context window system (ContextWindowStrategy, ContextSummarizer, ContextWindow), then configuration (MemoryConfiguration), then agent integration and plugin support. Each task references specific requirements. Tests are placed close to the code they validate.
+Incremental implementation of the Memory & Context Management feature for the `codecraftai-agent-kit` SDK. Tasks build bottom-up: error types and enumerations first, then foundational value objects (MemoryEntry, MemoryQuery, MemoryQueryResult, ExpirationPolicy), then internal indexing (MemoryIndex), then abstract base classes (EmbeddingProvider, MemoryStore), then concrete store implementations (InMemoryStore, FileMemoryStore), then registry (MemoryStoreRegistry), then context window system (ContextWindowStrategy, ContextSummarizer, ContextWindow), then configuration (MemoryConfiguration), then agent integration and plugin support. Each task references specific requirements. Tests are placed close to the code they validate.
 
 ## Tasks
 
 - [x] 1. Implement memory error types and enumerations
-  - [x] 1.1 Create `source/packages/automojo/agentkit/memoryerrors.py` with MemoryStoreError and ContextWindowError
+  - [x] 1.1 Create `source/packages/ccai/agentkit/memoryerrors.py` with MemoryStoreError and ContextWindowError
     - MemoryStoreError inherits from AgentKitError, stores store_name, operation, cause
     - Format error message including store name, operation, and cause string
     - Provide `store_name`, `operation`, `cause` read-only properties and `__repr__`
@@ -15,7 +15,7 @@ Incremental implementation of the Memory & Context Management feature for the `a
     - Provide `max_tokens`, `strategy`, `error_message` read-only properties and `__repr__`
     - _Requirements: 16.1, 16.2, 16.3, 16.4, 16.5_
 
-  - [x] 1.2 Create `source/packages/automojo/agentkit/memoryscope.py` with the MemoryScope enumeration
+  - [x] 1.2 Create `source/packages/ccai/agentkit/memoryscope.py` with the MemoryScope enumeration
     - Define AGENT, SHARED, GLOBAL values
     - Implement `from_string` class method with case-insensitive matching
     - Raise SemanticError for invalid values listing valid options
@@ -28,11 +28,11 @@ Incremental implementation of the Memory & Context Management feature for the `a
     - Test MemoryScope.from_string with valid values (case-insensitive)
     - Test MemoryScope.from_string raises SemanticError for invalid values
     - Test MemoryScope __repr__ and __str__
-    - Create test files at `source/testroots/automojo/tests/singlehost/agentkit/test_memoryerrors.py` and `test_memoryscope.py`
+    - Create test files at `source/testroots/ccai/tests/singlehost/agentkit/test_memoryerrors.py` and `test_memoryscope.py`
     - _Requirements: 2.1, 2.5, 2.6, 16.1, 16.2, 16.3, 16.4, 16.5_
 
 - [x] 2. Implement MemoryEntry and ExpirationPolicy value objects
-  - [x] 2.1 Create `source/packages/automojo/agentkit/memoryentry.py` with the MemoryEntry class
+  - [x] 2.1 Create `source/packages/ccai/agentkit/memoryentry.py` with the MemoryEntry class
     - Implement `__init__` with content, scope, optional identifier (auto UUID), optional embedding, optional metadata (default {}), optional tags (default []), optional created_at (default UTC now), optional expires_at
     - Implement all read-only properties returning defensive copies for mutable fields (embedding, metadata, tags)
     - Implement `is_expired(reference_time=None)` defaulting to current UTC time
@@ -40,7 +40,7 @@ Incremental implementation of the Memory & Context Management feature for the `a
     - Implement `__repr__` (class name, identifier, scope, truncated content), `__str__` (identifier, scope, tag count, truncated content), `__eq__`
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 1.10, 1.11, 1.12, 17.1, 17.2, 17.7, 19.1, 19.2_
 
-  - [x] 2.2 Create `source/packages/automojo/agentkit/expirationpolicy.py` with the ExpirationPolicy class
+  - [x] 2.2 Create `source/packages/ccai/agentkit/expirationpolicy.py` with the ExpirationPolicy class
     - Implement `__init__` with optional default_ttl (float, seconds) and cleanup_interval (float, default 300.0)
     - Implement `default_ttl` and `cleanup_interval` read-only properties
     - Implement `as_dict()`, `to_json()`, `from_dict(cls, data)`, `from_json(cls, json_str)`
@@ -63,7 +63,7 @@ Incremental implementation of the Memory & Context Management feature for the `a
     - Test ExpirationPolicy construction with and without default_ttl
     - Test ExpirationPolicy as_dict, to_json, from_dict, from_json
     - Test ExpirationPolicy __repr__, __str__, __eq__
-    - Create test files at `source/testroots/automojo/tests/singlehost/agentkit/test_memoryentry.py` and `test_expirationpolicy.py`
+    - Create test files at `source/testroots/ccai/tests/singlehost/agentkit/test_memoryentry.py` and `test_expirationpolicy.py`
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 1.10, 1.11, 1.12, 13.1, 13.2, 13.6, 13.7, 13.8, 13.9, 13.10, 13.11_
 
 - [x] 3. Checkpoint - Ensure all tests pass
@@ -71,14 +71,14 @@ Incremental implementation of the Memory & Context Management feature for the `a
 
 
 - [x] 4. Implement MemoryQuery and MemoryQueryResult
-  - [x] 4.1 Create `source/packages/automojo/agentkit/memoryquery.py` with the MemoryQuery class
+  - [x] 4.1 Create `source/packages/ccai/agentkit/memoryquery.py` with the MemoryQuery class
     - Implement `__init__` with optional tags, metadata, scope, start_time, end_time, semantic_text, max_results, min_relevance
     - Implement all read-only properties returning defensive copies for mutable fields
     - Implement `as_dict()`, `to_json()`, `from_dict(cls, data)`, `from_json(cls, json_str)`
     - Implement `__repr__` (class name, summary of active filter criteria), `__str__` (human-readable criteria), `__eq__`
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 4.10, 17.3, 17.4, 17.8, 19.5, 19.6_
 
-  - [x] 4.2 Create `source/packages/automojo/agentkit/memoryqueryresult.py` with the MemoryQueryResult class
+  - [x] 4.2 Create `source/packages/ccai/agentkit/memoryqueryresult.py` with the MemoryQueryResult class
     - Implement `__init__` with entries list, optional scores list, optional total_count (default len(entries))
     - Implement `entries`, `scores`, `total_count` read-only properties returning defensive copies
     - Implement `as_dict()` serializing entries via their as_dict method
@@ -97,11 +97,11 @@ Incremental implementation of the Memory & Context Management feature for the `a
     - Test MemoryQueryResult construction with and without scores
     - Test MemoryQueryResult default total_count equals len(entries)
     - Test MemoryQueryResult as_dict, __repr__, __str__
-    - Create test files at `source/testroots/automojo/tests/singlehost/agentkit/test_memoryquery.py` and `test_memoryqueryresult.py`
+    - Create test files at `source/testroots/ccai/tests/singlehost/agentkit/test_memoryquery.py` and `test_memoryqueryresult.py`
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 4.10, 4.11, 4.12, 4.13, 4.14, 4.15_
 
 - [x] 5. Implement MemoryIndex and EmbeddingProvider
-  - [x] 5.1 Create `source/packages/automojo/agentkit/memoryindex.py` with the MemoryIndex class
+  - [x] 5.1 Create `source/packages/ccai/agentkit/memoryindex.py` with the MemoryIndex class
     - Implement `__init__` initializing entries dict, tag_index dict, metadata_index dict
     - Implement `add(entry)` indexing by identifier, tags, and metadata key-value pairs
     - Implement `remove(identifier)` cleaning up all index references
@@ -112,7 +112,7 @@ Incremental implementation of the Memory & Context Management feature for the `a
     - Implement `_cosine_similarity(vec_a, vec_b)` static method
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 5.2, 5.3_
 
-  - [x] 5.2 Create `source/packages/automojo/agentkit/embeddingprovider.py` with the EmbeddingProvider abstract base class
+  - [x] 5.2 Create `source/packages/ccai/agentkit/embeddingprovider.py` with the EmbeddingProvider abstract base class
     - Implement `__init__` with provider_name, embedding_dimension, optional credential_names
     - Validate provider_name is non-empty and embedding_dimension is positive, raise SemanticError
     - Implement `provider_name`, `embedding_dimension`, `credential_names` read-only properties
@@ -131,7 +131,7 @@ Incremental implementation of the Memory & Context Management feature for the `a
     - Test MemoryIndex _cosine_similarity with known vectors
     - Test EmbeddingProvider construction validation (empty name, non-positive dimension)
     - Test EmbeddingProvider __repr__ and __str__
-    - Create test files at `source/testroots/automojo/tests/singlehost/agentkit/test_memoryindex.py` and `test_embeddingprovider.py`
+    - Create test files at `source/testroots/ccai/tests/singlehost/agentkit/test_memoryindex.py` and `test_embeddingprovider.py`
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 5.2, 5.3, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9_
 
 - [x] 6. Checkpoint - Ensure all tests pass
@@ -139,7 +139,7 @@ Incremental implementation of the Memory & Context Management feature for the `a
 
 
 - [x] 7. Implement MemoryStore abstract base class
-  - [x] 7.1 Create `source/packages/automojo/agentkit/memorystore.py` with the MemoryStore abstract base class
+  - [x] 7.1 Create `source/packages/ccai/agentkit/memorystore.py` with the MemoryStore abstract base class
     - Implement `__init__` with store_name, optional embedding_provider, optional expiration_policy, optional credential_names
     - Validate store_name is non-empty, raise SemanticError
     - Implement `store_name`, `embedding_provider`, `expiration_policy` read-only properties
@@ -149,7 +149,7 @@ Incremental implementation of the Memory & Context Management feature for the `a
     - Implement `_generate_embedding_if_needed(entry)` creating new MemoryEntry with embedding when provider is configured and entry lacks embedding
     - Implement `_apply_expiration_policy(entry)` creating new MemoryEntry with expires_at when policy defines default_ttl and entry lacks expiration
     - Implement `__repr__` and `__str__`
-    - Use logger `automojo.agentkit.memory` for structured logging
+    - Use logger `ccai.agentkit.memory` for structured logging
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 3.10, 13.3, 13.4, 13.5, 18.5, 19.3, 19.4_
 
   - [x] 7.2 Write unit tests for MemoryStore base class
@@ -160,11 +160,11 @@ Incremental implementation of the Memory & Context Management feature for the `a
     - Test MemoryStore cleanup_expired removes expired entries and returns count
     - Test MemoryStore __repr__ and __str__
     - Use a concrete test subclass that implements abstract methods with simple in-memory storage
-    - Create test file at `source/testroots/automojo/tests/singlehost/agentkit/test_memorystore.py`
+    - Create test file at `source/testroots/ccai/tests/singlehost/agentkit/test_memorystore.py`
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 3.10, 13.3, 13.4, 13.5_
 
 - [x] 8. Implement InMemoryStore
-  - [x] 8.1 Create `source/packages/automojo/agentkit/inmemorystore.py` with the InMemoryStore class
+  - [x] 8.1 Create `source/packages/ccai/agentkit/inmemorystore.py` with the InMemoryStore class
     - Extend MemoryStore, initialize with MemoryIndex
     - Implement `count` property delegating to index
     - Implement `store(entry)` — check duplicate identifier (raise SemanticError), apply expiration policy, generate embedding if needed, add to index, log at INFO
@@ -190,11 +190,11 @@ Incremental implementation of the Memory & Context Management feature for the `a
     - Test store auto-generates embedding when EmbeddingProvider configured
     - Test store applies ExpirationPolicy default TTL
     - Test cleanup_expired removes expired entries
-    - Create test file at `source/testroots/automojo/tests/singlehost/agentkit/test_inmemorystore.py`
+    - Create test file at `source/testroots/ccai/tests/singlehost/agentkit/test_inmemorystore.py`
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 13.3, 13.4, 13.5_
 
 - [x] 9. Implement FileMemoryStore
-  - [x] 9.1 Create `source/packages/automojo/agentkit/filememorystore.py` with the FileMemoryStore class
+  - [x] 9.1 Create `source/packages/ccai/agentkit/filememorystore.py` with the FileMemoryStore class
     - Extend MemoryStore, accept directory_path, initialize MemoryIndex
     - Create directory if it does not exist at construction time
     - Implement `_load_existing_entries()` loading all .json files from directory into index, raising MemoryStoreError on I/O failure
@@ -222,7 +222,7 @@ Incremental implementation of the Memory & Context Management feature for the `a
     - Test clear removes all JSON files
     - Test I/O failure raises MemoryStoreError with file path
     - Use temporary directories for test isolation
-    - Create test file at `source/testroots/automojo/tests/singlehost/agentkit/test_filememorystore.py`
+    - Create test file at `source/testroots/ccai/tests/singlehost/agentkit/test_filememorystore.py`
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8_
 
 - [x] 10. Checkpoint - Ensure all tests pass
@@ -230,7 +230,7 @@ Incremental implementation of the Memory & Context Management feature for the `a
 
 
 - [x] 11. Implement MemoryStoreRegistry
-  - [x] 11.1 Create `source/packages/automojo/agentkit/memorystoreregistry.py` with the MemoryStoreRegistry class
+  - [x] 11.1 Create `source/packages/ccai/agentkit/memorystoreregistry.py` with the MemoryStoreRegistry class
     - Implement `__init__` initializing empty stores dict
     - Implement `register(store)` using store_name as key, raise SemanticError on duplicate name
     - Implement `deregister(name)` removing by name
@@ -246,18 +246,18 @@ Incremental implementation of the Memory & Context Management feature for the `a
     - Test register with duplicate name raises SemanticError
     - Test lookup returns None for unknown name
     - Test __repr__ and __str__
-    - Create test file at `source/testroots/automojo/tests/singlehost/agentkit/test_memorystoreregistry.py`
+    - Create test file at `source/testroots/ccai/tests/singlehost/agentkit/test_memorystoreregistry.py`
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7, 11.8, 11.9_
 
 - [x] 12. Implement ContextWindowStrategy and ContextSummarizer
-  - [x] 12.1 Create `source/packages/automojo/agentkit/contextwindowstrategy.py` with the ContextWindowStrategy enumeration
+  - [x] 12.1 Create `source/packages/ccai/agentkit/contextwindowstrategy.py` with the ContextWindowStrategy enumeration
     - Define FIFO, RELEVANCE, SUMMARIZE values
     - Implement `from_string` class method with case-insensitive matching
     - Raise SemanticError for invalid values listing valid options
     - Implement `__repr__` and `__str__`
     - _Requirements: 9.1, 9.2, 9.3_
 
-  - [x] 12.2 Create `source/packages/automojo/agentkit/contextsummarizer.py` with the ContextSummarizer class
+  - [x] 12.2 Create `source/packages/ccai/agentkit/contextsummarizer.py` with the ContextSummarizer class
     - Implement `__init__` with llm_provider and optional max_summary_tokens
     - Implement `llm_provider` and `max_summary_tokens` read-only properties
     - Implement `summarize_messages(messages)` — raise SemanticError if empty, build summary prompt, call llm_provider.complete, return LlmMessage with summary, raise ContextWindowError on LLM failure, log at INFO
@@ -274,11 +274,11 @@ Incremental implementation of the Memory & Context Management feature for the `a
     - Test ContextSummarizer.summarize_entries with mock LlmProvider
     - Test ContextSummarizer.summarize_entries raises SemanticError for empty input
     - Test ContextSummarizer __repr__ and __str__
-    - Create test files at `source/testroots/automojo/tests/singlehost/agentkit/test_contextwindowstrategy.py` and `test_contextsummarizer.py`
+    - Create test files at `source/testroots/ccai/tests/singlehost/agentkit/test_contextwindowstrategy.py` and `test_contextsummarizer.py`
     - _Requirements: 9.1, 9.2, 9.3, 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7, 10.8_
 
 - [x] 13. Implement ContextWindow
-  - [x] 13.1 Create `source/packages/automojo/agentkit/contextwindow.py` with the ContextWindow class
+  - [x] 13.1 Create `source/packages/ccai/agentkit/contextwindow.py` with the ContextWindow class
     - Implement `__init__` with max_tokens, strategy, token_counter callable, optional summarizer
     - Validate max_tokens > 0 and token_counter is not None, raise SemanticError
     - Implement `max_tokens` and `strategy` read-only properties
@@ -307,7 +307,7 @@ Incremental implementation of the Memory & Context Management feature for the `a
     - Test construction validation (max_tokens <= 0, None token_counter)
     - Test SUMMARIZE without summarizer raises ContextWindowError
     - Test __repr__ and __str__
-    - Create test file at `source/testroots/automojo/tests/singlehost/agentkit/test_contextwindow.py`
+    - Create test file at `source/testroots/ccai/tests/singlehost/agentkit/test_contextwindow.py`
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 8.8, 8.9, 8.10, 8.11, 8.12_
 
 - [x] 14. Checkpoint - Ensure all tests pass
@@ -315,7 +315,7 @@ Incremental implementation of the Memory & Context Management feature for the `a
 
 
 - [x] 15. Implement MemoryConfiguration
-  - [x] 15.1 Create `source/packages/automojo/agentkit/memoryconfiguration.py` with the MemoryConfiguration class
+  - [x] 15.1 Create `source/packages/ccai/agentkit/memoryconfiguration.py` with the MemoryConfiguration class
     - Implement `__init__` with backend_type, optional connection_params, optional default_scope (default AGENT), optional expiration_policy, optional embedding_settings, optional credential_names
     - Implement all read-only properties returning defensive copies for mutable fields
     - Implement `as_dict()` excluding resolved credential values, `to_json()`
@@ -339,7 +339,7 @@ Incremental implementation of the Memory & Context Management feature for the `a
     - Test from_json_file raises ConfigurationError on missing file
     - Test as_dict excludes resolved credential values
     - Test __repr__, __str__, __eq__
-    - Create test file at `source/testroots/automojo/tests/singlehost/agentkit/test_memoryconfiguration.py`
+    - Create test file at `source/testroots/ccai/tests/singlehost/agentkit/test_memoryconfiguration.py`
     - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6, 12.7, 12.8, 12.9, 12.10, 12.11, 12.12, 12.13, 12.14, 12.15, 12.16_
 
 - [x] 16. Implement Agent memory integration
@@ -373,11 +373,11 @@ Incremental implementation of the Memory & Context Management feature for the `a
     - Test Agent INITIALIZED state constructs memory system from config
     - Test Agent STOPPED state clears registry
     - Use mock MemoryStore, ContextWindow, and LlmProvider
-    - Create test file at `source/testroots/automojo/tests/singlehost/agentkit/test_agent_memory.py`
+    - Create test file at `source/testroots/ccai/tests/singlehost/agentkit/test_agent_memory.py`
     - _Requirements: 14.1, 14.2, 14.3, 14.4, 14.5, 14.6, 14.7, 14.8, 14.9, 14.10, 14.11_
 
 - [x] 17. Implement memory backend plugin integration
-  - [x] 17.1 Define the `automojo.agentkit.memory_backends` ExtensionPoint
+  - [x] 17.1 Define the `ccai.agentkit.memory_backends` ExtensionPoint
     - Register the extension point name for memory backend plugin discovery
     - Implement plugin loading during Agent initialization: query extension point, register discovered stores
     - Log WARNING on plugin load failure (include plugin name and error detail), continue loading remaining plugins
@@ -389,7 +389,7 @@ Incremental implementation of the Memory & Context Management feature for the `a
     - Test plugin load failure logs WARNING and continues
     - Test store name conflict logs WARNING and skips
     - Use mock ExtensionPoint and mock MemoryStore plugins
-    - Create test file at `source/testroots/automojo/tests/singlehost/agentkit/test_memory_plugins.py`
+    - Create test file at `source/testroots/ccai/tests/singlehost/agentkit/test_memory_plugins.py`
     - _Requirements: 15.1, 15.2, 15.3, 15.4_
 
 - [x] 18. Final checkpoint - Ensure all tests pass
@@ -404,6 +404,6 @@ Incremental implementation of the Memory & Context Management feature for the `a
 - Unit tests validate specific examples, edge cases, and error conditions
 - All test files use the testbase framework (not pytest or unittest)
 - All mocking uses testbase mocking (not unittest.mock)
-- Property-based tests use automojo.testbase.properties (built-in testbase property testing engine)
+- Property-based tests use ccai.testbase.properties (built-in testbase property testing engine)
 - Class filenames are all lowercase with no underscores per project conventions
-- Test file hierarchy mirrors source hierarchy under `source/testroots/automojo/tests/singlehost/agentkit/`
+- Test file hierarchy mirrors source hierarchy under `source/testroots/ccai/tests/singlehost/agentkit/`

@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The LLM Integration feature extends the `automojo-agent-kit` SDK with a unified interface for interacting with Large Language Model providers. It defines an LLM provider abstraction with a common interface, a provider registry for managing available providers, prompt template management with versioning, structured output parsing and validation, token usage tracking and cost estimation, streaming response support, retry and fallback strategies across providers, and conversation/message history management. The system integrates with the Agent base class so agents can use LLM providers, with the Tool system so LLMs can invoke tools and receive tool results, with `automojo-extension` so LLM provider plugins can be discovered and loaded, with `automojo-credentials` for API key and credential management, with `automojo-dataprofiles` for data profile management, and with `automojo-this-app` for settings and environment configuration.
+The LLM Integration feature extends the `codecraftai-agent-kit` SDK with a unified interface for interacting with Large Language Model providers. It defines an LLM provider abstraction with a common interface, a provider registry for managing available providers, prompt template management with versioning, structured output parsing and validation, token usage tracking and cost estimation, streaming response support, retry and fallback strategies across providers, and conversation/message history management. The system integrates with the Agent base class so agents can use LLM providers, with the Tool system so LLMs can invoke tools and receive tool results, with `codecraftai-extension` so LLM provider plugins can be discovered and loaded, with `codecraftai-credentials` for API key and credential management, with `codecraftai-dataprofiles` for data profile management, and with `codecraftai-this-app` for settings and environment configuration.
 
 ## Glossary
 
@@ -23,10 +23,10 @@ The LLM Integration feature extends the `automojo-agent-kit` SDK with a unified 
 - **RetryPolicy**: A configuration object defining retry behavior for failed LLM requests, including maximum retry count, backoff strategy, and retryable error conditions.
 - **FallbackChain**: An ordered list of LlmProvider names that defines the fallback sequence when a provider fails. The FallbackChain tries each provider in order until one succeeds or all fail.
 - **LlmToolBridge**: A component that converts Tool descriptors into LLM-compatible function/tool definitions, and converts LLM tool call responses back into tool execution requests.
-- **LlmProviderPlugin**: An LlmProvider implementation discovered and loaded through the `automojo-extension` ExtensionPoint mechanism, allowing external packages to contribute LLM providers.
+- **LlmProviderPlugin**: An LlmProvider implementation discovered and loaded through the `codecraftai-extension` ExtensionPoint mechanism, allowing external packages to contribute LLM providers.
 - **Agent**: The base agent class defined in the Core Agent Framework that owns an LlmProviderRegistry and uses LLM providers for completion requests.
-- **ExtensionPoint**: An integration surface provided by `automojo-extension` that allows external plugins to register LlmProvider implementations with an Agent.
-- **CredentialReference**: A named reference resolved through `automojo-credentials` that provides secure access to API keys and secrets required by an LlmProvider.
+- **ExtensionPoint**: An integration surface provided by `codecraftai-extension` that allows external plugins to register LlmProvider implementations with an Agent.
+- **CredentialReference**: A named reference resolved through `codecraftai-credentials` that provides secure access to API keys and secrets required by an LlmProvider.
 - **ConfigurationError**: An exception raised for configuration-related problems, inherited from AgentKitError.
 - **SemanticError**: An exception raised for API misuse, inherited from AgentKitError.
 - **LlmRequestError**: An exception raised when an LLM provider request fails due to a provider-side error (rate limit, authentication failure, server error).
@@ -248,29 +248,29 @@ The LLM Integration feature extends the `automojo-agent-kit` SDK with a unified 
 2. THE Agent base class SHALL provide a register_llm_provider method that accepts an LlmProvider instance and registers the LlmProvider with the Agent's LlmProviderRegistry.
 3. THE Agent base class SHALL provide a complete method that accepts a provider name, model name, an LlmConversation, and optional parameters, looks up the LlmProvider in the Agent's LlmProviderRegistry, and executes the completion request, returning an LlmResponse.
 4. IF the requested provider name and model name combination is not found in the Agent's LlmProviderRegistry, THEN THE complete method SHALL raise a SemanticError that includes the requested provider name, model name, and the agent identity.
-5. WHEN an Agent transitions to the INITIALIZED state, THE Agent SHALL discover and register all LlmProviderPlugin instances from `automojo-extension` ExtensionPoint entries targeting the Agent.
+5. WHEN an Agent transitions to the INITIALIZED state, THE Agent SHALL discover and register all LlmProviderPlugin instances from `codecraftai-extension` ExtensionPoint entries targeting the Agent.
 6. WHEN an Agent transitions to the STOPPED state, THE Agent's LlmProviderRegistry SHALL be cleared of all registered providers.
 7. THE Agent base class SHALL expose a read-only cost_tracker property that returns the Agent's CostTracker instance.
 8. WHEN an LLM completion request returns an LlmResponse, THE Agent SHALL record the TokenUsage and CostEstimate from the response in the Agent's CostTracker.
 
 ### Requirement 13: LLM Provider Plugin Integration
 
-**User Story:** As a developer, I want to distribute LLM providers as plugins through `automojo-extension`, so that provider packages can be installed and discovered automatically by agents.
+**User Story:** As a developer, I want to distribute LLM providers as plugins through `codecraftai-extension`, so that provider packages can be installed and discovered automatically by agents.
 
 #### Acceptance Criteria
 
-1. THE framework SHALL define an ExtensionPoint named "automojo.agentkit.llm_providers" through `automojo-extension` for registering LlmProviderPlugin implementations.
-2. WHEN an Agent is initialized, THE Agent SHALL query the "automojo.agentkit.llm_providers" ExtensionPoint and register all discovered LlmProvider instances with the Agent's LlmProviderRegistry.
+1. THE framework SHALL define an ExtensionPoint named "ccai.agentkit.llm_providers" through `codecraftai-extension` for registering LlmProviderPlugin implementations.
+2. WHEN an Agent is initialized, THE Agent SHALL query the "ccai.agentkit.llm_providers" ExtensionPoint and register all discovered LlmProvider instances with the Agent's LlmProviderRegistry.
 3. IF an LlmProviderPlugin fails to load, THEN THE Agent SHALL log the failure at WARNING level including the plugin name and the error detail, and continue loading remaining plugins.
 4. IF an LlmProviderPlugin provides an LlmProvider with a name-model combination that conflicts with an already registered LlmProvider, THEN THE Agent SHALL log the conflict at WARNING level including both provider identifiers and skip the conflicting plugin provider.
 
 ### Requirement 14: Credential Integration for LLM Providers
 
-**User Story:** As a developer, I want LLM providers to securely resolve API keys and credentials through `automojo-credentials`, so that secrets are managed centrally and not embedded in agent configuration or code.
+**User Story:** As a developer, I want LLM providers to securely resolve API keys and credentials through `codecraftai-credentials`, so that secrets are managed centrally and not embedded in agent configuration or code.
 
 #### Acceptance Criteria
 
-1. WHEN an LlmProvider declares CredentialReference names, THE framework SHALL resolve each CredentialReference through the `automojo-credentials` package before the provider handles completion requests.
+1. WHEN an LlmProvider declares CredentialReference names, THE framework SHALL resolve each CredentialReference through the `codecraftai-credentials` package before the provider handles completion requests.
 2. IF a CredentialReference declared by an LlmProvider cannot be resolved, THEN THE framework SHALL raise a ConfigurationError that identifies the unresolvable credential name and the provider name.
 3. THE LlmProvider SHALL NOT include resolved credential values in the output of any serialization method or string representation.
 
@@ -324,7 +324,7 @@ The LLM Integration feature extends the `automojo-agent-kit` SDK with a unified 
 
 #### Acceptance Criteria
 
-1. THE framework SHALL use the Python standard logging module with a logger hierarchy under `automojo.agentkit.llm`.
+1. THE framework SHALL use the Python standard logging module with a logger hierarchy under `ccai.agentkit.llm`.
 2. WHEN an LLM completion request begins, THE framework SHALL log at INFO level including the provider name, model name, and agent identifier.
 3. WHEN an LLM completion request completes successfully, THE framework SHALL log at INFO level including the provider name, model name, token usage, and request duration.
 4. WHEN an LLM completion request fails, THE framework SHALL log at WARNING level including the provider name, model name, error category, and error detail.

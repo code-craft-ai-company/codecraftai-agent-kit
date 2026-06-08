@@ -2,20 +2,20 @@
 
 ## Introduction
 
-The Developer Experience feature extends the `automojo-agent-kit` SDK with developer-facing tools and utilities that make the SDK productive and enjoyable to use. It defines a command-line interface built on `automojo-arcli` for scaffolding agents, tools, workflows, and other SDK components from templates; an interactive REPL for real-time agent interaction, tool invocation, state inspection, and behavior debugging; a documentation system providing inline help, API reference generation, and example code for all SDK components; a type annotation system ensuring all public APIs have complete type hints with optional runtime type checking in debug mode; and IDE-friendly API design patterns that maximize autocompletion, discoverability, and developer productivity. The system integrates with the Agent base class so the REPL can create, configure, and exercise agents interactively, with the Tool & Capability System so tools can be scaffolded and invoked from the REPL, with the LLM Integration system so LLM providers can be tested interactively, with the Memory & Context Management system so memory stores can be inspected from the REPL, with the Communication & Messaging system so messages can be sent and received interactively, with the Workflow & Orchestration system so workflows can be scaffolded and stepped through, with the Observability & Debugging system so the REPL integrates with debug sessions and execution inspection, with the Configuration & Extensibility system so scaffolded components follow configuration conventions and plugins can extend the CLI and REPL, with the Error Handling & Resilience system so error diagnostics are surfaced clearly in the REPL, with `automojo-arcli` as the CLI framework for all command-line operations, with `automojo-extension` so CLI commands, REPL commands, and scaffolding templates can be discovered and loaded as plugins, with `automojo-configuration` for managing scaffolding template configuration, with `automojo-credentials` for credential management during interactive sessions, with `automojo-dataprofiles` for data profile management, and with `automojo-this-app` for settings, environment configuration, and directory-based project presence.
+The Developer Experience feature extends the `codecraftai-agent-kit` SDK with developer-facing tools and utilities that make the SDK productive and enjoyable to use. It defines a command-line interface built on `codecraftai-arcli` for scaffolding agents, tools, workflows, and other SDK components from templates; an interactive REPL for real-time agent interaction, tool invocation, state inspection, and behavior debugging; a documentation system providing inline help, API reference generation, and example code for all SDK components; a type annotation system ensuring all public APIs have complete type hints with optional runtime type checking in debug mode; and IDE-friendly API design patterns that maximize autocompletion, discoverability, and developer productivity. The system integrates with the Agent base class so the REPL can create, configure, and exercise agents interactively, with the Tool & Capability System so tools can be scaffolded and invoked from the REPL, with the LLM Integration system so LLM providers can be tested interactively, with the Memory & Context Management system so memory stores can be inspected from the REPL, with the Communication & Messaging system so messages can be sent and received interactively, with the Workflow & Orchestration system so workflows can be scaffolded and stepped through, with the Observability & Debugging system so the REPL integrates with debug sessions and execution inspection, with the Configuration & Extensibility system so scaffolded components follow configuration conventions and plugins can extend the CLI and REPL, with the Error Handling & Resilience system so error diagnostics are surfaced clearly in the REPL, with `codecraftai-arcli` as the CLI framework for all command-line operations, with `codecraftai-extension` so CLI commands, REPL commands, and scaffolding templates can be discovered and loaded as plugins, with `codecraftai-configuration` for managing scaffolding template configuration, with `codecraftai-credentials` for credential management during interactive sessions, with `codecraftai-dataprofiles` for data profile management, and with `codecraftai-this-app` for settings, environment configuration, and directory-based project presence.
 
 ## Glossary
 
-- **ScaffoldCli**: The top-level CLI application built on `automojo-arcli` that provides commands for scaffolding agents, tools, workflows, and other SDK components from templates. The ScaffoldCli discovers and loads CLI command plugins through `automojo-extension`.
+- **ScaffoldCli**: The top-level CLI application built on `codecraftai-arcli` that provides commands for scaffolding agents, tools, workflows, and other SDK components from templates. The ScaffoldCli discovers and loads CLI command plugins through `codecraftai-extension`.
 - **ScaffoldCommand**: An abstract base class representing a single CLI command that generates one or more files from a ScaffoldTemplate. Concrete implementations provide commands for scaffolding agents, tools, workflows, serializers, and other component types.
 - **ScaffoldTemplate**: An immutable object representing a file generation template, containing a template name, a target file path pattern, a template content string with placeholder variables, and a dictionary of default variable values. Templates follow the project's naming conventions for class names (PascalCase) and file names (all lowercase, no underscores).
-- **ScaffoldTemplateRegistry**: A registry that tracks all available ScaffoldTemplate instances, providing lookup by name, component type, and enumeration. The registry supports loading templates from `automojo-extension` plugins.
+- **ScaffoldTemplateRegistry**: A registry that tracks all available ScaffoldTemplate instances, providing lookup by name, component type, and enumeration. The registry supports loading templates from `codecraftai-extension` plugins.
 - **ScaffoldContext**: A mutable context object that carries scaffolding state during file generation, containing the target project directory, the component name, the component type, resolved template variables, and the list of generated file paths.
 - **ScaffoldResult**: An immutable object encapsulating the outcome of a scaffolding operation, containing the component name, the component type, the list of generated file paths, and a success flag.
 - **NamingConvention**: A utility class that provides methods for converting between naming styles used in the project: PascalCase for class names, all-lowercase-no-underscores for file names, and snake_case for function and variable names.
 - **AgentRepl**: The interactive read-eval-print loop that allows developers to interact with agents in real-time, send messages, invoke tools, inspect agent state, and debug agent behavior. The AgentRepl integrates with the Agent lifecycle and the DebugSession from the Observability & Debugging feature.
 - **ReplCommand**: An abstract base class representing a single command available within the AgentRepl. Concrete implementations provide commands for agent lifecycle management, tool invocation, state inspection, memory queries, message sending, and help display.
-- **ReplCommandRegistry**: A registry that tracks all available ReplCommand instances within the AgentRepl, providing lookup by name, alias, and enumeration. The registry supports loading command plugins through `automojo-extension`.
+- **ReplCommandRegistry**: A registry that tracks all available ReplCommand instances within the AgentRepl, providing lookup by name, alias, and enumeration. The registry supports loading command plugins through `codecraftai-extension`.
 - **ReplSession**: A mutable context object that carries the state of an active REPL session, containing the active Agent instance, the command history, the session start timestamp, and the current CorrelationContext from the Observability & Debugging feature.
 - **ReplResult**: An immutable object encapsulating the outcome of a REPL command execution, containing the command name, the output string, a success flag, and an optional error message.
 - **ReplFormatter**: An abstract base class for formatting REPL output for display. Concrete implementations provide plain text and colored terminal output formatting.
@@ -44,10 +44,10 @@ The Developer Experience feature extends the `automojo-agent-kit` SDK with devel
 - **StructuredLogger**: The structured logger defined in the Observability & Debugging feature, used for logging CLI and REPL operations.
 - **ConfigurationManager**: The configuration manager defined in the Configuration & Extensibility feature, used by scaffolding templates for generating configuration files.
 - **FeatureFlag**: The feature flag defined in the Configuration & Extensibility feature, used to toggle debug mode and runtime type checking.
-- **ExtensionPoint**: An integration surface provided by `automojo-extension` that allows external plugins to register CLI commands, REPL commands, scaffolding templates, and documentation entries.
-- **CredentialReference**: A named reference resolved through `automojo-credentials` that provides secure access to secrets during interactive REPL sessions.
-- **DataProfileReference**: A named reference resolved through `automojo-dataprofiles` that provides data profile configuration during interactive sessions.
-- **AppContext**: The application context provided by `automojo-this-app` that supplies settings, environment variables, and directory-based presence for scaffolding target directories and REPL configuration.
+- **ExtensionPoint**: An integration surface provided by `codecraftai-extension` that allows external plugins to register CLI commands, REPL commands, scaffolding templates, and documentation entries.
+- **CredentialReference**: A named reference resolved through `codecraftai-credentials` that provides secure access to secrets during interactive REPL sessions.
+- **DataProfileReference**: A named reference resolved through `codecraftai-dataprofiles` that provides data profile configuration during interactive sessions.
+- **AppContext**: The application context provided by `codecraftai-this-app` that supplies settings, environment variables, and directory-based presence for scaffolding target directories and REPL configuration.
 - **ConfigurationError**: An exception raised for configuration-related problems, inherited from AgentKitError.
 - **SemanticError**: An exception raised for API misuse, inherited from AgentKitError.
 - **ScaffoldError**: An exception raised when a scaffolding operation fails due to a template rendering error, file write error, or naming convention violation, inherited from AgentKitError.
@@ -59,19 +59,19 @@ The Developer Experience feature extends the `automojo-agent-kit` SDK with devel
 
 ### Requirement 1: Scaffold CLI Application
 
-**User Story:** As a developer, I want a command-line interface built on `automojo-arcli` that provides commands for scaffolding SDK components, so that I can quickly generate properly structured project files without manual boilerplate.
+**User Story:** As a developer, I want a command-line interface built on `codecraftai-arcli` that provides commands for scaffolding SDK components, so that I can quickly generate properly structured project files without manual boilerplate.
 
 #### Acceptance Criteria
 
-1. THE ScaffoldCli SHALL be built on the `automojo-arcli` framework, registering all scaffold commands through the `automojo-arcli` command registration mechanism.
+1. THE ScaffoldCli SHALL be built on the `codecraftai-arcli` framework, registering all scaffold commands through the `codecraftai-arcli` command registration mechanism.
 2. THE ScaffoldCli SHALL provide a top-level command group named `agentkit` with subcommands for scaffolding agents, tools, workflows, and other SDK components.
-3. THE ScaffoldCli SHALL discover and load additional ScaffoldCommand plugins through the `automojo-extension` ExtensionPoint mechanism at startup.
-4. THE ScaffoldCli SHALL resolve the target project directory from the AppContext provided by `automojo-this-app`, defaulting to the current working directory when no AppContext is configured.
+3. THE ScaffoldCli SHALL discover and load additional ScaffoldCommand plugins through the `codecraftai-extension` ExtensionPoint mechanism at startup.
+4. THE ScaffoldCli SHALL resolve the target project directory from the AppContext provided by `codecraftai-this-app`, defaulting to the current working directory when no AppContext is configured.
 5. THE ScaffoldCli SHALL provide a `--dry-run` option on all scaffold subcommands that displays the files that would be generated without writing them to disk.
 6. THE ScaffoldCli SHALL provide a `--force` option on all scaffold subcommands that overwrites existing files without prompting for confirmation.
 7. WHEN a scaffold subcommand completes successfully, THE ScaffoldCli SHALL display a summary of generated files including the file paths and the component name.
 8. IF a scaffold subcommand fails, THEN THE ScaffoldCli SHALL display a descriptive error message identifying the failure reason and exit with a non-zero exit code.
-9. THE ScaffoldCli SHALL log all scaffolding operations at INFO level using the logger hierarchy rooted at `automojo.agentkit.devex.cli`.
+9. THE ScaffoldCli SHALL log all scaffolding operations at INFO level using the logger hierarchy rooted at `ccai.agentkit.devex.cli`.
 10. THE ScaffoldCli SHALL provide a __repr__ method that includes the class name and the count of registered scaffold commands.
 11. THE ScaffoldCli SHALL provide a __str__ method that returns a human-readable summary including the count of registered scaffold commands and the list of available subcommand names.
 
@@ -86,13 +86,13 @@ The Developer Experience feature extends the `automojo-agent-kit` SDK with devel
 3. THE ScaffoldCli SHALL provide a `scaffold workflow` command that accepts a component name and generates a WorkflowDefinition file with a sample DAG structure and a test file following the project's naming conventions.
 4. THE ScaffoldCli SHALL provide a `scaffold serializer` command that accepts a component name and generates a MessageSerializer subclass file with serialize and deserialize methods and a test file following the project's naming conventions.
 5. ALL scaffold commands SHALL generate class names in PascalCase and file names in all-lowercase-no-underscores format, consistent with the project's naming conventions.
-6. ALL scaffold commands SHALL generate files under the `source/packages/automojo/agentkit/` directory structure, placing source files in the appropriate subpackage and test files in the corresponding `source/testroots/automojo/tests/singlehost/agentkit/` directory.
+6. ALL scaffold commands SHALL generate files under the `source/packages/ccai/agentkit/` directory structure, placing source files in the appropriate subpackage and test files in the corresponding `source/testroots/ccai/tests/singlehost/agentkit/` directory.
 7. ALL scaffold commands SHALL include a `--template` option that accepts a template name for selecting an alternative ScaffoldTemplate from the ScaffoldTemplateRegistry.
 8. ALL scaffold commands SHALL include a `--output-dir` option that overrides the default target directory for generated files.
 9. WHEN a scaffold command generates a file that already exists and the `--force` option is not provided, THE scaffold command SHALL display a warning and skip the existing file.
 10. ALL scaffold commands SHALL generate files with complete type hints on all public methods and properties.
 11. ALL scaffold commands SHALL generate files with docstrings on all public classes and methods.
-12. ALL scaffold commands SHALL generate test files that import from `automojo.testbase` and follow the `testbase` test function convention with `test_` prefixed functions.
+12. ALL scaffold commands SHALL generate test files that import from `ccai.testbase` and follow the `testbase` test function convention with `test_` prefixed functions.
 
 ### Requirement 3: Scaffold Template
 
@@ -127,7 +127,7 @@ The Developer Experience feature extends the `automojo-agent-kit` SDK with devel
 5. THE ScaffoldTemplateRegistry SHALL support lookup of registered ScaffoldTemplate instances by component type, returning a list of templates matching the provided component type.
 6. THE ScaffoldTemplateRegistry SHALL support enumeration of all registered ScaffoldTemplate instances as a list.
 7. THE ScaffoldTemplateRegistry SHALL expose a read-only property for the count of currently registered templates.
-8. THE ScaffoldTemplateRegistry SHALL support loading ScaffoldTemplate plugins through the `automojo-extension` ExtensionPoint mechanism, allowing external packages to contribute templates.
+8. THE ScaffoldTemplateRegistry SHALL support loading ScaffoldTemplate plugins through the `codecraftai-extension` ExtensionPoint mechanism, allowing external packages to contribute templates.
 9. THE ScaffoldTemplateRegistry SHALL provide a has_template method that accepts a template name and returns a boolean indicating whether a template with the given name is registered.
 10. THE ScaffoldTemplateRegistry SHALL provide a __repr__ method that includes the class name and the count of registered templates.
 11. THE ScaffoldTemplateRegistry SHALL provide a __str__ method that returns a human-readable summary listing the registered template names and component types.
@@ -178,13 +178,13 @@ The Developer Experience feature extends the `automojo-agent-kit` SDK with devel
 2. THE AgentRepl SHALL accept an optional Agent instance at construction time, setting the agent as the active agent for the session.
 3. THE AgentRepl SHALL accept an optional AgentConfiguration dictionary at construction time for creating a new Agent instance when no Agent is provided.
 4. THE AgentRepl SHALL create a ReplSession at startup, initializing the command history, session timestamp, and a CorrelationContext for tracing REPL operations.
-5. THE AgentRepl SHALL discover and load ReplCommand plugins through the `automojo-extension` ExtensionPoint mechanism at startup.
+5. THE AgentRepl SHALL discover and load ReplCommand plugins through the `codecraftai-extension` ExtensionPoint mechanism at startup.
 6. THE AgentRepl SHALL display a prompt that includes the active agent name and current LifecycleState when an agent is active, or a default prompt when no agent is active.
 7. THE AgentRepl SHALL support command completion using the registered ReplCommand names and aliases.
 8. THE AgentRepl SHALL provide a `help` command that lists all available commands with their descriptions.
 9. THE AgentRepl SHALL provide a `quit` command that stops the active agent (if running), cleans up the session, and exits the REPL loop.
 10. IF a ReplCommand execution raises an exception, THEN THE AgentRepl SHALL display a formatted error message including the exception type and message, and continue the REPL loop.
-11. THE AgentRepl SHALL log all REPL operations at DEBUG level using the logger hierarchy rooted at `automojo.agentkit.devex.repl`.
+11. THE AgentRepl SHALL log all REPL operations at DEBUG level using the logger hierarchy rooted at `ccai.agentkit.devex.repl`.
 12. THE AgentRepl SHALL provide a __repr__ method that includes the class name, active agent identifier (or "no agent"), and session duration.
 13. THE AgentRepl SHALL provide a __str__ method that returns a human-readable summary including the active agent name, lifecycle state, and command count.
 
@@ -222,7 +222,7 @@ The Developer Experience feature extends the `automojo-agent-kit` SDK with devel
 5. THE ReplCommandRegistry SHALL support lookup of a registered ReplCommand by name or alias, returning the ReplCommand instance or None when the name is not found.
 6. THE ReplCommandRegistry SHALL support enumeration of all registered ReplCommand instances as a list, excluding alias duplicates.
 7. THE ReplCommandRegistry SHALL expose a read-only property for the count of currently registered commands (excluding aliases).
-8. THE ReplCommandRegistry SHALL support loading ReplCommand plugins through the `automojo-extension` ExtensionPoint mechanism.
+8. THE ReplCommandRegistry SHALL support loading ReplCommand plugins through the `codecraftai-extension` ExtensionPoint mechanism.
 9. THE ReplCommandRegistry SHALL provide a has_command method that accepts a name or alias and returns a boolean indicating whether a command with the given name or alias is registered.
 10. THE ReplCommandRegistry SHALL provide a __repr__ method that includes the class name and the count of registered commands.
 11. THE ReplCommandRegistry SHALL provide a __str__ method that returns a human-readable summary listing the registered command names.
@@ -275,7 +275,7 @@ The Developer Experience feature extends the `automojo-agent-kit` SDK with devel
 4. THE DocGenerator SHALL extract function signatures including parameter names, parameter type hints, return type hints, and function-level docstrings.
 5. THE DocGenerator SHALL skip private members (names starting with underscore) unless they are dunder methods (__repr__, __str__, __init__).
 6. THE DocGenerator SHALL populate the DocRegistry with all generated DocEntry instances.
-7. THE DocGenerator SHALL log documentation generation at INFO level using the logger hierarchy rooted at `automojo.agentkit.devex.docs`.
+7. THE DocGenerator SHALL log documentation generation at INFO level using the logger hierarchy rooted at `ccai.agentkit.devex.docs`.
 8. THE DocGenerator SHALL provide a __repr__ method that includes the class name and the count of modules processed.
 9. THE DocGenerator SHALL provide a __str__ method that returns a human-readable summary including the count of modules processed and the count of generated DocEntry instances.
 
@@ -337,7 +337,7 @@ The Developer Experience feature extends the `automojo-agent-kit` SDK with devel
 11. THE ExampleRegistry SHALL support lookup of registered ExampleCode instances by component name, returning a list of examples that reference the provided component name in their required component names list.
 12. THE ExampleRegistry SHALL support enumeration of all registered ExampleCode instances as a list.
 13. THE ExampleRegistry SHALL expose a read-only property for the count of currently registered examples.
-14. THE ExampleRegistry SHALL support loading ExampleCode plugins through the `automojo-extension` ExtensionPoint mechanism, allowing external packages to contribute examples.
+14. THE ExampleRegistry SHALL support loading ExampleCode plugins through the `codecraftai-extension` ExtensionPoint mechanism, allowing external packages to contribute examples.
 15. THE ExampleRegistry SHALL provide a __repr__ method that includes the class name and the count of registered examples.
 16. THE ExampleRegistry SHALL provide a __str__ method that returns a human-readable summary including the count of registered examples.
 
@@ -355,7 +355,7 @@ The Developer Experience feature extends the `automojo-agent-kit` SDK with devel
 6. THE TypeAnnotationValidator SHALL skip private members (names starting with underscore) except for `__init__`, `__repr__`, and `__str__` methods.
 7. THE TypeAnnotationValidator SHALL provide a read-only property for the list of validation warnings from the most recent validate call.
 8. THE TypeAnnotationValidator SHALL provide a read-only property for the count of validated modules.
-9. THE TypeAnnotationValidator SHALL log validation results at INFO level using the logger hierarchy rooted at `automojo.agentkit.devex.types`.
+9. THE TypeAnnotationValidator SHALL log validation results at INFO level using the logger hierarchy rooted at `ccai.agentkit.devex.types`.
 10. THE TypeAnnotationValidator SHALL provide a __repr__ method that includes the class name and the count of configured modules.
 11. THE TypeAnnotationValidator SHALL provide a __str__ method that returns a human-readable summary including the count of configured modules and the count of validation warnings.
 
@@ -372,7 +372,7 @@ The Developer Experience feature extends the `automojo-agent-kit` SDK with devel
 5. THE RuntimeTypeChecker SHALL support protocol type hints by checking for the presence of required methods and attributes.
 6. WHEN the TypeCheckConfiguration has runtime checking disabled, THE RuntimeTypeChecker SHALL skip all type validation and return immediately.
 7. THE RuntimeTypeChecker SHALL provide a decorator method `checked` that wraps a function or method to automatically validate argument types on entry and return type on exit.
-8. THE RuntimeTypeChecker SHALL log all type mismatches at WARNING level using the logger hierarchy rooted at `automojo.agentkit.devex.types`.
+8. THE RuntimeTypeChecker SHALL log all type mismatches at WARNING level using the logger hierarchy rooted at `ccai.agentkit.devex.types`.
 9. THE RuntimeTypeChecker SHALL provide a __repr__ method that includes the class name and whether runtime checking is enabled.
 10. THE RuntimeTypeChecker SHALL provide a __str__ method that returns a human-readable summary including whether runtime checking is enabled and the count of configured modules.
 
@@ -421,7 +421,7 @@ The Developer Experience feature extends the `automojo-agent-kit` SDK with devel
 5. THE ApiSurfaceValidator SHALL check that all public methods of classes listed in `__all__` have docstrings, reporting a warning for each undocumented method.
 6. THE ApiSurfaceValidator SHALL check that all public methods have complete type hints on parameters and return values, reporting a warning for each missing type hint.
 7. THE ApiSurfaceValidator SHALL check that parameter names across similar methods are consistent (e.g., all methods accepting an agent identifier use the same parameter name), reporting a warning for inconsistencies.
-8. THE ApiSurfaceValidator SHALL log validation results at INFO level using the logger hierarchy rooted at `automojo.agentkit.devex.api`.
+8. THE ApiSurfaceValidator SHALL log validation results at INFO level using the logger hierarchy rooted at `ccai.agentkit.devex.api`.
 9. THE ApiSurfaceValidator SHALL provide a __repr__ method that includes the class name and the count of configured modules.
 10. THE ApiSurfaceValidator SHALL provide a __str__ method that returns a human-readable summary including the count of configured modules and the total warning count.
 
@@ -460,18 +460,18 @@ The Developer Experience feature extends the `automojo-agent-kit` SDK with devel
 
 ### Requirement 23: Extension Point Integration
 
-**User Story:** As a developer, I want the developer experience system to support extensibility through `automojo-extension`, so that plugins can contribute CLI commands, REPL commands, scaffolding templates, and documentation entries.
+**User Story:** As a developer, I want the developer experience system to support extensibility through `codecraftai-extension`, so that plugins can contribute CLI commands, REPL commands, scaffolding templates, and documentation entries.
 
 #### Acceptance Criteria
 
-1. THE ScaffoldCli SHALL register an ExtensionPoint with `automojo-extension` for discovering and loading ScaffoldCommand plugins.
-2. THE ScaffoldTemplateRegistry SHALL register an ExtensionPoint with `automojo-extension` for discovering and loading ScaffoldTemplate plugins.
-3. THE AgentRepl SHALL register an ExtensionPoint with `automojo-extension` for discovering and loading ReplCommand plugins.
-4. THE ExampleRegistry SHALL register an ExtensionPoint with `automojo-extension` for discovering and loading ExampleCode plugins.
-5. WHEN the ScaffoldCli is initialized, THE ScaffoldCli SHALL discover and load all registered ScaffoldCommand extensions from `automojo-extension`.
-6. WHEN the AgentRepl is initialized, THE AgentRepl SHALL discover and load all registered ReplCommand extensions from `automojo-extension`.
-7. WHEN the ScaffoldTemplateRegistry is initialized, THE ScaffoldTemplateRegistry SHALL discover and load all registered ScaffoldTemplate extensions from `automojo-extension`.
-8. WHEN the ExampleRegistry is initialized, THE ExampleRegistry SHALL discover and load all registered ExampleCode extensions from `automojo-extension`.
+1. THE ScaffoldCli SHALL register an ExtensionPoint with `codecraftai-extension` for discovering and loading ScaffoldCommand plugins.
+2. THE ScaffoldTemplateRegistry SHALL register an ExtensionPoint with `codecraftai-extension` for discovering and loading ScaffoldTemplate plugins.
+3. THE AgentRepl SHALL register an ExtensionPoint with `codecraftai-extension` for discovering and loading ReplCommand plugins.
+4. THE ExampleRegistry SHALL register an ExtensionPoint with `codecraftai-extension` for discovering and loading ExampleCode plugins.
+5. WHEN the ScaffoldCli is initialized, THE ScaffoldCli SHALL discover and load all registered ScaffoldCommand extensions from `codecraftai-extension`.
+6. WHEN the AgentRepl is initialized, THE AgentRepl SHALL discover and load all registered ReplCommand extensions from `codecraftai-extension`.
+7. WHEN the ScaffoldTemplateRegistry is initialized, THE ScaffoldTemplateRegistry SHALL discover and load all registered ScaffoldTemplate extensions from `codecraftai-extension`.
+8. WHEN the ExampleRegistry is initialized, THE ExampleRegistry SHALL discover and load all registered ExampleCode extensions from `codecraftai-extension`.
 
 ### Requirement 24: Exception Hierarchy
 
@@ -492,12 +492,12 @@ The Developer Experience feature extends the `automojo-agent-kit` SDK with devel
 
 #### Acceptance Criteria
 
-1. THE developer experience system SHALL use the Python standard logging module with a logger hierarchy rooted at `automojo.agentkit.devex`.
-2. THE ScaffoldCli SHALL use the logger `automojo.agentkit.devex.cli` for logging scaffolding operations.
-3. THE AgentRepl SHALL use the logger `automojo.agentkit.devex.repl` for logging REPL operations.
-4. THE DocGenerator SHALL use the logger `automojo.agentkit.devex.docs` for logging documentation generation operations.
-5. THE TypeAnnotationValidator and RuntimeTypeChecker SHALL use the logger `automojo.agentkit.devex.types` for logging type validation operations.
-6. THE ApiSurfaceValidator SHALL use the logger `automojo.agentkit.devex.api` for logging API surface validation operations.
+1. THE developer experience system SHALL use the Python standard logging module with a logger hierarchy rooted at `ccai.agentkit.devex`.
+2. THE ScaffoldCli SHALL use the logger `ccai.agentkit.devex.cli` for logging scaffolding operations.
+3. THE AgentRepl SHALL use the logger `ccai.agentkit.devex.repl` for logging REPL operations.
+4. THE DocGenerator SHALL use the logger `ccai.agentkit.devex.docs` for logging documentation generation operations.
+5. THE TypeAnnotationValidator and RuntimeTypeChecker SHALL use the logger `ccai.agentkit.devex.types` for logging type validation operations.
+6. THE ApiSurfaceValidator SHALL use the logger `ccai.agentkit.devex.api` for logging API surface validation operations.
 7. WHEN a scaffolding operation completes, THE ScaffoldCli SHALL log the operation at INFO level including the component name, component type, and generated file count.
 8. WHEN a REPL command is executed, THE AgentRepl SHALL log the command at DEBUG level including the command name and execution duration.
 9. WHEN a type mismatch is detected, THE RuntimeTypeChecker SHALL log the mismatch at WARNING level including the callable name, parameter name, expected type, and actual type.

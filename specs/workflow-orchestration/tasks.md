@@ -2,7 +2,7 @@
 
 ## Overview
 
-Build the Workflow & Orchestration system bottom-up: foundational types (enums, errors) first, then immutable data types (edges, results, context), then workflow definition with DAG validation, then condition evaluation, then checkpointing, then approval gates, then workflow executor, then built-in steps, then agent integration. All source files go under `source/packages/automojo/agentkit/` with all-lowercase filenames (no underscores). Tests go under `source/testroots/testbase/agentkit/` mirroring the source hierarchy. Uses `testbase` framework and `testbase` mocking throughout.
+Build the Workflow & Orchestration system bottom-up: foundational types (enums, errors) first, then immutable data types (edges, results, context), then workflow definition with DAG validation, then condition evaluation, then checkpointing, then approval gates, then workflow executor, then built-in steps, then agent integration. All source files go under `source/packages/ccai/agentkit/` with all-lowercase filenames (no underscores). Tests go under `source/testroots/testbase/agentkit/` mirroring the source hierarchy. Uses `testbase` framework and `testbase` mocking throughout.
 
 ## Tasks
 
@@ -154,7 +154,7 @@ Build the Workflow & Orchestration system bottom-up: foundational types (enums, 
     - Accept MemoryStore at construction time
     - Implement save_checkpoint, load_checkpoint, list_checkpoints, delete_checkpoint
     - Raise WorkflowCheckpointError for save/load failures
-    - Log checkpoint operations under `automojo.agentkit.workflow.checkpoint`
+    - Log checkpoint operations under `ccai.agentkit.workflow.checkpoint`
     - Implement __repr__, __str__
     - _Requirements: 9.1–9.9, 23.27, 23.28_
   - [x] 8.3 Write property test for WorkflowCheckpoint JSON round-trip
@@ -178,7 +178,7 @@ Build the Workflow & Orchestration system bottom-up: foundational types (enums, 
   - [x] 9.2 Create `approvalgate.py` with ApprovalGate class
     - Implement create_request, approve, reject, list_pending
     - Implement register_handler, deregister_handler
-    - Log approval events under `automojo.agentkit.workflow.approval`
+    - Log approval events under `ccai.agentkit.workflow.approval`
     - Implement __repr__, __str__
     - _Requirements: 11.8–11.12, 23.17, 23.18_
   - [x] 9.3 Write property test for ApprovalRequest JSON round-trip
@@ -232,7 +232,7 @@ Build the Workflow & Orchestration system bottom-up: foundational types (enums, 
     - Retry failed steps according to RetryPolicy when configured
     - Return WorkflowResult with COMPLETED/FAILED status
     - Implement resume method: load checkpoint, skip completed steps, continue execution
-    - Log all execution events under `automojo.agentkit.workflow.executor`
+    - Log all execution events under `ccai.agentkit.workflow.executor`
     - Implement __repr__, __str__
     - _Requirements: 4.1–4.13, 8.6–8.9, 9.6–9.7, 10.1–10.6, 22.1–22.15, 23.21, 23.22_
   - [x] 12.2 Write property test for topological execution order
@@ -303,7 +303,7 @@ Build the Workflow & Orchestration system bottom-up: foundational types (enums, 
     - _Requirements: 18.1–18.6_
   - [x] 16.2 Implement Agent lifecycle integration for workflows
     - On INITIALIZED: construct WorkflowRegistry, WorkflowExecutor, CheckpointManager, ApprovalGate from WorkflowConfiguration
-    - On INITIALIZED: query "automojo.agentkit.workflow_steps" ExtensionPoint, register discovered step types
+    - On INITIALIZED: query "ccai.agentkit.workflow_steps" ExtensionPoint, register discovered step types
     - On STOPPED: clear WorkflowRegistry, cancel all pending ApprovalRequests
     - Default to WorkflowConfiguration with default values when not provided
     - Handle plugin load failures (log WARNING, continue) and type conflicts (log WARNING, skip)
@@ -319,7 +319,7 @@ Build the Workflow & Orchestration system bottom-up: foundational types (enums, 
     - _Requirements: 18.1–18.11, 19.1–19.4_
 
 - [x] 17. Wire module exports and create package __init__.py entries
-  - Update `source/packages/automojo/agentkit/__init__.py` to export all workflow classes
+  - Update `source/packages/ccai/agentkit/__init__.py` to export all workflow classes
   - Ensure all imports resolve correctly across the workflow module
   - _Requirements: All_
 
@@ -333,7 +333,7 @@ Build the Workflow & Orchestration system bottom-up: foundational types (enums, 
 - Checkpoints ensure incremental validation at natural integration boundaries
 - Property tests validate the 13 universal correctness properties from the design document
 - Unit tests validate specific examples and edge cases
-- All source files use all-lowercase filenames (no underscores) under `source/packages/automojo/agentkit/`
+- All source files use all-lowercase filenames (no underscores) under `source/packages/ccai/agentkit/`
 - All test files go under `source/testroots/testbase/agentkit/` mirroring source hierarchy
 - Uses `testbase` framework and `testbase` mocking (not pytest/unittest/unittest.mock)
 - Prioritize debuggability over performance, readability over conciseness per coding standards

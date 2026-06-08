@@ -2,7 +2,7 @@
 
 ## Overview
 
-The LLM Integration feature extends the `automojo-agent-kit` SDK with a unified interface for interacting with Large Language Model providers. It defines an LLM provider abstraction with a common interface, a provider registry for managing available providers, prompt template management with versioning, structured output parsing and validation, token usage tracking and cost estimation, streaming response support, retry and fallback strategies across providers, conversation/message history management, and a tool bridge for LLM-to-tool interoperability.
+The LLM Integration feature extends the `codecraftai-agent-kit` SDK with a unified interface for interacting with Large Language Model providers. It defines an LLM provider abstraction with a common interface, a provider registry for managing available providers, prompt template management with versioning, structured output parsing and validation, token usage tracking and cost estimation, streaming response support, retry and fallback strategies across providers, conversation/message history management, and a tool bridge for LLM-to-tool interoperability.
 
 The system provides:
 
@@ -19,12 +19,12 @@ The system provides:
 - `LlmToolBridge` for converting between tool descriptors and LLM function definitions
 - `LlmRequestError` and `LlmResponseParsingError` for LLM-specific error handling
 
-All classes live under `source/packages/automojo/agentkit/` with filenames in all-lowercase (no underscores), following the project naming conventions. The system integrates with:
+All classes live under `source/packages/ccai/agentkit/` with filenames in all-lowercase (no underscores), following the project naming conventions. The system integrates with:
 
 - Core Agent Framework — `Agent` base class, `AgentIdentity`, `AgentConfiguration`, `AgentKitError`, `SemanticError`, `ConfigurationError`
 - Tool & Capability System — `Tool`, `ToolDescriptor`, `ToolSchema`, `ToolRegistry`, `ToolResult`
-- `automojo-extension` — `ExtensionPoint` for LLM provider plugin discovery
-- `automojo-credentials` — `CredentialReference` resolution for API keys and secrets
+- `codecraftai-extension` — `ExtensionPoint` for LLM provider plugin discovery
+- `codecraftai-credentials` — `CredentialReference` resolution for API keys and secrets
 
 The design prioritizes debuggability over performance and readability over conciseness, per the project coding standards.
 
@@ -32,7 +32,7 @@ The design prioritizes debuggability over performance and readability over conci
 
 ```mermaid
 graph TD
-    subgraph automojo.agentkit - LLM System
+    subgraph ccai.agentkit - LLM System
         LlmProvider[LlmProvider base class]
         LlmMessage[LlmMessage]
         LlmConversation[LlmConversation]
@@ -68,8 +68,8 @@ graph TD
     end
 
     subgraph External Packages
-        Extension[automojo-extension]
-        Credentials[automojo-credentials]
+        Extension[codecraftai-extension]
+        Credentials[codecraftai-credentials]
     end
 
     Agent --> LlmProviderRegistry
@@ -101,7 +101,7 @@ sequenceDiagram
     participant Agent
     participant Registry as LlmProviderRegistry
     participant Provider as LlmProvider
-    participant Credentials as automojo-credentials
+    participant Credentials as codecraftai-credentials
     participant CostTracker
 
     Agent->>Registry: lookup(provider_name, model_name)
@@ -2001,7 +2001,7 @@ def complete(self, provider_name: str, model_name: str,
     ...
 ```
 
-During `Agent.initialize()`, the agent discovers and registers `LlmProviderPlugin` instances from the `automojo.agentkit.llm_providers` ExtensionPoint. During `Agent.stop()`, the agent's `LlmProviderRegistry` is cleared.
+During `Agent.initialize()`, the agent discovers and registers `LlmProviderPlugin` instances from the `ccai.agentkit.llm_providers` ExtensionPoint. During `Agent.stop()`, the agent's `LlmProviderRegistry` is cleared.
 
 
 ## Data Models
@@ -2445,7 +2445,7 @@ When an LlmProviderPlugin provides an LlmProvider with a conflicting name-model 
 
 ### Logging
 
-The LLM system uses the Python standard logging module with a logger hierarchy under `automojo.agentkit.llm`:
+The LLM system uses the Python standard logging module with a logger hierarchy under `ccai.agentkit.llm`:
 - INFO: Completion request begin (provider name, model name, agent identifier)
 - INFO: Completion request success (provider name, model name, token usage, duration)
 - INFO: Retry attempt (provider name, attempt number, delay)
@@ -2458,7 +2458,7 @@ The LLM system uses the Python standard logging module with a logger hierarchy u
 
 ### Testing Framework
 
-Tests use testbase and reside under `source/testroots/automojo/tests/singlehost/agentkit/`, mirroring the source hierarchy:
+Tests use testbase and reside under `source/testroots/ccai/tests/singlehost/agentkit/`, mirroring the source hierarchy:
 
 | Source File | Test File |
 |---|---|
@@ -2485,14 +2485,14 @@ Tests use testbase and reside under `source/testroots/automojo/tests/singlehost/
 
 ### Dual Testing Approach
 
-- **Unit tests**: Verify specific examples, edge cases, error conditions, and integration with external packages (using `automojo.testbase.mocking.Mock`)
+- **Unit tests**: Verify specific examples, edge cases, error conditions, and integration with external packages (using `ccai.testbase.mocking.Mock`)
 - **Property-based tests**: Verify universal properties across randomly generated inputs
 
 Both are complementary and necessary for comprehensive coverage. Unit tests catch concrete bugs and verify specific behaviors; property tests verify general correctness across the input space.
 
 ### Property-Based Testing Configuration
 
-- **Library**: automojo.testbase.properties (built-in testbase property testing engine)
+- **Library**: ccai.testbase.properties (built-in testbase property testing engine)
 - **Minimum 100 iterations** per property test (due to randomization)
 - Each test tagged with a comment: **Feature: llm-integration, Property N: title**
 - Each correctness property implemented by a **single** property-based test
@@ -2524,7 +2524,7 @@ Both are complementary and necessary for comprehensive coverage. Unit tests catc
 - **LlmToolBridge**: ToolDescriptor with various schema types, messages with and without tool calls, ToolResult conversion
 - **CostTracker**: Multiple providers, reset behavior, empty tracker
 - **PromptTemplateRegistry**: Lookup latest version, load from JSON/YAML files with temp files
-- **Integration**: Agent LLM provider registration/completion with mocked LlmProvider, plugin discovery with mocked ExtensionPoint, credential resolution with mocked automojo-credentials
+- **Integration**: Agent LLM provider registration/completion with mocked LlmProvider, plugin discovery with mocked ExtensionPoint, credential resolution with mocked codecraftai-credentials
 - **Logging**: Verify log output at correct levels using log capture
 - **Error messages**: Verify error messages follow multi-line formation pattern and include required context
 
@@ -2532,5 +2532,5 @@ Both are complementary and necessary for comprehensive coverage. Unit tests catc
 
 ```bash
 source .venv/bin/activate
-testbase testing run --root source/testroots/automojo --includes=automojo.tests.singlehost.agentkit --output=./.output
+testbase testing run --root source/testroots/ccai --includes=ccai.tests.singlehost.agentkit --output=./.output
 ```

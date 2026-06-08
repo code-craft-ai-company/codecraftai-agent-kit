@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The Agent Coordination feature extends the `automojo-agent-kit` SDK with higher-level multi-agent coordination primitives that build on top of the Core Agent Framework and Communication & Messaging systems. It defines a first-class task delegation API on the Agent base class, a structured TaskRequest/TaskResponse protocol for assigning and tracking work between agents, an agent capability advertisement and discovery system for capability-based routing, a TaskTracker component for monitoring delegated task lifecycle, a TaskQueue for buffering tasks when target agents are busy, and coordination patterns including fan-out/fan-in and priority-based scheduling. The system integrates with the Agent base class for delegation methods, with the AgentRegistry for local agent discovery, with the Communication & Messaging system (Message, Transport, AgentAddress, AddressResolver) for remote agent communication, with `automojo-extension` for plugin discovery of capability providers and coordination strategies, with `automojo-credentials` for credential management, and with `automojo-this-app` for settings and environment configuration.
+The Agent Coordination feature extends the `codecraftai-agent-kit` SDK with higher-level multi-agent coordination primitives that build on top of the Core Agent Framework and Communication & Messaging systems. It defines a first-class task delegation API on the Agent base class, a structured TaskRequest/TaskResponse protocol for assigning and tracking work between agents, an agent capability advertisement and discovery system for capability-based routing, a TaskTracker component for monitoring delegated task lifecycle, a TaskQueue for buffering tasks when target agents are busy, and coordination patterns including fan-out/fan-in and priority-based scheduling. The system integrates with the Agent base class for delegation methods, with the AgentRegistry for local agent discovery, with the Communication & Messaging system (Message, Transport, AgentAddress, AddressResolver) for remote agent communication, with `codecraftai-extension` for plugin discovery of capability providers and coordination strategies, with `codecraftai-credentials` for credential management, and with `codecraftai-this-app` for settings and environment configuration.
 
 ## Glossary
 
@@ -30,8 +30,8 @@ The Agent Coordination feature extends the `automojo-agent-kit` SDK with higher-
 - **Transport**: The transport abstraction defined in the Communication & Messaging feature, used for sending and receiving task-related messages between agents.
 - **AgentAddress**: The agent address object defined in the Communication & Messaging feature, used for routing task messages to target agents.
 - **AddressResolver**: The address resolver defined in the Communication & Messaging feature, used for resolving agent identifiers to AgentAddress objects during task delegation.
-- **ExtensionPoint**: An integration surface provided by `automojo-extension` that allows external plugins to register CoordinationProtocol implementations and DelegationHandler callbacks.
-- **CredentialReference**: A named reference resolved through `automojo-credentials` that provides secure access to secrets required during cross-agent task delegation.
+- **ExtensionPoint**: An integration surface provided by `codecraftai-extension` that allows external plugins to register CoordinationProtocol implementations and DelegationHandler callbacks.
+- **CredentialReference**: A named reference resolved through `codecraftai-credentials` that provides secure access to secrets required during cross-agent task delegation.
 - **ConfigurationError**: An exception raised for configuration-related problems, inherited from AgentKitError.
 - **SemanticError**: An exception raised for API misuse, inherited from AgentKitError.
 
@@ -264,7 +264,7 @@ The Agent Coordination feature extends the `automojo-agent-kit` SDK with higher-
 2. THE CoordinationConfiguration SHALL support loading configuration from a Python dictionary.
 3. THE CoordinationConfiguration SHALL support loading configuration from a JSON file path.
 4. THE CoordinationConfiguration SHALL support loading configuration from a YAML file path.
-5. WHEN a configuration file path is provided, THE CoordinationConfiguration SHALL resolve the file path relative to the AppContext directory provided by `automojo-this-app`.
+5. WHEN a configuration file path is provided, THE CoordinationConfiguration SHALL resolve the file path relative to the AppContext directory provided by `codecraftai-this-app`.
 6. THE CoordinationConfiguration SHALL validate all fields during loading and raise a ConfigurationError when a field value is outside the acceptable range.
 7. IF the default task timeout is less than or equal to zero, THEN THE CoordinationConfiguration SHALL raise a ConfigurationError identifying the invalid timeout value.
 8. IF the maximum concurrent delegations is less than one, THEN THE CoordinationConfiguration SHALL raise a ConfigurationError identifying the invalid concurrency value.
@@ -314,14 +314,14 @@ The Agent Coordination feature extends the `automojo-agent-kit` SDK with higher-
 
 #### Acceptance Criteria
 
-1. THE coordination system SHALL use the Python standard logging module with a logger hierarchy rooted at `automojo.agentkit.coordination`.
+1. THE coordination system SHALL use the Python standard logging module with a logger hierarchy rooted at `ccai.agentkit.coordination`.
 2. WHEN a task is delegated through the delegate_task method, THE coordination system SHALL log the delegation at INFO level, including the requester agent identifier, target agent identifier, task request identifier, and task type.
 3. WHEN a TaskResponse is received for a delegated task, THE coordination system SHALL log the response at INFO level, including the task request identifier, task status, and responder agent identifier.
 4. WHEN a task times out, THE coordination system SHALL log the timeout at WARNING level, including the task request identifier, task type, and the configured timeout duration.
 5. WHEN a capability lookup fails, THE coordination system SHALL log the failure at WARNING level, including the requested capability name or task type.
 6. WHEN a task is enqueued in the TaskQueue, THE coordination system SHALL log the enqueue at DEBUG level, including the task request identifier, task type, priority, and current queue size.
 7. WHEN a DelegationHandler raises an exception, THE coordination system SHALL log the exception at ERROR level, including the task request identifier and the exception detail.
-8. THE Agent base class SHALL provide a method that returns a logger instance scoped to the agent's coordination subsystem, using the naming pattern `automojo.agentkit.coordination.<agent_identifier>`.
+8. THE Agent base class SHALL provide a method that returns a logger instance scoped to the agent's coordination subsystem, using the naming pattern `ccai.agentkit.coordination.<agent_identifier>`.
 
 ### Requirement 18: Serialization
 
@@ -368,13 +368,13 @@ The Agent Coordination feature extends the `automojo-agent-kit` SDK with higher-
 
 ### Requirement 20: Extension Point Integration
 
-**User Story:** As a developer, I want the coordination system to support extensibility through `automojo-extension`, so that plugins can register custom coordination protocols and delegation handlers.
+**User Story:** As a developer, I want the coordination system to support extensibility through `codecraftai-extension`, so that plugins can register custom coordination protocols and delegation handlers.
 
 #### Acceptance Criteria
 
-1. THE Agent base class SHALL register ExtensionPoint entries with the `automojo-extension` package for CoordinationProtocol registration.
-2. THE Agent base class SHALL register ExtensionPoint entries with the `automojo-extension` package for DelegationHandler registration.
-3. WHEN an Agent is initialized, THE Agent SHALL discover and load all registered coordination extensions from `automojo-extension` that target the Agent's coordination ExtensionPoint entries.
+1. THE Agent base class SHALL register ExtensionPoint entries with the `codecraftai-extension` package for CoordinationProtocol registration.
+2. THE Agent base class SHALL register ExtensionPoint entries with the `codecraftai-extension` package for DelegationHandler registration.
+3. WHEN an Agent is initialized, THE Agent SHALL discover and load all registered coordination extensions from `codecraftai-extension` that target the Agent's coordination ExtensionPoint entries.
 4. THE Agent base class SHALL expose a read-only property that returns the list of loaded CoordinationProtocol extensions.
 
 ### Requirement 21: Concurrency and Thread Safety

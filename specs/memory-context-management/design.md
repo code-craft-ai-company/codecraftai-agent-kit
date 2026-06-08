@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Memory & Context Management feature extends the `automojo-agent-kit` SDK with a unified system for storing, retrieving, and managing agent memory across short-term and long-term horizons. It defines a memory entry abstraction with metadata and tags, pluggable memory backends (in-memory, file-based), memory scoping (per-agent, shared, global), semantic similarity-based retrieval via pluggable embedding providers, context window management for fitting conversation history within LLM token limits, and memory lifecycle management (creation, update, expiration, cleanup).
+The Memory & Context Management feature extends the `codecraftai-agent-kit` SDK with a unified system for storing, retrieving, and managing agent memory across short-term and long-term horizons. It defines a memory entry abstraction with metadata and tags, pluggable memory backends (in-memory, file-based), memory scoping (per-agent, shared, global), semantic similarity-based retrieval via pluggable embedding providers, context window management for fitting conversation history within LLM token limits, and memory lifecycle management (creation, update, expiration, cleanup).
 
 The system provides:
 
@@ -22,13 +22,13 @@ The system provides:
 - `ExpirationPolicy` — configuration for default time-to-live and cleanup interval
 - `MemoryStoreError` and `ContextWindowError` — memory-specific exceptions inheriting from AgentKitError
 
-All classes live under `source/packages/automojo/agentkit/` with filenames in all-lowercase (no underscores), following the project naming conventions. The system integrates with:
+All classes live under `source/packages/ccai/agentkit/` with filenames in all-lowercase (no underscores), following the project naming conventions. The system integrates with:
 
 - Core Agent Framework — `Agent` base class, `AgentIdentity`, `AgentConfiguration`, `AgentStateMachine`, `LifecycleState`, `AgentKitError`, `SemanticError`, `ConfigurationError`
 - LLM Integration — `LlmProvider`, `LlmConversation`, `LlmMessage`, `TokenUsage` for context window management and summarization
-- `automojo-extension` — `ExtensionPoint` for memory backend plugin discovery
-- `automojo-credentials` — `CredentialReference` resolution for backend authentication
-- `automojo-this-app` — `AppContext` for settings, environment variables, and directory resolution
+- `codecraftai-extension` — `ExtensionPoint` for memory backend plugin discovery
+- `codecraftai-credentials` — `CredentialReference` resolution for backend authentication
+- `codecraftai-this-app` — `AppContext` for settings, environment variables, and directory resolution
 
 The design prioritizes debuggability over performance and readability over conciseness, per the project coding standards.
 
@@ -36,7 +36,7 @@ The design prioritizes debuggability over performance and readability over conci
 
 ```mermaid
 graph TD
-    subgraph automojo.agentkit - Memory System
+    subgraph ccai.agentkit - Memory System
         MemoryEntry[MemoryEntry]
         MemoryScope[MemoryScope enum]
         MemoryStore[MemoryStore base class]
@@ -69,9 +69,9 @@ graph TD
     end
 
     subgraph External Packages
-        Extension[automojo-extension]
-        Credentials[automojo-credentials]
-        ThisApp[automojo-this-app]
+        Extension[codecraftai-extension]
+        Credentials[codecraftai-credentials]
+        ThisApp[codecraftai-this-app]
     end
 
     Agent --> MemoryStoreRegistry
@@ -185,7 +185,7 @@ stateDiagram-v2
 9. Cosine similarity for semantic search — standard metric for embedding-based retrieval, computed in `MemoryIndex`.
 10. `ExpirationPolicy` as a separate configuration object — cleanly separates lifecycle policy from store implementation.
 11. All serializable classes follow the naming convention: `as_dict` for dictionary conversion, `to_json` for JSON serialization, `from_dict`/`from_json` for deserialization.
-12. Memory backend plugins discovered via `automojo-extension` ExtensionPoint — consistent with how LLM provider plugins are discovered.
+12. Memory backend plugins discovered via `codecraftai-extension` ExtensionPoint — consistent with how LLM provider plugins are discovered.
 
 ## Components and Interfaces
 
@@ -1004,7 +1004,7 @@ import abc
 import logging
 
 
-logger = logging.getLogger("automojo.agentkit.memory")
+logger = logging.getLogger("ccai.agentkit.memory")
 
 
 class MemoryStore(abc.ABC):
@@ -1383,7 +1383,7 @@ import os
 import logging
 
 
-logger = logging.getLogger("automojo.agentkit.memory")
+logger = logging.getLogger("ccai.agentkit.memory")
 
 
 class FileMemoryStore(MemoryStore):
@@ -1401,7 +1401,7 @@ class FileMemoryStore(MemoryStore):
 
             :param store_name: The name of this memory store.
             :param directory_path: The directory path for storing JSON files.
-                Resolved relative to AppContext directory from automojo-this-app.
+                Resolved relative to AppContext directory from codecraftai-this-app.
             :param embedding_provider: Optional EmbeddingProvider for generating embeddings.
             :param expiration_policy: Optional ExpirationPolicy for entry lifecycle.
         """
@@ -1735,7 +1735,7 @@ class ContextWindowStrategy(enum.Enum):
 import logging
 
 
-logger = logging.getLogger("automojo.agentkit.memory")
+logger = logging.getLogger("ccai.agentkit.memory")
 
 
 class ContextSummarizer:
@@ -1882,7 +1882,7 @@ class ContextSummarizer:
 import logging
 
 
-logger = logging.getLogger("automojo.agentkit.memory")
+logger = logging.getLogger("ccai.agentkit.memory")
 
 
 class ContextWindow:
@@ -2576,4 +2576,4 @@ The Agent base class (from Core Agent Framework) is extended with the following 
 
 | Extension Point Name | Purpose |
 |---|---|
-| automojo.agentkit.memory_backends | Registers MemoryBackendPlugin implementations |
+| ccai.agentkit.memory_backends | Registers MemoryBackendPlugin implementations |

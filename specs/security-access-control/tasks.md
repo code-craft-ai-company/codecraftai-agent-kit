@@ -2,7 +2,7 @@
 
 ## Overview
 
-Implement the Security & Access Control feature for the `automojo-agent-kit` SDK. The implementation follows a bottom-up approach: security error types first, then credential data models, access control data models, sanitization data models, audit data models, sandbox data models, then the concrete implementations (sanitizers, filters, stores, enforcer), then the coordination layers (SanitizationPipeline, AuditLogger, SandboxExecutor, SecurityConfiguration, SecurityPipeline), and finally Agent integration. All source files go under `source/packages/automojo/agentkit/` with lowercase filenames. Tests go under `source/testroots/automojo/tests/singlehost/agentkit/`.
+Implement the Security & Access Control feature for the `codecraftai-agent-kit` SDK. The implementation follows a bottom-up approach: security error types first, then credential data models, access control data models, sanitization data models, audit data models, sandbox data models, then the concrete implementations (sanitizers, filters, stores, enforcer), then the coordination layers (SanitizationPipeline, AuditLogger, SandboxExecutor, SecurityConfiguration, SecurityPipeline), and finally Agent integration. All source files go under `source/packages/ccai/agentkit/` with lowercase filenames. Tests go under `source/testroots/ccai/tests/singlehost/agentkit/`.
 
 ## Tasks
 
@@ -326,7 +326,7 @@ Implement the Security & Access Control feature for the `automojo-agent-kit` SDK
 - [ ] 17. Implement credential manager
   - [ ] 17.1 Create `credentialmanager.py` with CredentialManager class
     - Accept agent_identifier and optional CredentialRotationPolicy at construction
-    - Implement get_credential resolving through automojo-credentials on first access, caching result
+    - Implement get_credential resolving through codecraftai-credentials on first access, caching result
     - Implement get_credential_value returning secret value string
     - Raise ConfigurationError for unresolvable credential names
     - Implement invalidate and invalidate_all for cache management
@@ -337,7 +337,7 @@ Implement the Security & Access Control feature for the `automojo-agent-kit` SDK
     - _Requirements: 1.1–1.12_
 
   - [ ]* 17.2 Write unit tests for CredentialManager
-    - Create `test_credentialmanager.py` testing get_credential caching, get_credential_value, invalidate, invalidate_all, rotation, unresolvable credential error, cached_count, list_credential_names, secret value exclusion from repr/str (using Mock for automojo-credentials)
+    - Create `test_credentialmanager.py` testing get_credential caching, get_credential_value, invalidate, invalidate_all, rotation, unresolvable credential error, cached_count, list_credential_names, secret value exclusion from repr/str (using Mock for codecraftai-credentials)
     - _Requirements: 1.1–1.12_
 
 - [ ] 18. Checkpoint - Ensure all tests pass
@@ -348,14 +348,14 @@ Implement the Security & Access Control feature for the `automojo-agent-kit` SDK
     - Immutable object with access_control_enabled, audit_logging_enabled, input_sanitization_enabled, output_filtering_enabled, sandbox_enabled, default_sandbox_policy, credential_rotation_settings, security_plugin_settings properties
     - Implement from_dict, from_json, from_yaml class methods with field validation
     - Implement from_json_file and from_yaml_file with AppContext path resolution
-    - Support CredentialReference resolution through automojo-credentials
+    - Support CredentialReference resolution through codecraftai-credentials
     - Raise ConfigurationError for missing required fields or unresolvable credentials
     - Implement as_dict, to_json, to_yaml excluding resolved credential values
     - Implement __repr__ and __str__ methods
     - _Requirements: 21.1–21.18_
 
   - [ ]* 19.2 Write unit tests for SecurityConfiguration
-    - Create `test_securityconfiguration.py` testing from_dict, from_json, from_yaml, file loading, field validation, credential resolution, serialization round-trip, defaults, __repr__, __str__ (using Mock for automojo-credentials and automojo-this-app)
+    - Create `test_securityconfiguration.py` testing from_dict, from_json, from_yaml, file loading, field validation, credential resolution, serialization round-trip, defaults, __repr__, __str__ (using Mock for codecraftai-credentials and codecraftai-this-app)
     - _Requirements: 21.1–21.18_
 
 - [ ] 20. Implement security pipeline
@@ -404,14 +404,14 @@ Implement the Security & Access Control feature for the `automojo-agent-kit` SDK
 
 - [ ] 23. Implement security plugin integration
   - [ ] 23.1 Define security ExtensionPoints and plugin discovery
-    - Define ExtensionPoints: automojo.agentkit.input_sanitizers, automojo.agentkit.output_filters, automojo.agentkit.audit_stores
+    - Define ExtensionPoints: ccai.agentkit.input_sanitizers, ccai.agentkit.output_filters, ccai.agentkit.audit_stores
     - Query ExtensionPoints during Agent initialization and register discovered plugins with SecurityPipeline
     - Log plugin load failures at WARNING level and continue
     - Log conflicting component names at WARNING level and skip
     - _Requirements: 25.1–25.6_
 
   - [ ]* 23.2 Write unit tests for security plugin integration
-    - Test plugin discovery and registration, failed plugin load handling, conflicting name handling (using Mock for automojo-extension)
+    - Test plugin discovery and registration, failed plugin load handling, conflicting name handling (using Mock for codecraftai-extension)
     - _Requirements: 25.1–25.6_
 
 - [ ] 24. Implement structured logging for security operations
@@ -422,7 +422,7 @@ Implement the Security & Access Control feature for the `automojo-agent-kit` SDK
     - Log sandbox violations at WARNING level
     - Log credential rotations at INFO level (no secret values)
     - Log audit entries at DEBUG level
-    - All logging under automojo.agentkit.security logger hierarchy
+    - All logging under ccai.agentkit.security logger hierarchy
     - _Requirements: 27.1–27.8_
 
   - [ ]* 24.2 Write unit tests for structured logging
@@ -437,6 +437,6 @@ Implement the Security & Access Control feature for the `automojo-agent-kit` SDK
 - Tasks marked with `*` are optional and can be skipped for faster MVP
 - Each task references specific requirements for traceability
 - Checkpoints ensure incremental validation
-- All source files use lowercase filenames with no underscores under `source/packages/automojo/agentkit/`
-- All test files mirror the source hierarchy under `source/testroots/automojo/tests/singlehost/agentkit/`
-- External dependencies (automojo-credentials, automojo-extension, automojo-this-app) are mocked in tests using `testbase.mocking.Mock`
+- All source files use lowercase filenames with no underscores under `source/packages/ccai/agentkit/`
+- All test files mirror the source hierarchy under `source/testroots/ccai/tests/singlehost/agentkit/`
+- External dependencies (codecraftai-credentials, codecraftai-extension, codecraftai-this-app) are mocked in tests using `testbase.mocking.Mock`

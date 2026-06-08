@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Communication & Messaging feature extends the `automojo-agent-kit` SDK with a unified system for agent-to-agent communication and message exchange. It defines a pluggable transport layer abstraction with a common interface supporting multiple protocols (HTTP, WebSocket, gRPC, message queues), an agent-to-agent communication protocol with addressing and routing, pub/sub messaging for event-driven communication, request/response and fire-and-forget messaging patterns, and message serialization/deserialization across multiple formats (JSON, Protobuf, MessagePack).
+The Communication & Messaging feature extends the `codecraftai-agent-kit` SDK with a unified system for agent-to-agent communication and message exchange. It defines a pluggable transport layer abstraction with a common interface supporting multiple protocols (HTTP, WebSocket, gRPC, message queues), an agent-to-agent communication protocol with addressing and routing, pub/sub messaging for event-driven communication, request/response and fire-and-forget messaging patterns, and message serialization/deserialization across multiple formats (JSON, Protobuf, MessagePack).
 
 The system provides:
 
@@ -23,14 +23,14 @@ The system provides:
 - `MessagingConfiguration` for declarative messaging system configuration
 - Built-in transports: `HttpTransport`, `WebSocketTransport`, `GrpcTransport`, `MessageQueueTransport`
 
-All classes live under `source/packages/automojo/agentkit/` with filenames in all-lowercase (no underscores), following the project naming conventions. The system integrates with:
+All classes live under `source/packages/ccai/agentkit/` with filenames in all-lowercase (no underscores), following the project naming conventions. The system integrates with:
 
 - Core Agent Framework — `Agent` base class, `AgentConfiguration`, `AgentIdentity`, `AgentRegistry`
 - Tool & Capability System — `ToolRegistry`, `ToolExecutor` (messaging tools can be registered as tools)
-- `automojo-extension` — `ExtensionPoint` for transport and serializer plugin discovery
-- `automojo-credentials` — `CredentialReference` resolution for transport authentication
-- `automojo-dataprofiles` — `DataProfileReference` resolution for data profile management
-- `automojo-this-app` — `AppContext` for settings, environment variables, and file path resolution
+- `codecraftai-extension` — `ExtensionPoint` for transport and serializer plugin discovery
+- `codecraftai-credentials` — `CredentialReference` resolution for transport authentication
+- `codecraftai-dataprofiles` — `DataProfileReference` resolution for data profile management
+- `codecraftai-this-app` — `AppContext` for settings, environment variables, and file path resolution
 
 The design prioritizes debuggability over performance and readability over conciseness, per the project coding standards.
 
@@ -38,7 +38,7 @@ The design prioritizes debuggability over performance and readability over conci
 
 ```mermaid
 graph TD
-    subgraph automojo.agentkit - Messaging System
+    subgraph ccai.agentkit - Messaging System
         Transport[Transport base class]
         TransportConfiguration[TransportConfiguration]
         TransportRegistry[TransportRegistry]
@@ -77,9 +77,9 @@ graph TD
     end
 
     subgraph External Packages
-        Extension[automojo-extension]
-        Credentials[automojo-credentials]
-        ThisApp[automojo-this-app]
+        Extension[codecraftai-extension]
+        Credentials[codecraftai-credentials]
+        ThisApp[codecraftai-this-app]
     end
 
     Agent --> TransportRegistry
@@ -186,7 +186,7 @@ sequenceDiagram
 
 1. `Transport` as abstract base class using `abc.ABC` with abstract methods for connect, disconnect, send, and receive — consistent with the Core Agent Framework pattern for `Agent` and Tool System pattern for `Tool`.
 2. `TransportRegistry` as a per-agent instance (not singleton) — transports are scoped to individual agents, consistent with `ToolRegistry`.
-3. `MessageSerializer` as abstract base class — allows pluggable serialization formats via `automojo-extension`.
+3. `MessageSerializer` as abstract base class — allows pluggable serialization formats via `codecraftai-extension`.
 4. `MessageRouter` uses ordered handler registration — handlers are invoked in registration order, consistent with lifecycle hooks in the Core Agent Framework.
 5. `PubSubBroker` supports wildcard topic matching using `*` (single segment) and `#` (zero or more segments) with `.` as separator — follows MQTT/AMQP conventions.
 6. `RequestResponseHandler` uses correlation identifiers for request/response tracking — standard pattern for asynchronous request/response over message-based transports.
@@ -196,11 +196,11 @@ sequenceDiagram
 10. `MessagingConfiguration` follows the same serialization patterns as `AgentConfiguration` and `TransportConfiguration` — consistent API surface across the SDK.
 11. Built-in transports as concrete `Transport` subclasses — consistent with built-in tools in the Tool & Capability System.
 12. All messaging errors inherit from `AgentKitError` — consistent with the exception hierarchy established in the Core Agent Framework.
-13. Structured logging under `automojo.agentkit.messaging` logger hierarchy — consistent with Python logging best practices and enables fine-grained log filtering.
+13. Structured logging under `ccai.agentkit.messaging` logger hierarchy — consistent with Python logging best practices and enables fine-grained log filtering.
 
 ### Structured Logging
 
-All messaging components use the Python standard `logging` module under the `automojo.agentkit.messaging` logger hierarchy. The following table maps operations to log levels:
+All messaging components use the Python standard `logging` module under the `ccai.agentkit.messaging` logger hierarchy. The following table maps operations to log levels:
 
 | Operation | Log Level | Logged Fields |
 |---|---|---|
@@ -492,7 +492,7 @@ class Transport(abc.ABC):
         self._credential_names = list(credential_names) if credential_names is not None else []
         self._tags = dict(tags) if tags is not None else {}
         self._connected = False
-        self._logger = logging.getLogger("automojo.agentkit.messaging.transport")
+        self._logger = logging.getLogger("ccai.agentkit.messaging.transport")
 
         if self._name is None or len(self._name.strip()) == 0:
             errmsg = "A transport name is required."
@@ -752,7 +752,7 @@ class MessageRouter:
     def __init__(self):
         self._handlers: list = []
         self._next_registration_id: int = 0
-        self._logger = logging.getLogger("automojo.agentkit.messaging.router")
+        self._logger = logging.getLogger("ccai.agentkit.messaging.router")
         return
 
     def register_by_topic(self, topic: str, handler: callable) -> str:
@@ -908,7 +908,7 @@ class PubSubBroker:
 
     def __init__(self):
         self._subscriptions: dict = {}
-        self._logger = logging.getLogger("automojo.agentkit.messaging.pubsub")
+        self._logger = logging.getLogger("ccai.agentkit.messaging.pubsub")
         return
 
     def subscribe(self, topic: str, subscriber_agent_id: str,
@@ -976,7 +976,7 @@ class RequestResponseHandler:
     def __init__(self, default_timeout: float = 30.0):
         self._pending_requests: dict = {}
         self._default_timeout = default_timeout
-        self._logger = logging.getLogger("automojo.agentkit.messaging.requestresponse")
+        self._logger = logging.getLogger("ccai.agentkit.messaging.requestresponse")
         return
 
     def send_request(self, message: Message, transport: Transport,
@@ -1368,17 +1368,17 @@ def subscribe(self, topic: str, handler: callable) -> Subscription:
 
 ### Extension Points
 
-The framework defines two `automojo-extension` ExtensionPoint names for plugin discovery:
+The framework defines two `codecraftai-extension` ExtensionPoint names for plugin discovery:
 
 | ExtensionPoint Name | Plugin Type | Description |
 |---|---|---|
-| `automojo.agentkit.transports` | Transport | Registers Transport plugin implementations with an Agent's TransportRegistry |
-| `automojo.agentkit.message_serializers` | MessageSerializer | Registers MessageSerializer plugin implementations with an Agent's MessageSerializerRegistry |
+| `ccai.agentkit.transports` | Transport | Registers Transport plugin implementations with an Agent's TransportRegistry |
+| `ccai.agentkit.message_serializers` | MessageSerializer | Registers MessageSerializer plugin implementations with an Agent's MessageSerializerRegistry |
 
 During `Agent.initialize()`, the agent:
 1. Constructs `TransportRegistry`, `MessageRouter`, `PubSubBroker`, `AddressResolver`, and `RequestResponseHandler` from the `MessagingConfiguration`
-2. Queries the `"automojo.agentkit.transports"` ExtensionPoint and registers all discovered `Transport` instances with the Agent's `TransportRegistry`
-3. Queries the `"automojo.agentkit.message_serializers"` ExtensionPoint and registers all discovered `MessageSerializer` instances with the Agent's `MessageSerializerRegistry`
+2. Queries the `"ccai.agentkit.transports"` ExtensionPoint and registers all discovered `Transport` instances with the Agent's `TransportRegistry`
+3. Queries the `"ccai.agentkit.message_serializers"` ExtensionPoint and registers all discovered `MessageSerializer` instances with the Agent's `MessageSerializerRegistry`
 4. If a Transport or MessageSerializer plugin fails to load, logs the failure at WARNING level and continues loading remaining plugins
 5. If a plugin provides a Transport or serializer with a name that conflicts with an already registered entry, logs the conflict at WARNING level and skips the conflicting plugin entry
 6. If no `MessagingConfiguration` is provided, defaults to a `JsonMessageSerializer` and no registered transports

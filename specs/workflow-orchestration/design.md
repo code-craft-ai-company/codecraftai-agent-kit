@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Workflow & Orchestration feature extends the `automojo-agent-kit` SDK with a system for defining, executing, checkpointing, and resuming multi-step workflows composed as directed acyclic graphs (DAGs). It provides a workflow definition abstraction with typed steps and edges, conditional branching, parallel task execution, workflow checkpointing and resumption for fault tolerance, and human-in-the-loop approval gates for supervised automation.
+The Workflow & Orchestration feature extends the `codecraftai-agent-kit` SDK with a system for defining, executing, checkpointing, and resuming multi-step workflows composed as directed acyclic graphs (DAGs). It provides a workflow definition abstraction with typed steps and edges, conditional branching, parallel task execution, workflow checkpointing and resumption for fault tolerance, and human-in-the-loop approval gates for supervised automation.
 
 The system provides:
 
@@ -21,16 +21,16 @@ The system provides:
 - `WorkflowExecutionStatus` and `StepExecutionStatus` enumerations
 - Error types: `WorkflowDefinitionError`, `WorkflowExecutionError`, `WorkflowCheckpointError`, `ApprovalTimeoutError`
 
-All classes live under `source/packages/automojo/agentkit/` with filenames in all-lowercase (no underscores), following the project naming conventions. The system integrates with:
+All classes live under `source/packages/ccai/agentkit/` with filenames in all-lowercase (no underscores), following the project naming conventions. The system integrates with:
 
 - Core Agent Framework — `Agent` base class, `AgentConfiguration`, `AgentIdentity`, `AgentRegistry`
 - Tool & Capability System — `ToolRegistry`, `ToolExecutor`, `ToolResult`
 - LLM Integration — `LlmProviderRegistry`, `LlmConversation`, `LlmResponse`, `PromptTemplate`, `OutputParser`
 - Memory & Context Management — `MemoryStore` for checkpoint persistence
 - Communication & Messaging — `Transport`, `Message` for cross-agent coordination
-- `automojo-extension` — `ExtensionPoint` for workflow step plugin discovery
-- `automojo-credentials` — `CredentialReference` resolution within workflow steps
-- `automojo-this-app` — `AppContext` for settings and file path resolution
+- `codecraftai-extension` — `ExtensionPoint` for workflow step plugin discovery
+- `codecraftai-credentials` — `CredentialReference` resolution within workflow steps
+- `codecraftai-this-app` — `AppContext` for settings and file path resolution
 
 The design prioritizes debuggability over performance and readability over conciseness, per the project coding standards.
 
@@ -38,7 +38,7 @@ The design prioritizes debuggability over performance and readability over conci
 
 ```mermaid
 graph TD
-    subgraph automojo.agentkit - Workflow System
+    subgraph ccai.agentkit - Workflow System
         WorkflowDefinition[WorkflowDefinition]
         WorkflowStep[WorkflowStep base class]
         WorkflowEdge[WorkflowEdge]
@@ -78,8 +78,8 @@ graph TD
         LlmProviderRegistry[LlmProviderRegistry]
         MemoryStore[MemoryStore]
         Transport[Transport]
-        Extension[automojo-extension]
-        AppContext[automojo-this-app]
+        Extension[codecraftai-extension]
+        AppContext[codecraftai-this-app]
     end
 
     Agent --> WorkflowRegistry
@@ -218,7 +218,7 @@ sequenceDiagram
 9. `WorkflowContext` is mutable — steps need to write outputs during execution, but the context is scoped to a single execution and not shared across executions.
 10. All workflow errors inherit from `AgentKitError` — consistent with the exception hierarchy established in the Core Agent Framework.
 11. Built-in steps as concrete `WorkflowStep` subclasses — consistent with built-in tools and built-in transports patterns.
-12. Structured logging under `automojo.agentkit.workflow` logger hierarchy — consistent with messaging and configuration logging patterns.
+12. Structured logging under `ccai.agentkit.workflow` logger hierarchy — consistent with messaging and configuration logging patterns.
 
 ## Components and Interfaces
 
@@ -716,7 +716,7 @@ class CheckpointManager:
 
     def __init__(self, memory_store):
         self._memory_store = memory_store
-        self._logger = logging.getLogger("automojo.agentkit.workflow.checkpoint")
+        self._logger = logging.getLogger("ccai.agentkit.workflow.checkpoint")
         return
 
     def save_checkpoint(self, execution_id: str, context: WorkflowContext,
@@ -819,7 +819,7 @@ class ApprovalGate:
     def __init__(self):
         self._pending_requests = {}
         self._handlers = []
-        self._logger = logging.getLogger("automojo.agentkit.workflow.approval")
+        self._logger = logging.getLogger("ccai.agentkit.workflow.approval")
         return
 
     def create_request(self, execution_id: str, step_id: str,
@@ -960,7 +960,7 @@ class WorkflowExecutor:
         self._configuration = configuration or WorkflowConfiguration()
         self._checkpoint_manager = checkpoint_manager
         self._condition_evaluator = ConditionEvaluator()
-        self._logger = logging.getLogger("automojo.agentkit.workflow.executor")
+        self._logger = logging.getLogger("ccai.agentkit.workflow.executor")
         return
 
     def execute(self, workflow: WorkflowDefinition, inputs: dict,
@@ -1260,7 +1260,7 @@ def resume_workflow(self, execution_id: str,
 
 During `Agent.initialize()` (transition to INITIALIZED):
 1. Construct `WorkflowRegistry`, `WorkflowExecutor`, `CheckpointManager`, and `ApprovalGate` from the `WorkflowConfiguration`
-2. Query the `"automojo.agentkit.workflow_steps"` ExtensionPoint and register all discovered `WorkflowStep` types
+2. Query the `"ccai.agentkit.workflow_steps"` ExtensionPoint and register all discovered `WorkflowStep` types
 3. If no `WorkflowConfiguration` is provided, default to a `WorkflowConfiguration` with default values
 
 During `Agent.stop()` (transition to STOPPED):
@@ -1271,7 +1271,7 @@ During `Agent.stop()` (transition to STOPPED):
 
 | ExtensionPoint Name | Plugin Type | Description |
 |---|---|---|
-| `automojo.agentkit.workflow_steps` | WorkflowStep | Registers custom WorkflowStep implementations with an Agent |
+| `ccai.agentkit.workflow_steps` | WorkflowStep | Registers custom WorkflowStep implementations with an Agent |
 
 ### Structured Logging
 

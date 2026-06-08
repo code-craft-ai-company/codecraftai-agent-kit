@@ -2,7 +2,7 @@
 
 ## Overview
 
-Implement the Testing & Quality feature for the `automojo-agent-kit` SDK. The implementation follows a bottom-up approach: error types and configuration first, then mock providers, then core test fixtures and assertions, then execution trace recording and replay, then invariant system, and finally platform test harnesses. All source files go under `source/packages/automojo/agentkit/testing/` with lowercase filenames (no underscores). Tests go under `source/testroots/automojo/tests/singlehost/agentkit/testing/`, mirroring the source hierarchy.
+Implement the Testing & Quality feature for the `codecraftai-agent-kit` SDK. The implementation follows a bottom-up approach: error types and configuration first, then mock providers, then core test fixtures and assertions, then execution trace recording and replay, then invariant system, and finally platform test harnesses. All source files go under `source/packages/ccai/agentkit/testing/` with lowercase filenames (no underscores). Tests go under `source/testroots/ccai/tests/singlehost/agentkit/testing/`, mirroring the source hierarchy.
 
 ## Tasks
 
@@ -272,7 +272,7 @@ Implement the Testing & Quality feature for the `automojo-agent-kit` SDK. The im
     - Capture ExecutionTraceEvent for each event type with monotonically increasing sequence numbers
     - Implement stop method returning finalized ExecutionTrace
     - Expose event_count property
-    - Log captured events at DEBUG level under `automojo.agentkit.testing`
+    - Log captured events at DEBUG level under `ccai.agentkit.testing`
     - Implement __repr__ and __str__ methods
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7, 11.8, 11.9, 11.10, 11.11, 11.12, 11.13, 25.3_
 
@@ -310,7 +310,7 @@ Implement the Testing & Quality feature for the `automojo-agent-kit` SDK. The im
 
   - [ ] 11.2 Create `testing/invariants/agentinvariant.py` with AgentInvariant abstract base class
     - Abstract properties: name, description
-    - Abstract methods: strategy (returns Strategy from automojo.testbase.properties.strategies), verify (accepts generated input, raises InvariantViolationError)
+    - Abstract methods: strategy (returns Strategy from ccai.testbase.properties.strategies), verify (accepts generated input, raises InvariantViolationError)
     - Implement __repr__ and __str__ methods
     - _Requirements: 15.1, 15.2, 15.9, 15.10_
 
@@ -341,9 +341,9 @@ Implement the Testing & Quality feature for the `automojo-agent-kit` SDK. The im
 
   - [ ] 11.7 Create `testing/invariants/invarianttestrunner.py` with InvariantTestRunner class
     - Accept list of AgentInvariant instances and optional max_examples (default 100)
-    - Implement run method executing all invariants via automojo.testbase.properties, returning list of InvariantResult
+    - Implement run method executing all invariants via ccai.testbase.properties, returning list of InvariantResult
     - Implement run_single method for individual invariant execution
-    - Discover additional invariants from "automojo.agentkit.testing.invariants" ExtensionPoint
+    - Discover additional invariants from "ccai.agentkit.testing.invariants" ExtensionPoint
     - Log invariant execution at INFO level, failures at WARNING level
     - Implement __repr__ and __str__ methods
     - _Requirements: 17.1, 17.2, 17.3, 17.4, 17.5, 17.6, 17.7, 17.8, 17.9, 25.6, 25.7, 26.2, 26.3_
@@ -429,8 +429,8 @@ Implement the Testing & Quality feature for the `automojo-agent-kit` SDK. The im
 
 - [ ] 14. Implement extension point integration and structured logging
   - [ ] 14.1 Register ExtensionPoints for testing harnesses and invariants
-    - Define ExtensionPoint "automojo.agentkit.testing.harnesses" for PlatformTestHarness implementations
-    - Define ExtensionPoint "automojo.agentkit.testing.invariants" for AgentInvariant implementations
+    - Define ExtensionPoint "ccai.agentkit.testing.harnesses" for PlatformTestHarness implementations
+    - Define ExtensionPoint "ccai.agentkit.testing.invariants" for AgentInvariant implementations
     - Handle plugin load failures: log at WARNING, continue loading remaining plugins
     - _Requirements: 26.1, 26.2, 26.3, 26.4_
 
@@ -457,7 +457,7 @@ Implement the Testing & Quality feature for the `automojo-agent-kit` SDK. The im
 - Each task references specific requirements for traceability
 - Checkpoints ensure incremental validation
 - Unit tests validate specific examples, edge cases, and error conditions
-- All source files use lowercase filenames with no underscores under `source/packages/automojo/agentkit/testing/`
-- All test files go under `source/testroots/automojo/tests/singlehost/agentkit/testing/`, mirroring the source hierarchy
-- Tests use the `testbase` framework and `automojo.testbase.mocking` for mocks
-- Run tests with: `source .venv/bin/activate && testbase testing run --root source/testroots/automojo --includes=automojo.tests.singlehost.agentkit.testing --output=./.output`
+- All source files use lowercase filenames with no underscores under `source/packages/ccai/agentkit/testing/`
+- All test files go under `source/testroots/ccai/tests/singlehost/agentkit/testing/`, mirroring the source hierarchy
+- Tests use the `testbase` framework and `ccai.testbase.mocking` for mocks
+- Run tests with: `source .venv/bin/activate && testbase testing run --root source/testroots/ccai --includes=ccai.tests.singlehost.agentkit.testing --output=./.output`

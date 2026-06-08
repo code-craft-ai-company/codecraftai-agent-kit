@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Agent Coordination feature extends the `automojo-agent-kit` SDK with higher-level multi-agent coordination primitives that build on top of the Core Agent Framework and Communication & Messaging systems. It defines:
+The Agent Coordination feature extends the `codecraftai-agent-kit` SDK with higher-level multi-agent coordination primitives that build on top of the Core Agent Framework and Communication & Messaging systems. It defines:
 
 1. **Task Request/Response Protocol** — `TaskRequest` and `TaskResponse` immutable data objects for structured task delegation with JSON round-trip serialization
 2. **Task Status Enumeration** — `TaskStatus` enum defining the lifecycle states of delegated tasks (PENDING, ACCEPTED, RUNNING, COMPLETED, FAILED, TIMED_OUT, CANCELLED)
@@ -15,9 +15,9 @@ The Agent Coordination feature extends the `automojo-agent-kit` SDK with higher-
 9. **Coordination Configuration** — `CoordinationConfiguration` for declarative coordination settings with JSON/YAML serialization
 10. **Delegation Handler** — `DelegationHandler` callback interface for processing incoming task requests
 11. **Exception Hierarchy** — `TaskDelegationError`, `TaskTimeoutError`, `CapabilityNotFoundError`, `TaskQueueFullError` for precise error classification
-12. **Structured Logging** — Logger hierarchy rooted at `automojo.agentkit.coordination`
+12. **Structured Logging** — Logger hierarchy rooted at `ccai.agentkit.coordination`
 
-All classes live under `source/packages/automojo/agentkit/` with filenames in all-lowercase (no underscores), following the project naming conventions. The coordination module is organized as a sub-package under `agentkit/coordination/`.
+All classes live under `source/packages/ccai/agentkit/` with filenames in all-lowercase (no underscores), following the project naming conventions. The coordination module is organized as a sub-package under `agentkit/coordination/`.
 
 The system integrates with:
 
@@ -25,9 +25,9 @@ The system integrates with:
 - Communication & Messaging — `Message`, `Transport`, `AgentAddress`, `AddressResolver`, `MessagePattern` for remote agent communication
 - Workflow & Orchestration — `WorkflowStep` (coordination can be used within workflow steps)
 - Error Handling & Resilience — `RetryPolicy` for retry configuration on failed delegations
-- `automojo-extension` — `ExtensionPoint` for plugin discovery of coordination protocols and delegation handlers
-- `automojo-credentials` — `CredentialReference` for credential management during cross-agent delegation
-- `automojo-this-app` — `AppContext` for settings, environment variables, and file path resolution
+- `codecraftai-extension` — `ExtensionPoint` for plugin discovery of coordination protocols and delegation handlers
+- `codecraftai-credentials` — `CredentialReference` for credential management during cross-agent delegation
+- `codecraftai-this-app` — `AppContext` for settings, environment variables, and file path resolution
 
 The design prioritizes debuggability over performance and readability over conciseness, per the project coding standards.
 
@@ -35,7 +35,7 @@ The design prioritizes debuggability over performance and readability over conci
 
 ```mermaid
 graph TD
-    subgraph "automojo.agentkit.coordination"
+    subgraph "ccai.agentkit.coordination"
         TaskRequest[TaskRequest]
         TaskResponse[TaskResponse]
         TaskStatus[TaskStatus enum]
@@ -48,14 +48,14 @@ graph TD
         CoordinationErrors[TaskDelegationError / TaskTimeoutError / CapabilityNotFoundError / TaskQueueFullError]
     end
 
-    subgraph "automojo.agentkit.coordination.protocols"
+    subgraph "ccai.agentkit.coordination.protocols"
         CoordinationProtocol[CoordinationProtocol ABC]
         DirectDelegation[DirectDelegationProtocol]
         CapabilityRouting[CapabilityRoutingProtocol]
         FanOutFanIn[FanOutFanInProtocol]
     end
 
-    subgraph "automojo.agentkit.coordination.handlers"
+    subgraph "ccai.agentkit.coordination.handlers"
         DelegationHandler[DelegationHandler]
     end
 
@@ -75,9 +75,9 @@ graph TD
     end
 
     subgraph "External Packages"
-        Extension[automojo-extension]
-        Credentials[automojo-credentials]
-        ThisApp[automojo-this-app]
+        Extension[codecraftai-extension]
+        Credentials[codecraftai-credentials]
+        ThisApp[codecraftai-this-app]
     end
 
     Agent --> TaskTracker
@@ -215,7 +215,7 @@ sequenceDiagram
 
 5. **Local-first delegation with transport fallback** — The `delegate_task` method first checks the local `AgentRegistry` for the target agent. If found locally, the `TaskRequest` is delivered directly to the `DelegationHandler` without serialization or transport overhead. Only when the target is not local does the system serialize the `TaskRequest` into a `Message` and send it through the `Transport`. This optimizes the common case of co-located agents.
 
-6. **Coordination protocols as strategy pattern** — `CoordinationProtocol` is an abstract base class with concrete implementations (`DirectDelegationProtocol`, `CapabilityRoutingProtocol`, `FanOutFanInProtocol`). New coordination strategies can be added via `automojo-extension` without modifying existing code.
+6. **Coordination protocols as strategy pattern** — `CoordinationProtocol` is an abstract base class with concrete implementations (`DirectDelegationProtocol`, `CapabilityRoutingProtocol`, `FanOutFanInProtocol`). New coordination strategies can be added via `codecraftai-extension` without modifying existing code.
 
 7. **TaskTracker with thread-safe status management** — The `TaskTracker` uses `threading.Lock` to protect all status updates and queries. This ensures correctness when multiple threads delegate tasks concurrently.
 
@@ -229,7 +229,7 @@ sequenceDiagram
 
 12. **Fan-out/fan-in with optional aggregation** — The `FanOutFanInProtocol` returns a list of `TaskResponse` objects by default, but accepts an optional aggregator callable in the metadata to combine results into a single `TaskResponse`. This supports both raw collection and custom aggregation use cases.
 
-13. **Structured logging under `automojo.agentkit.coordination`** — All coordination components log to the `automojo.agentkit.coordination` logger hierarchy, consistent with the logging patterns established in other SDK features.
+13. **Structured logging under `ccai.agentkit.coordination`** — All coordination components log to the `ccai.agentkit.coordination` logger hierarchy, consistent with the logging patterns established in other SDK features.
 
 ## Components and Interfaces
 
@@ -946,7 +946,7 @@ class CapabilityAdvertisement:
 import logging
 import threading
 
-logger = logging.getLogger("automojo.agentkit.coordination")
+logger = logging.getLogger("ccai.agentkit.coordination")
 
 class CapabilityRegistry:
     """
@@ -1108,7 +1108,7 @@ import logging
 import threading
 from datetime import datetime, timezone
 
-logger = logging.getLogger("automojo.agentkit.coordination")
+logger = logging.getLogger("ccai.agentkit.coordination")
 
 class TaskTracker:
     """
@@ -1333,7 +1333,7 @@ import heapq
 import logging
 import threading
 
-logger = logging.getLogger("automojo.agentkit.coordination")
+logger = logging.getLogger("ccai.agentkit.coordination")
 
 class TaskQueue:
     """
@@ -1825,7 +1825,7 @@ class CoordinationProtocol(abc.ABC):
 ```python
 import logging
 
-logger = logging.getLogger("automojo.agentkit.coordination")
+logger = logging.getLogger("ccai.agentkit.coordination")
 
 class DirectDelegationProtocol(CoordinationProtocol):
     """
@@ -1929,7 +1929,7 @@ class DirectDelegationProtocol(CoordinationProtocol):
 ```python
 import logging
 
-logger = logging.getLogger("automojo.agentkit.coordination")
+logger = logging.getLogger("ccai.agentkit.coordination")
 
 class CapabilityRoutingProtocol(CoordinationProtocol):
     """
@@ -2042,7 +2042,7 @@ import concurrent.futures
 import logging
 from datetime import datetime, timezone
 
-logger = logging.getLogger("automojo.agentkit.coordination")
+logger = logging.getLogger("ccai.agentkit.coordination")
 
 class FanOutFanInProtocol(CoordinationProtocol):
     """
@@ -2249,7 +2249,7 @@ class Agent(abc.ABC):
         self._task_tracker.register(task_request)
 
         coord_logger = logging.getLogger(
-            "automojo.agentkit.coordination.{}".format(self.identity.identifier)
+            "ccai.agentkit.coordination.{}".format(self.identity.identifier)
         )
         coord_logger.info(
             "Delegating task: id=%s, type=%s, target=%s",
@@ -2327,7 +2327,7 @@ class Agent(abc.ABC):
             :returns: A TaskResponse.
         """
         coord_logger = logging.getLogger(
-            "automojo.agentkit.coordination.{}".format(self.identity.identifier)
+            "ccai.agentkit.coordination.{}".format(self.identity.identifier)
         )
 
         if self._delegation_handler is None:
@@ -2368,7 +2368,7 @@ class Agent(abc.ABC):
             :returns: Logger instance.
         """
         rtnval = logging.getLogger(
-            "automojo.agentkit.coordination.{}".format(self.identity.identifier)
+            "ccai.agentkit.coordination.{}".format(self.identity.identifier)
         )
         return rtnval
 
@@ -2405,7 +2405,7 @@ class Agent(abc.ABC):
     def _load_coordination_extensions(self) -> list:
         """
             Discovers and loads CoordinationProtocol implementations
-            from the automojo-extension ExtensionPoint.
+            from the codecraftai-extension ExtensionPoint.
 
             :returns: List of CoordinationProtocol instances.
         """
@@ -2549,10 +2549,10 @@ class TaskQueueFullError(AgentKitError):
 
 ### Extension Point Integration (Requirement 20)
 
-The framework defines two `ExtensionPoint` entries through `automojo-extension`:
+The framework defines two `ExtensionPoint` entries through `codecraftai-extension`:
 
-1. `"automojo.agentkit.coordination.protocols"` — For registering `CoordinationProtocol` implementations
-2. `"automojo.agentkit.coordination.handlers"` — For registering `DelegationHandler` callbacks
+1. `"ccai.agentkit.coordination.protocols"` — For registering `CoordinationProtocol` implementations
+2. `"ccai.agentkit.coordination.handlers"` — For registering `DelegationHandler` callbacks
 
 - During `Agent.__init__`, the agent discovers all registered coordination extensions from the extension points
 - If a plugin provides a `CoordinationProtocol`, it is added to the agent's `coordination_protocols` list
@@ -2561,16 +2561,16 @@ The framework defines two `ExtensionPoint` entries through `automojo-extension`:
 
 ### Structured Logging (Requirement 17)
 
-All coordination components use the Python standard `logging` module with a logger hierarchy rooted at `automojo.agentkit.coordination`:
+All coordination components use the Python standard `logging` module with a logger hierarchy rooted at `ccai.agentkit.coordination`:
 
 | Logger Name | Component |
 |---|---|
-| `automojo.agentkit.coordination` | Root coordination logger |
-| `automojo.agentkit.coordination.<agent_id>` | Per-agent coordination logger |
-| `automojo.agentkit.coordination.protocols` | CoordinationProtocol subclasses |
-| `automojo.agentkit.coordination.registry` | CapabilityRegistry |
-| `automojo.agentkit.coordination.tracker` | TaskTracker |
-| `automojo.agentkit.coordination.queue` | TaskQueue |
+| `ccai.agentkit.coordination` | Root coordination logger |
+| `ccai.agentkit.coordination.<agent_id>` | Per-agent coordination logger |
+| `ccai.agentkit.coordination.protocols` | CoordinationProtocol subclasses |
+| `ccai.agentkit.coordination.registry` | CapabilityRegistry |
+| `ccai.agentkit.coordination.tracker` | TaskTracker |
+| `ccai.agentkit.coordination.queue` | TaskQueue |
 
 Logging levels:
 - **INFO** — Task delegation, task response receipt, capability registration/deregistration, protocol coordination
@@ -2703,7 +2703,7 @@ Error messages follow the multi-line formation pattern: build a list of lines, j
 
 ### Testing Framework
 
-Tests use `testbase` and reside under `source/testroots/automojo/tests/singlehost/agentkit/coordination/`, mirroring the source hierarchy:
+Tests use `testbase` and reside under `source/testroots/ccai/tests/singlehost/agentkit/coordination/`, mirroring the source hierarchy:
 
 | Source File | Test File |
 |---|---|
@@ -2723,12 +2723,12 @@ Tests use `testbase` and reside under `source/testroots/automojo/tests/singlehos
 
 ### Dual Testing Approach
 
-- **Unit tests**: Specific examples, edge cases, error conditions, integration with external packages (using `automojo.testbase.mocking.Mock`)
-- **Property-based tests**: Universal properties across randomly generated inputs using automojo.testbase.properties
+- **Unit tests**: Specific examples, edge cases, error conditions, integration with external packages (using `ccai.testbase.mocking.Mock`)
+- **Property-based tests**: Universal properties across randomly generated inputs using ccai.testbase.properties
 
 ### Property-Based Testing Configuration
 
-- Library: automojo.testbase.properties (built-in testbase property testing engine)
+- Library: ccai.testbase.properties (built-in testbase property testing engine)
 - Minimum 100 iterations per property test
 - Each test tagged: `Feature: agent-coordination, Property N: title`
 - Each correctness property implemented by a single property-based test
@@ -2757,10 +2757,10 @@ Tests use `testbase` and reside under `source/testroots/automojo/tests/singlehos
 
 ### Mocking Strategy
 
-Communication & Messaging components (Transport, AddressResolver, AgentAddress) and AgentRegistry are tested using `automojo.testbase.mocking.Mock`:
+Communication & Messaging components (Transport, AddressResolver, AgentAddress) and AgentRegistry are tested using `ccai.testbase.mocking.Mock`:
 
 ```python
-from automojo.testbase.mocking import Mock
+from ccai.testbase.mocking import Mock
 
 # Example: Mock AddressResolver for DirectDelegationProtocol testing
 mock_resolver = Mock()
@@ -2787,5 +2787,5 @@ The `TaskQueue`, `TaskTracker`, and `CapabilityRegistry` are tested with real in
 
 ```bash
 source .venv/bin/activate
-testbase testing run --root source/testroots/automojo --includes=automojo.tests.singlehost.agentkit.coordination --output=./.output
+testbase testing run --root source/testroots/ccai --includes=ccai.tests.singlehost.agentkit.coordination --output=./.output
 ```

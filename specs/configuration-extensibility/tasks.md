@@ -2,7 +2,7 @@
 
 ## Overview
 
-Build the Configuration & Extensibility system bottom-up: foundational types (enums, errors) first, then immutable data types, then configuration management, then schema validation, then feature flags, then plugin system, then agent integration. All source files go under `source/packages/automojo/agentkit/` with all-lowercase filenames (no underscores). Tests go under `source/testroots/automojo/tests/singlehost/agentkit/` mirroring the source hierarchy. Uses `testbase` framework and `testbase` mocking throughout.
+Build the Configuration & Extensibility system bottom-up: foundational types (enums, errors) first, then immutable data types, then configuration management, then schema validation, then feature flags, then plugin system, then agent integration. All source files go under `source/packages/ccai/agentkit/` with all-lowercase filenames (no underscores). Tests go under `source/testroots/ccai/tests/singlehost/agentkit/` mirroring the source hierarchy. Uses `testbase` framework and `testbase` mocking throughout.
 
 ## Tasks
 
@@ -150,7 +150,7 @@ Build the Configuration & Extensibility system bottom-up: foundational types (en
     - Log listener exceptions at WARNING level and continue invoking remaining listeners
     - Implement read-only properties: agent_identifier, schema, merged_configuration, layers
     - Implement `__repr__` (class name, agent identifier, layer count) and `__str__` methods
-    - Use Python standard logging under `automojo.agentkit.configuration` logger hierarchy
+    - Use Python standard logging under `ccai.agentkit.configuration` logger hierarchy
     - _Requirements: 1.1, 1.3, 1.4, 1.5, 1.6, 1.9, 1.10, 1.14, 1.15, 1.16, 1.17, 4.1, 4.8, 8.10, 8.11, 8.12, 8.13, 23.1, 23.2, 24.1, 24.2_
 
   - [x] 5.2 Implement schema validation in ConfigurationManager
@@ -221,7 +221,7 @@ Build the Configuration & Extensibility system bottom-up: foundational types (en
     - On file change detection (modification timestamp), trigger configuration_manager.reload()
     - On reload failure, log WARNING with file path and validation error, retain previous config
     - Implement `__repr__` (class name, monitoring status, polling interval) and `__str__` methods
-    - Use Python standard logging under `automojo.agentkit.configuration` logger hierarchy
+    - Use Python standard logging under `ccai.agentkit.configuration` logger hierarchy
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9, 9.10_
 
   - [x] 7.4 Write unit tests for HotReloadPolicy
@@ -276,7 +276,7 @@ Build the Configuration & Extensibility system bottom-up: foundational types (en
     - Implement `load_from_json_file` and `load_from_yaml_file` methods
     - Implement read-only property: count
     - Implement `__repr__` (class name, flag count) and `__str__` (flag names and enabled status) methods
-    - Use Python standard logging under `automojo.agentkit.featureflags` logger hierarchy
+    - Use Python standard logging under `ccai.agentkit.featureflags` logger hierarchy
     - Log override set/clear at INFO level including flag name and new effective value
     - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6, 12.7, 12.8, 12.9, 12.10, 12.11, 12.12, 12.13, 12.14, 12.15, 12.16, 23.9, 23.10, 24.3, 24.4_
 
@@ -359,8 +359,8 @@ Build the Configuration & Extensibility system bottom-up: foundational types (en
 
   - [x] 12.8 Create `pluginmanager.py` with PluginManager class
     - Implement constructor with agent_identifier and optional plugin_configuration
-    - Implement `discover` method scanning search paths and automojo-extension registry
-    - Implement `load_plugin` method: load through automojo-extension, validate, transition to LOADED
+    - Implement `discover` method scanning search paths and codecraftai-extension registry
+    - Implement `load_plugin` method: load through codecraftai-extension, validate, transition to LOADED
     - Implement `activate_plugin` method: validate dependencies, invoke on_activate hook, transition to ACTIVE
     - Implement `deactivate_plugin` method: invoke on_deactivate hook, transition to LOADED
     - Implement `unload_plugin` method: deactivate if active, invoke on_unload hook, remove from manager
@@ -370,7 +370,7 @@ Build the Configuration & Extensibility system bottom-up: foundational types (en
     - Raise PluginLoadError when dependencies are not satisfied
     - Log lifecycle events at INFO level, failures at WARNING level
     - Implement `__repr__` (class name, agent identifier, loaded count, active count) and `__str__` methods
-    - Use Python standard logging under `automojo.agentkit.plugins` logger hierarchy
+    - Use Python standard logging under `ccai.agentkit.plugins` logger hierarchy
     - _Requirements: 14.1, 14.2, 14.3, 14.4, 14.5, 14.6, 14.7, 14.8, 14.9, 14.10, 14.11, 14.12, 14.13, 14.14, 14.15, 14.16, 14.17, 18.2, 18.3, 18.4, 18.5, 18.6, 23.5, 23.6, 23.7, 23.8, 24.5, 24.6_
 
   - [x] 12.9 Write unit tests for PluginDependency
@@ -399,7 +399,7 @@ Build the Configuration & Extensibility system bottom-up: foundational types (en
     - Test PluginLoadError raised for load failures (status transitions to FAILED)
     - Test PluginLoadError raised when dependencies are not satisfied
     - Test lifecycle hook exceptions are logged at WARNING and operation continues
-    - Use testbase mocking for automojo-extension and PluginLifecycleHook
+    - Use testbase mocking for codecraftai-extension and PluginLifecycleHook
     - _Requirements: 14.4, 14.5, 14.6, 14.7, 14.8, 14.12, 14.13, 14.14, 14.15, 18.2, 18.3, 18.4, 18.5, 18.6_
 
 - [x] 13. Checkpoint - Ensure all tests pass
@@ -433,7 +433,7 @@ Build the Configuration & Extensibility system bottom-up: foundational types (en
     - _Requirements: 21.1, 21.2, 21.3, 21.4, 21.5, 21.6, 21.7, 21.8, 21.9, 21.10_
 
 - [x] 15. Update `__init__.py` and wire all exports
-  - Add all new classes to `source/packages/automojo/agentkit/__init__.py`
+  - Add all new classes to `source/packages/ccai/agentkit/__init__.py`
   - Ensure all public classes are importable from the agentkit package
   - _Requirements: All_
 
@@ -447,7 +447,7 @@ Build the Configuration & Extensibility system bottom-up: foundational types (en
 - Checkpoints ensure incremental validation at natural integration boundaries
 - Property tests validate the 12 universal correctness properties from the design document
 - Unit tests validate specific examples and edge cases
-- All source files use all-lowercase filenames (no underscores) under `source/packages/automojo/agentkit/`
-- All test files go under `source/testroots/automojo/tests/singlehost/agentkit/` mirroring source hierarchy
+- All source files use all-lowercase filenames (no underscores) under `source/packages/ccai/agentkit/`
+- All test files go under `source/testroots/ccai/tests/singlehost/agentkit/` mirroring source hierarchy
 - Uses `testbase` framework and `testbase` mocking (not pytest/unittest/unittest.mock)
 - Prioritize debuggability over performance, readability over conciseness per coding standards

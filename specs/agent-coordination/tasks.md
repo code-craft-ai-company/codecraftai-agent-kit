@@ -2,17 +2,17 @@
 
 ## Overview
 
-Bottom-up implementation of the Agent Coordination feature for the `automojo-agent-kit` SDK. Starts with foundational data objects (enums, immutable DTOs), then builds registries and trackers, then coordination protocols, and finally wires everything into the Agent base class. All source files go under `source/packages/automojo/agentkit/coordination/` and tests under `source/testroots/automojo/tests/singlehost/agentkit/coordination/`.
+Bottom-up implementation of the Agent Coordination feature for the `codecraftai-agent-kit` SDK. Starts with foundational data objects (enums, immutable DTOs), then builds registries and trackers, then coordination protocols, and finally wires everything into the Agent base class. All source files go under `source/packages/ccai/agentkit/coordination/` and tests under `source/testroots/ccai/tests/singlehost/agentkit/coordination/`.
 
 ## Tasks
 
 - [ ] 1. Create package structure and exception hierarchy
   - [ ] 1.1 Create coordination package directories and `__init__.py` files
-    - Create `source/packages/automojo/agentkit/coordination/__init__.py`
-    - Create `source/packages/automojo/agentkit/coordination/protocols/__init__.py`
-    - Create `source/packages/automojo/agentkit/coordination/handlers/__init__.py`
-    - Create `source/testroots/automojo/tests/singlehost/agentkit/coordination/__init__.py`
-    - Create `source/testroots/automojo/tests/singlehost/agentkit/coordination/protocols/__init__.py`
+    - Create `source/packages/ccai/agentkit/coordination/__init__.py`
+    - Create `source/packages/ccai/agentkit/coordination/protocols/__init__.py`
+    - Create `source/packages/ccai/agentkit/coordination/handlers/__init__.py`
+    - Create `source/testroots/ccai/tests/singlehost/agentkit/coordination/__init__.py`
+    - Create `source/testroots/ccai/tests/singlehost/agentkit/coordination/protocols/__init__.py`
     - _Requirements: Design file layout table_
 
   - [ ] 1.2 Implement coordination exception hierarchy in `coordination/errors.py`
@@ -238,7 +238,7 @@ Bottom-up implementation of the Agent Coordination feature for the `automojo-age
     - Test remote delegation via mocked Transport and AddressResolver (agent not local)
     - Test `TaskDelegationError` raised when `target_agent_id` missing from metadata
     - Test `TaskDelegationError` raised when remote agent unreachable
-    - Use `automojo.testbase.mocking.Mock` for all external dependencies
+    - Use `ccai.testbase.mocking.Mock` for all external dependencies
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6_
 
 - [ ] 16. Implement CapabilityRoutingProtocol
@@ -259,7 +259,7 @@ Bottom-up implementation of the Agent Coordination feature for the `automojo-age
     - Test fallback to next agent when first agent fails
     - Test `CapabilityNotFoundError` raised when no agent supports task type
     - Test `TaskDelegationError` raised when all agents fail
-    - Use `automojo.testbase.mocking.Mock` for external dependencies
+    - Use `ccai.testbase.mocking.Mock` for external dependencies
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6_
 
 - [ ] 17. Implement FanOutFanInProtocol
@@ -278,7 +278,7 @@ Bottom-up implementation of the Agent Coordination feature for the `automojo-age
     - Test TIMED_OUT response included for unresponsive agents
     - Test aggregator callable applied to responses
     - Test `TaskDelegationError` raised when `target_agent_ids` missing
-    - Use `automojo.testbase.mocking.Mock` for external dependencies
+    - Use `ccai.testbase.mocking.Mock` for external dependencies
     - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6, 12.7, 12.8_
 
 - [ ] 18. Checkpoint - Verify all coordination protocols
@@ -294,9 +294,9 @@ Bottom-up implementation of the Agent Coordination feature for the `automojo-age
     - Implement `delegate_task_by_capability` method: query CapabilityRegistry, delegate to discovered agent
     - Implement `register_delegation_handler` and `deregister_delegation_handler` methods
     - Implement `handle_incoming_task` method: invoke handler, catch exceptions, return FAILED response if no handler or handler raises
-    - Implement `get_coordination_logger` returning logger scoped to `automojo.agentkit.coordination.<agent_id>`
+    - Implement `get_coordination_logger` returning logger scoped to `ccai.agentkit.coordination.<agent_id>`
     - Implement `_delegate_local` and `_delegate_remote` private methods
-    - Implement `_load_coordination_extensions` for automojo-extension integration
+    - Implement `_load_coordination_extensions` for codecraftai-extension integration
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9, 7.10, 7.11, 7.12, 15.2, 15.3, 15.4, 15.5, 17.2, 17.3, 17.7, 17.8, 20.1, 20.2, 20.3, 20.4, 21.4_
 
   - [ ] 19.2 Write unit tests for Agent coordination integration in `coordination/test_agent_coordination.py`
@@ -309,7 +309,7 @@ Bottom-up implementation of the Agent Coordination feature for the `automojo-age
     - Test `handle_incoming_task` returns FAILED when no handler registered
     - Test `handle_incoming_task` returns FAILED with error info when handler raises exception
     - Test `task_tracker` and `capability_registry` properties
-    - Use `automojo.testbase.mocking.Mock` for Agent, AgentRegistry, Transport, AddressResolver
+    - Use `ccai.testbase.mocking.Mock` for Agent, AgentRegistry, Transport, AddressResolver
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9, 7.10, 7.11, 7.12, 15.2, 15.3, 15.4, 15.5, 17.2, 17.3, 17.7, 17.8, 21.4_
 
 - [ ] 20. Wire up package exports in `__init__.py` files
@@ -327,5 +327,5 @@ Bottom-up implementation of the Agent Coordination feature for the `automojo-age
 - Each task references specific requirements for traceability
 - Checkpoints ensure incremental validation
 - All source files use lowercase filenames with no underscores per project naming conventions
-- Tests use `testbase` framework and `automojo.testbase.mocking` for mocks
+- Tests use `testbase` framework and `ccai.testbase.mocking` for mocks
 - Implementation follows bottom-up order: data objects → registries → protocols → agent integration → exports

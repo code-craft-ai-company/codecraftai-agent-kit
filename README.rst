@@ -1,8 +1,8 @@
 ==========================
-Automation Mojo Agent Kit
+Code Craft AI Agent Kit
 ==========================
 
-The ``automojo-agent-kit`` is a Python SDK for building cross-platform AI agents. It provides a unified framework for agent development that works across cloud providers (AWS, Azure, GCP) and local environments. The SDK covers the full agent development lifecycle — from agent identity and state management through LLM integration, tool invocation, workflow orchestration, observability, and cross-platform deployment.
+The ``codecraftai-agent-kit`` is a Python SDK for building cross-platform AI agents. It provides a unified framework for agent development that works across cloud providers (AWS, Azure, GCP) and local environments. The SDK covers the full agent development lifecycle — from agent identity and state management through LLM integration, tool invocation, workflow orchestration, observability, and cross-platform deployment.
 
 Highlights
 ==========
@@ -20,7 +20,7 @@ Repository Structure
 - ``development/`` - Runtime environment scripts.
 - ``repository-setup/`` - Repository homing and setup scripts.
 - ``source/packages/`` - Package source code.
-- ``source/testroots/automojo/`` - TestBase test roots.
+- ``source/testroots/ccai/`` - TestBase test roots.
 - ``source/examples/`` - Example agent definitions.
 - ``specs/`` - Requirements, design, and task documentation organised by feature area.
 - ``userguide/`` - Standards, conventions, and documentation.
@@ -54,7 +54,7 @@ Run the single-host test suite:
 
 .. code-block:: bash
 
-   testbase testing run --root source/testroots/automojo --includes=automojo.tests.singlehost.agentkit --output=./.output
+   testbase testing run --root source/testroots/ccai --includes=ccai.tests.singlehost.agentkit --output=./.output
 
 Standards and Conventions
 =========================

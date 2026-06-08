@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The Error Handling & Resilience feature extends the `automojo-agent-kit` SDK with a cross-cutting system for handling failures, recovering from transient errors, and maintaining system health across all agent subsystems. It defines a unified retry executor that leverages the existing RetryPolicy from the LLM Integration feature and applies it across all agent operations (tool execution, transport communication, memory backend access, workflow steps), a circuit breaker pattern for protecting agents from cascading failures when external services are degraded, graceful degradation strategies that allow agents to continue operating with reduced functionality when dependencies are unavailable, a dead letter queue for capturing and managing messages and operations that have permanently failed after exhausting retry and fallback options, and a health check and self-healing system for monitoring agent component health and triggering automated recovery actions. The system integrates with the Agent base class so agents own and manage resilience components throughout their lifecycle, with the Tool & Capability System so tool executions are protected by circuit breakers and retries, with the LLM Integration system so LLM requests leverage the existing RetryPolicy and FallbackChain with circuit breaker protection, with the Memory & Context Management system so memory backend operations are resilient to transient failures, with the Communication & Messaging system so message delivery failures are captured in the dead letter queue, with the Workflow & Orchestration system so workflow step failures trigger retry and degradation strategies, with the Observability & Debugging system so resilience events are traced, logged, and metered, with the Security & Access Control system so resilience operations are audited, with the Configuration & Extensibility system so resilience policies are configurable and hot-reloadable, with `automojo-extension` so resilience plugins can be discovered and loaded, with `automojo-credentials` for credential management, with `automojo-dataprofiles` for data profile management, and with `automojo-this-app` for settings and environment configuration.
+The Error Handling & Resilience feature extends the `codecraftai-agent-kit` SDK with a cross-cutting system for handling failures, recovering from transient errors, and maintaining system health across all agent subsystems. It defines a unified retry executor that leverages the existing RetryPolicy from the LLM Integration feature and applies it across all agent operations (tool execution, transport communication, memory backend access, workflow steps), a circuit breaker pattern for protecting agents from cascading failures when external services are degraded, graceful degradation strategies that allow agents to continue operating with reduced functionality when dependencies are unavailable, a dead letter queue for capturing and managing messages and operations that have permanently failed after exhausting retry and fallback options, and a health check and self-healing system for monitoring agent component health and triggering automated recovery actions. The system integrates with the Agent base class so agents own and manage resilience components throughout their lifecycle, with the Tool & Capability System so tool executions are protected by circuit breakers and retries, with the LLM Integration system so LLM requests leverage the existing RetryPolicy and FallbackChain with circuit breaker protection, with the Memory & Context Management system so memory backend operations are resilient to transient failures, with the Communication & Messaging system so message delivery failures are captured in the dead letter queue, with the Workflow & Orchestration system so workflow step failures trigger retry and degradation strategies, with the Observability & Debugging system so resilience events are traced, logged, and metered, with the Security & Access Control system so resilience operations are audited, with the Configuration & Extensibility system so resilience policies are configurable and hot-reloadable, with `codecraftai-extension` so resilience plugins can be discovered and loaded, with `codecraftai-credentials` for credential management, with `codecraftai-dataprofiles` for data profile management, and with `codecraftai-this-app` for settings and environment configuration.
 
 ## Glossary
 
@@ -38,7 +38,7 @@ The Error Handling & Resilience feature extends the `automojo-agent-kit` SDK wit
 - **SelfHealingResult**: An immutable object representing the outcome of a self-healing action, containing the health check name, the action name, a success flag, an optional error message, the attempt number, and a timestamp.
 - **ResilienceConfiguration**: A configuration object that defines the resilience settings for an Agent, including default RetryPolicy, circuit breaker enablement, degradation management enablement, dead letter queue enablement, health monitoring enablement, health check interval, and self-healing enablement.
 - **ResiliencePipeline**: A component that coordinates the RetryExecutor, CircuitBreakerRegistry, DegradationManager, DeadLetterQueue, and HealthMonitor for an Agent, providing a unified resilience surface.
-- **ResiliencePlugin**: A resilience component implementation (DegradationStrategy, HealthCheck, SelfHealingAction, or DeadLetterStore) discovered and loaded through the `automojo-extension` ExtensionPoint mechanism, allowing external packages to contribute resilience components.
+- **ResiliencePlugin**: A resilience component implementation (DegradationStrategy, HealthCheck, SelfHealingAction, or DeadLetterStore) discovered and loaded through the `codecraftai-extension` ExtensionPoint mechanism, allowing external packages to contribute resilience components.
 - **Agent**: The base agent class defined in the Core Agent Framework that owns a ResiliencePipeline and applies resilience policies throughout its lifecycle.
 - **ToolExecutor**: The tool executor defined in the Tool & Capability System, wrapped by the RetryExecutor and CircuitBreaker for resilient tool execution.
 - **LlmProvider**: The LLM provider abstraction defined in the LLM Integration feature, protected by CircuitBreaker instances for resilient LLM requests.
@@ -55,9 +55,9 @@ The Error Handling & Resilience feature extends the `automojo-agent-kit` SDK wit
 - **AuditLogger**: The audit logger defined in the Security & Access Control feature, used for auditing resilience events.
 - **ConfigurationManager**: The configuration manager defined in the Configuration & Extensibility feature, used for loading and hot-reloading resilience configuration.
 - **FeatureFlagRegistry**: The feature flag registry defined in the Configuration & Extensibility feature, used for toggling resilience features.
-- **ExtensionPoint**: An integration surface provided by `automojo-extension` that allows external plugins to register resilience component implementations with an Agent.
-- **CredentialReference**: A named reference resolved through `automojo-credentials` that provides secure access to secrets required by resilience components.
-- **AppContext**: The application context provided by `automojo-this-app` that supplies settings, environment variables, and directory-based presence for loading resilience configuration files.
+- **ExtensionPoint**: An integration surface provided by `codecraftai-extension` that allows external plugins to register resilience component implementations with an Agent.
+- **CredentialReference**: A named reference resolved through `codecraftai-credentials` that provides secure access to secrets required by resilience components.
+- **AppContext**: The application context provided by `codecraftai-this-app` that supplies settings, environment variables, and directory-based presence for loading resilience configuration files.
 - **ConfigurationError**: An exception raised for configuration-related problems, inherited from AgentKitError.
 - **SemanticError**: An exception raised for API misuse, inherited from AgentKitError.
 - **ResilienceError**: An exception raised when a resilience operation fails due to a configuration or execution error, inherited from AgentKitError.
@@ -77,7 +77,7 @@ The Error Handling & Resilience feature extends the `automojo-agent-kit` SDK wit
 5. WHEN the callable succeeds, THE RetryExecutor SHALL return a RetryResult with a success flag of True, the operation result value, and the list of RetryAttempt objects from any preceding failed attempts.
 6. WHEN all retry attempts are exhausted, THE RetryExecutor SHALL return a RetryResult with a success flag of False, the final exception, and the complete list of RetryAttempt objects.
 7. THE RetryExecutor SHALL record a RetryAttempt object for each failed attempt, containing the attempt number, the delay before the attempt, the exception, and a timestamp.
-8. THE RetryExecutor SHALL log each retry attempt at INFO level including the operation name, attempt number, delay, and exception type, using the logger hierarchy under `automojo.agentkit.resilience`.
+8. THE RetryExecutor SHALL log each retry attempt at INFO level including the operation name, attempt number, delay, and exception type, using the logger hierarchy under `ccai.agentkit.resilience`.
 9. THE RetryExecutor SHALL provide a read-only property for the configured RetryPolicy.
 10. THE RetryExecutor SHALL provide a __repr__ method that includes the class name, maximum retry count, and backoff strategy from the configured RetryPolicy.
 11. THE RetryExecutor SHALL provide a __str__ method that returns a human-readable summary of the retry configuration.
@@ -130,7 +130,7 @@ The Error Handling & Resilience feature extends the `automojo-agent-kit` SDK wit
 14. THE CircuitBreaker SHALL expose a read-only property for the current success count.
 15. THE CircuitBreaker SHALL expose a read-only property for the list of recorded CircuitBreakerEvent objects.
 16. THE CircuitBreaker SHALL provide a reset method that transitions the CircuitBreaker to the CLOSED state and clears all counters and event history.
-17. THE CircuitBreaker SHALL log each state transition at WARNING level including the circuit breaker name, previous state, new state, and reason, using the logger hierarchy under `automojo.agentkit.resilience`.
+17. THE CircuitBreaker SHALL log each state transition at WARNING level including the circuit breaker name, previous state, new state, and reason, using the logger hierarchy under `ccai.agentkit.resilience`.
 18. THE CircuitBreaker SHALL be thread-safe, using appropriate synchronization primitives to protect state transitions and counter updates from concurrent access.
 19. THE CircuitBreaker SHALL provide a __repr__ method that includes the class name, circuit breaker name, and current state.
 20. THE CircuitBreaker SHALL provide a __str__ method that returns a human-readable summary including the circuit breaker name, current state, failure count, and success count.
@@ -235,7 +235,7 @@ The Error Handling & Resilience feature extends the `automojo-agent-kit` SDK wit
 8. THE DegradationManager SHALL support registration of DegradationChangeListener callbacks that are invoked when a dependency DegradationLevel changes.
 9. WHEN a dependency DegradationLevel changes, THE DegradationManager SHALL create a DegradationChangeEvent and invoke all registered DegradationChangeListener callbacks with the event.
 10. IF a DegradationChangeListener callback raises an exception during invocation, THEN THE DegradationManager SHALL log the exception at WARNING level including the agent identifier and dependency name, and continue invoking the remaining registered listeners.
-11. THE DegradationManager SHALL log each degradation level change at WARNING level including the agent identifier, dependency name, previous level, new level, and reason, using the logger hierarchy under `automojo.agentkit.resilience`.
+11. THE DegradationManager SHALL log each degradation level change at WARNING level including the agent identifier, dependency name, previous level, new level, and reason, using the logger hierarchy under `ccai.agentkit.resilience`.
 12. THE DegradationManager SHALL provide a __repr__ method that includes the class name, agent identifier, and current overall degradation level.
 13. THE DegradationManager SHALL provide a __str__ method that returns a human-readable summary including the agent identifier, overall degradation level, and count of tracked dependencies.
 
@@ -270,7 +270,7 @@ The Error Handling & Resilience feature extends the `automojo-agent-kit` SDK wit
 7. IF the replay method fails, THEN THE DeadLetterQueue SHALL update the entry metadata with the replay failure information and retain the entry in the DeadLetterStore.
 8. THE DeadLetterQueue SHALL provide a purge method that accepts an optional age threshold in seconds and removes all entries older than the threshold, or all entries when no threshold is provided.
 9. THE DeadLetterQueue SHALL expose a read-only property for the count of entries in the DeadLetterStore.
-10. THE DeadLetterQueue SHALL log each enqueue operation at WARNING level including the operation type, source component, agent identifier, and exception type, using the logger hierarchy under `automojo.agentkit.resilience`.
+10. THE DeadLetterQueue SHALL log each enqueue operation at WARNING level including the operation type, source component, agent identifier, and exception type, using the logger hierarchy under `ccai.agentkit.resilience`.
 11. THE DeadLetterQueue SHALL provide a __repr__ method that includes the class name and entry count.
 12. THE DeadLetterQueue SHALL provide a __str__ method that returns a human-readable summary including the entry count and store type.
 
@@ -306,7 +306,7 @@ The Error Handling & Resilience feature extends the `automojo-agent-kit` SDK wit
 6. THE FileDeadLetterStore SHALL accept a directory path at construction time specifying where dead letter files are stored.
 7. WHEN a DeadLetterEntry is stored in the FileDeadLetterStore, THE FileDeadLetterStore SHALL persist the entry as a JSON file within the configured directory, using the entry identifier as the file name.
 8. IF the configured directory does not exist, THEN THE FileDeadLetterStore SHALL create the directory at construction time.
-9. THE FileDeadLetterStore SHALL resolve the directory path relative to the AppContext directory provided by `automojo-this-app`.
+9. THE FileDeadLetterStore SHALL resolve the directory path relative to the AppContext directory provided by `codecraftai-this-app`.
 10. IF a file read or write operation fails, THEN THE FileDeadLetterStore SHALL raise a ResilienceError that includes the file path and the underlying I/O error detail.
 11. FOR ALL DeadLetterEntry objects stored in the FileDeadLetterStore, writing the entry to a JSON file and then reading the JSON file back SHALL produce an equivalent DeadLetterEntry object (round-trip property).
 12. THE DeadLetterStore base class SHALL provide a __repr__ method that includes the class name and store name.
@@ -398,7 +398,7 @@ The Error Handling & Resilience feature extends the `automojo-agent-kit` SDK wit
 6. THE HealthMonitor SHALL expose a read-only property for the overall agent health status as a string, computed as "healthy" when all checks are healthy, "degraded" when any check is degraded but none are unhealthy, and "unhealthy" when any check is unhealthy.
 7. THE HealthMonitor SHALL expose a read-only property for the monitoring status as a boolean indicating whether the monitor is currently active.
 8. WHEN a HealthCheck execution raises an exception, THE HealthMonitor SHALL record a HealthStatus with status "unhealthy" and the exception detail as the detail message, and continue executing the remaining health checks.
-9. THE HealthMonitor SHALL log each health check result at DEBUG level when the status is "healthy" and at WARNING level when the status is "degraded" or "unhealthy", including the check name, status, and response time, using the logger hierarchy under `automojo.agentkit.resilience`.
+9. THE HealthMonitor SHALL log each health check result at DEBUG level when the status is "healthy" and at WARNING level when the status is "degraded" or "unhealthy", including the check name, status, and response time, using the logger hierarchy under `ccai.agentkit.resilience`.
 10. THE HealthMonitor SHALL provide a __repr__ method that includes the class name, overall health status, and monitoring status.
 11. THE HealthMonitor SHALL provide a __str__ method that returns a human-readable summary including the overall health status, check count, and monitoring status.
 
@@ -441,7 +441,7 @@ The Error Handling & Resilience feature extends the `automojo-agent-kit` SDK wit
 16. WHEN the HealthMonitor detects an unhealthy HealthStatus and a SelfHealingPolicy is registered for the health check, THE HealthMonitor SHALL execute the SelfHealingAction from the policy.
 17. WHEN the consecutive healing attempt count for a health check reaches the maximum defined in the SelfHealingPolicy, THE HealthMonitor SHALL stop executing the SelfHealingAction for that health check until the cooldown interval elapses.
 18. WHEN the cooldown interval elapses, THE HealthMonitor SHALL reset the consecutive healing attempt count and allow healing attempts to resume.
-19. THE HealthMonitor SHALL log each self-healing attempt at INFO level including the health check name, action name, attempt number, and result, using the logger hierarchy under `automojo.agentkit.resilience`.
+19. THE HealthMonitor SHALL log each self-healing attempt at INFO level including the health check name, action name, attempt number, and result, using the logger hierarchy under `ccai.agentkit.resilience`.
 20. IF a SelfHealingAction raises an exception during execution, THEN THE HealthMonitor SHALL log the exception at WARNING level including the health check name and action name, record a SelfHealingResult with a success flag of False, and continue monitoring.
 
 ### Requirement 21: Resilience Configuration
@@ -454,7 +454,7 @@ The Error Handling & Resilience feature extends the `automojo-agent-kit` SDK wit
 2. THE ResilienceConfiguration SHALL support loading configuration from a Python dictionary.
 3. THE ResilienceConfiguration SHALL support loading configuration from a JSON file path.
 4. THE ResilienceConfiguration SHALL support loading configuration from a YAML file path.
-5. WHEN a configuration file path is provided, THE ResilienceConfiguration SHALL resolve the file path relative to the AppContext directory provided by `automojo-this-app`.
+5. WHEN a configuration file path is provided, THE ResilienceConfiguration SHALL resolve the file path relative to the AppContext directory provided by `codecraftai-this-app`.
 6. THE ResilienceConfiguration SHALL validate all required fields are present during loading and raise a ConfigurationError when required fields are missing.
 7. THE ResilienceConfiguration SHALL provide an as_dict method that returns a dictionary representation of the configuration.
 8. THE ResilienceConfiguration SHALL provide a to_json method that returns a JSON string representation of the configuration.
@@ -499,17 +499,17 @@ The Error Handling & Resilience feature extends the `automojo-agent-kit` SDK wit
 5. WHEN an Agent transitions to the INITIALIZED state, THE Agent SHALL initialize the ResiliencePipeline using the ResilienceConfiguration from the Agent's configuration.
 6. WHEN an Agent transitions to the RUNNING state, THE Agent SHALL start the HealthMonitor if health monitoring is enabled.
 7. WHEN an Agent transitions to the STOPPED state, THE Agent SHALL stop the HealthMonitor and release resilience resources.
-8. WHEN an Agent transitions to the INITIALIZED state, THE Agent SHALL discover and register all ResiliencePlugin instances from `automojo-extension` ExtensionPoint entries targeting the Agent.
+8. WHEN an Agent transitions to the INITIALIZED state, THE Agent SHALL discover and register all ResiliencePlugin instances from `codecraftai-extension` ExtensionPoint entries targeting the Agent.
 9. THE Agent base class SHALL provide an execute_resilient method that accepts a callable, an optional operation name, an optional RetryPolicy, and an optional circuit breaker name, and delegates to the ResiliencePipeline execute_with_resilience method.
 
 ### Requirement 24: Resilience Plugin Integration
 
-**User Story:** As a developer, I want to distribute resilience components as plugins through `automojo-extension`, so that custom degradation strategies, health checks, self-healing actions, and dead letter stores can be installed and discovered automatically by agents.
+**User Story:** As a developer, I want to distribute resilience components as plugins through `codecraftai-extension`, so that custom degradation strategies, health checks, self-healing actions, and dead letter stores can be installed and discovered automatically by agents.
 
 #### Acceptance Criteria
 
-1. THE framework SHALL define an ExtensionPoint named "automojo.agentkit.resilience" through `automojo-extension` for registering ResiliencePlugin implementations.
-2. WHEN an Agent is initialized, THE Agent SHALL query the "automojo.agentkit.resilience" ExtensionPoint and register all discovered HealthCheck, DegradationStrategy, SelfHealingAction, and DeadLetterStore instances with the appropriate registries in the ResiliencePipeline.
+1. THE framework SHALL define an ExtensionPoint named "ccai.agentkit.resilience" through `codecraftai-extension` for registering ResiliencePlugin implementations.
+2. WHEN an Agent is initialized, THE Agent SHALL query the "ccai.agentkit.resilience" ExtensionPoint and register all discovered HealthCheck, DegradationStrategy, SelfHealingAction, and DeadLetterStore instances with the appropriate registries in the ResiliencePipeline.
 3. IF a ResiliencePlugin fails to load, THEN THE Agent SHALL log the failure at WARNING level including the plugin name and the error detail, and continue loading remaining plugins.
 4. IF a ResiliencePlugin provides a component with a name that conflicts with an already registered component, THEN THE Agent SHALL log the conflict at WARNING level including both component names and skip the conflicting plugin component.
 
@@ -531,7 +531,7 @@ The Error Handling & Resilience feature extends the `automojo-agent-kit` SDK wit
 
 #### Acceptance Criteria
 
-1. THE ResiliencePipeline SHALL use the Python standard logging module with a logger hierarchy under `automojo.agentkit.resilience`.
+1. THE ResiliencePipeline SHALL use the Python standard logging module with a logger hierarchy under `ccai.agentkit.resilience`.
 2. WHEN a retry attempt occurs, THE RetryExecutor SHALL log at INFO level including the operation name, attempt number, delay, and exception type.
 3. WHEN a circuit breaker state transition occurs, THE CircuitBreaker SHALL log at WARNING level including the circuit breaker name, previous state, new state, and reason.
 4. WHEN a degradation level change occurs, THE DegradationManager SHALL log at WARNING level including the dependency name, previous level, new level, and reason.

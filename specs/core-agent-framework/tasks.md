@@ -2,20 +2,20 @@
 
 ## Overview
 
-Incremental implementation of the Core Agent Framework for the `automojo-agent-kit` SDK. Tasks build bottom-up: foundational types first (enums, errors, records), then value objects (identity, address), then configuration, then state machine, then registry, then the Agent base class with hooks and sub-agents, then AsyncAgent. Each task references specific requirements and design properties. Tests are placed close to the code they validate.
+Incremental implementation of the Core Agent Framework for the `codecraftai-agent-kit` SDK. Tasks build bottom-up: foundational types first (enums, errors, records), then value objects (identity, address), then configuration, then state machine, then registry, then the Agent base class with hooks and sub-agents, then AsyncAgent. Each task references specific requirements and design properties. Tests are placed close to the code they validate.
 
 ## Tasks
 
 - [x] 1. Implement LifecycleState, ConcurrencyModel, and Exception Hierarchy
-  - [x] 1.1 Create `source/packages/automojo/agentkit/lifecyclestate.py` with the LifecycleState enum
+  - [x] 1.1 Create `source/packages/ccai/agentkit/lifecyclestate.py` with the LifecycleState enum
     - Implement enum with values: CREATED, INITIALIZED, RUNNING, PAUSED, STOPPED, ERROR
     - _Requirements: 4.1_
 
-  - [x] 1.2 Create `source/packages/automojo/agentkit/concurrencymodel.py` with the ConcurrencyModel enum
+  - [x] 1.2 Create `source/packages/ccai/agentkit/concurrencymodel.py` with the ConcurrencyModel enum
     - Implement enum with values: ASYNCIO, THREAD, THREAD_POOL
     - _Requirements: 10.1_
 
-  - [x] 1.3 Create `source/packages/automojo/agentkit/errors.py` with the exception hierarchy
+  - [x] 1.3 Create `source/packages/ccai/agentkit/errors.py` with the exception hierarchy
     - AgentKitError base exception with message and optional cause, exception chaining via __cause__
     - ConfigurationError inheriting from AgentKitError
     - SemanticError inheriting from AgentKitError
@@ -23,7 +23,7 @@ Incremental implementation of the Core Agent Framework for the `automojo-agent-k
     - All provide __repr__ with class name and message
     - _Requirements: 14.1, 14.2, 14.3, 14.4, 14.5, 14.6, 14.7_
 
-  - [x] 1.4 Create `source/packages/automojo/agentkit/configurationerrors.py` with extended configuration exceptions
+  - [x] 1.4 Create `source/packages/ccai/agentkit/configurationerrors.py` with extended configuration exceptions
     - ConfigurationValidationError with schema_name, errors list, optional warnings list
     - PluginLoadError with plugin_name and message
     - Both inherit from AgentKitError
@@ -32,7 +32,7 @@ Incremental implementation of the Core Agent Framework for the `automojo-agent-k
 
   - [x] 1.5 Write property tests for exception hierarchy (Property 24)
     - **Property 24: Exception hierarchy fields and chaining** — for any message and cause, properties match constructor args, __cause__ is set when cause provided, __repr__ contains class name and message
-    - Test file: `source/testroots/automojo/tests/singlehost/agentkit/test_errors_properties.py`
+    - Test file: `source/testroots/ccai/tests/singlehost/agentkit/test_errors_properties.py`
     - **Validates: Requirements 14.5, 14.6, 14.7**
 
   - [x] 1.6 Write unit tests for LifecycleState, ConcurrencyModel, and exceptions
@@ -42,18 +42,18 @@ Incremental implementation of the Core Agent Framework for the `automojo-agent-k
     - Test ConfigurationValidationError fields and formatted message
     - Test PluginLoadError fields and formatted message
     - Test exception without cause has None cause
-    - Test file: `source/testroots/automojo/tests/singlehost/agentkit/test_lifecyclestate.py`, `test_concurrencymodel.py`, `test_errors.py`, `test_configurationerrors.py`
+    - Test file: `source/testroots/ccai/tests/singlehost/agentkit/test_lifecyclestate.py`, `test_concurrencymodel.py`, `test_errors.py`, `test_configurationerrors.py`
     - _Requirements: 4.1, 10.1, 14.1, 14.2, 14.3, 14.4_
 
 - [x] 2. Implement TransitionRecord and AgentIdentity
-  - [x] 2.1 Create `source/packages/automojo/agentkit/transitionrecord.py` with the TransitionRecord class
+  - [x] 2.1 Create `source/packages/ccai/agentkit/transitionrecord.py` with the TransitionRecord class
     - Implement __init__ with previous_state, new_state, timestamp, optional metadata
     - Implement read-only properties for all fields
     - Implement defensive copy for metadata property
     - Implement __repr__ with class name, previous_state, new_state, timestamp
     - _Requirements: 5.1, 5.2, 5.3, 5.4_
 
-  - [x] 2.2 Create `source/packages/automojo/agentkit/agentidentity.py` with the AgentIdentity class
+  - [x] 2.2 Create `source/packages/ccai/agentkit/agentidentity.py` with the AgentIdentity class
     - Implement __init__ with name, version, optional tags, optional identifier (auto-generates UUID)
     - Implement read-only properties for identifier, name, version, tags (defensive copy)
     - Implement as_dict(), to_json(), from_json(cls, json_str)
@@ -67,12 +67,12 @@ Incremental implementation of the Core Agent Framework for the `automojo-agent-k
     - **Validates: Requirements 2.2**
     - **Property 11 (partial): Defensive copy for AgentIdentity tags** — modifying returned tags does not affect internal state
     - **Validates: Requirements 2.4**
-    - Test file: `source/testroots/automojo/tests/singlehost/agentkit/test_agentidentity_properties.py`
+    - Test file: `source/testroots/ccai/tests/singlehost/agentkit/test_agentidentity_properties.py`
 
   - [x] 2.4 Write property tests for TransitionRecord (Property 11-partial)
     - **Property 11 (partial): Defensive copy for TransitionRecord metadata** — modifying returned metadata does not affect internal state
     - **Validates: Requirements 5.3**
-    - Test file: `source/testroots/automojo/tests/singlehost/agentkit/test_transitionrecord_properties.py`
+    - Test file: `source/testroots/ccai/tests/singlehost/agentkit/test_transitionrecord_properties.py`
 
   - [x] 2.5 Write unit tests for TransitionRecord and AgentIdentity
     - Test TransitionRecord read-only properties and __repr__
@@ -80,11 +80,11 @@ Incremental implementation of the Core Agent Framework for the `automojo-agent-k
     - Test AgentIdentity read-only properties, __repr__, __str__
     - Test AgentIdentity with explicit identifier preserves it
     - Test AgentIdentity with tags and without tags
-    - Test files: `source/testroots/automojo/tests/singlehost/agentkit/test_transitionrecord.py`, `test_agentidentity.py`
+    - Test files: `source/testroots/ccai/tests/singlehost/agentkit/test_transitionrecord.py`, `test_agentidentity.py`
     - _Requirements: 2.1, 2.2, 2.3, 2.9, 2.10, 5.1, 5.2, 5.4_
 
 - [x] 3. Implement AgentAddress
-  - [x] 3.1 Create `source/packages/automojo/agentkit/agentaddress.py` with the AgentAddress class
+  - [x] 3.1 Create `source/packages/ccai/agentkit/agentaddress.py` with the AgentAddress class
     - Implement __init__ with agent_identifier, transport_name, optional endpoint dict
     - Implement read-only properties for all fields (endpoint returns defensive copy)
     - Implement as_dict(), to_json(), from_dict(cls, data), from_json(cls, json_str)
@@ -99,21 +99,21 @@ Incremental implementation of the Core Agent Framework for the `automojo-agent-k
     - **Validates: Requirements 9.9, 9.10**
     - **Property 11 (partial): Defensive copy for AgentAddress endpoint** — modifying returned endpoint does not affect internal state
     - **Validates: Requirements 9.3**
-    - Test file: `source/testroots/automojo/tests/singlehost/agentkit/test_agentaddress_properties.py`
+    - Test file: `source/testroots/ccai/tests/singlehost/agentkit/test_agentaddress_properties.py`
 
   - [x] 3.3 Write unit tests for AgentAddress
     - Test read-only properties and __repr__, __str__
     - Test AgentAddress with None endpoint defaults to empty dict
     - Test AgentAddress as dictionary key and set member
     - Test from_dict with missing endpoint key defaults to empty dict
-    - Test file: `source/testroots/automojo/tests/singlehost/agentkit/test_agentaddress.py`
+    - Test file: `source/testroots/ccai/tests/singlehost/agentkit/test_agentaddress.py`
     - _Requirements: 9.1, 9.2, 9.11, 9.12_
 
 - [x] 4. Checkpoint — Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 5. Implement AgentConfiguration
-  - [x] 5.1 Create `source/packages/automojo/agentkit/agentconfiguration.py` with the AgentConfiguration class
+  - [x] 5.1 Create `source/packages/ccai/agentkit/agentconfiguration.py` with the AgentConfiguration class
     - Implement __init__ with identity, optional settings, credentials, data_profiles, sub_agents, resolved_credentials, resolved_data_profiles
     - Implement read-only properties for all fields (defensive copies)
     - Implement _validate_config_data(cls, config_data) validating required fields
@@ -132,7 +132,7 @@ Incremental implementation of the Core Agent Framework for the `automojo-agent-k
     - **Validates: Requirements 3.6, 3.7**
     - **Property 6: AgentConfiguration excludes resolved credentials from serialization** — as_dict/to_json/to_yaml do not contain resolved credential values
     - **Validates: Requirements 3.14, 3.15, 11.3**
-    - Test file: `source/testroots/automojo/tests/singlehost/agentkit/test_agentconfiguration_properties.py`
+    - Test file: `source/testroots/ccai/tests/singlehost/agentkit/test_agentconfiguration_properties.py`
 
   - [x] 5.3 Write unit tests for AgentConfiguration
     - Test from_dict with minimal config (identity only)
@@ -142,17 +142,17 @@ Incremental implementation of the Core Agent Framework for the `automojo-agent-k
     - Test missing identity raises ConfigurationError
     - Test identity not a dict raises ConfigurationError
     - Test missing name or version in identity raises ConfigurationError
-    - Test credential resolution with mocked app_context (using automojo.testbase.mocking.Mock)
+    - Test credential resolution with mocked app_context (using ccai.testbase.mocking.Mock)
     - Test unresolvable credential raises ConfigurationError
     - Test data profile resolution with mocked app_context
     - Test unresolvable data profile raises ConfigurationError
     - Test as_dict excludes resolved credentials
     - Test __repr__ and __str__
-    - Test file: `source/testroots/automojo/tests/singlehost/agentkit/test_agentconfiguration.py`
+    - Test file: `source/testroots/ccai/tests/singlehost/agentkit/test_agentconfiguration.py`
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.14, 3.15, 11.1, 11.2, 11.3, 12.1, 12.2, 16.1, 16.2, 16.3_
 
 - [x] 6. Implement AgentStateMachine
-  - [x] 6.1 Create `source/packages/automojo/agentkit/agentstatemachine.py` with the AgentStateMachine class
+  - [x] 6.1 Create `source/packages/ccai/agentkit/agentstatemachine.py` with the AgentStateMachine class
     - Implement __init__ with initial state CREATED, empty history, threading.Lock
     - Implement VALID_TRANSITIONS class constant with the transition table
     - Implement current_state and transition_history read-only properties
@@ -167,7 +167,7 @@ Incremental implementation of the Core Agent Framework for the `automojo-agent-k
     - **Validates: Requirements 4.2, 4.3, 4.4**
     - **Property 8: AgentStateMachine records transition history** — N valid transitions produce N TransitionRecords with correct states and non-None timestamps
     - **Validates: Requirements 4.5, 4.7**
-    - Test file: `source/testroots/automojo/tests/singlehost/agentkit/test_agentstatemachine_properties.py`
+    - Test file: `source/testroots/ccai/tests/singlehost/agentkit/test_agentstatemachine_properties.py`
 
   - [x] 6.3 Write unit tests for AgentStateMachine
     - Test initial state is CREATED
@@ -176,14 +176,14 @@ Incremental implementation of the Core Agent Framework for the `automojo-agent-k
     - Test transition_history grows with each transition
     - Test get_valid_transitions returns correct list for each state
     - Test __repr__ and __str__
-    - Test file: `source/testroots/automojo/tests/singlehost/agentkit/test_agentstatemachine.py`
+    - Test file: `source/testroots/ccai/tests/singlehost/agentkit/test_agentstatemachine.py`
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.10, 4.11_
 
 - [x] 7. Checkpoint — Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 8. Implement AgentRegistry
-  - [x] 8.1 Create `source/packages/automojo/agentkit/agentregistry.py` with the AgentRegistry class
+  - [x] 8.1 Create `source/packages/ccai/agentkit/agentregistry.py` with the AgentRegistry class
     - Implement singleton pattern with _instance, _instance_lock, instance() class method
     - Implement __init__ with _agents dict and threading.Lock
     - Implement register(agent) raising SemanticError on duplicate identifier
@@ -201,7 +201,7 @@ Incremental implementation of the Core Agent Framework for the `automojo-agent-k
     - **Validates: Requirements 7.3**
     - **Property 19: AgentRegistry deregistration removes agent** — after deregister, lookup returns None, count decreases
     - **Validates: Requirements 7.8**
-    - Test file: `source/testroots/automojo/tests/singlehost/agentkit/test_agentregistry_properties.py`
+    - Test file: `source/testroots/ccai/tests/singlehost/agentkit/test_agentregistry_properties.py`
 
   - [x] 8.3 Write unit tests for AgentRegistry
     - Test singleton pattern (instance() returns same object)
@@ -215,14 +215,14 @@ Incremental implementation of the Core Agent Framework for the `automojo-agent-k
     - Test _reset clears all agents
     - Test _reset_singleton resets singleton
     - Test __repr__ and __str__
-    - Test file: `source/testroots/automojo/tests/singlehost/agentkit/test_agentregistry.py`
+    - Test file: `source/testroots/ccai/tests/singlehost/agentkit/test_agentregistry.py`
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9, 7.11, 7.12_
 
 - [x] 9. Checkpoint — Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 10. Implement Agent base class with lifecycle, hooks, and sub-agents
-  - [x] 10.1 Create `source/packages/automojo/agentkit/agent.py` with the Agent abstract base class
+  - [x] 10.1 Create `source/packages/ccai/agentkit/agent.py` with the Agent abstract base class
     - Implement __init__(configuration) creating AgentIdentity from config, AgentStateMachine (CREATED), registering with AgentRegistry, initializing hooks dict, creating scoped logger
     - Implement read-only properties: state, identity, configuration, parent, sub_agents, extensions
     - Declare abstract methods: initialize, start, pause, resume, stop, reset
@@ -253,9 +253,9 @@ Incremental implementation of the Core Agent Framework for the `automojo-agent-k
     - **Validates: Requirements 8.8, 8.9, 8.10**
     - **Property 22: Sub-agent ERROR notification propagates to parent** — parent on_error hooks invoked with child info in metadata
     - **Validates: Requirements 8.7**
-    - **Property 25: Agent logger scoped to identity** — get_logger().name matches automojo.agentkit.agent.<identifier>
+    - **Property 25: Agent logger scoped to identity** — get_logger().name matches ccai.agentkit.agent.<identifier>
     - **Validates: Requirements 15.4**
-    - Test file: `source/testroots/automojo/tests/singlehost/agentkit/test_agent_properties.py`
+    - Test file: `source/testroots/ccai/tests/singlehost/agentkit/test_agent_properties.py`
 
   - [x] 10.3 Write unit tests for Agent
     - Create a concrete TestAgent subclass for testing
@@ -277,11 +277,11 @@ Incremental implementation of the Core Agent Framework for the `automojo-agent-k
     - Test sub-agent ERROR propagation to parent on_error hooks
     - Test __repr__ and __str__
     - Test get_logger returns correctly named logger
-    - Test file: `source/testroots/automojo/tests/singlehost/agentkit/test_agent.py`
+    - Test file: `source/testroots/ccai/tests/singlehost/agentkit/test_agent.py`
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 1.10, 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 8.8, 8.9, 8.10, 15.1, 15.2, 15.3, 15.4_
 
 - [x] 11. Implement AsyncAgent
-  - [x] 11.1 Create `source/packages/automojo/agentkit/asyncagent.py` with the AsyncAgent class
+  - [x] 11.1 Create `source/packages/ccai/agentkit/asyncagent.py` with the AsyncAgent class
     - Extend Agent, set concurrency_model to ConcurrencyModel.ASYNCIO
     - Implement concurrency_model read-only property
     - Implement synchronous lifecycle methods delegating to async versions via _run_async
@@ -293,7 +293,7 @@ Incremental implementation of the Core Agent Framework for the `automojo-agent-k
   - [x] 11.2 Write property tests for AsyncAgent (Property 23)
     - **Property 23: AsyncAgent sync methods delegate to async methods** — calling initialize() invokes async_initialize() to completion
     - **Validates: Requirements 10.5, 10.7**
-    - Test file: `source/testroots/automojo/tests/singlehost/agentkit/test_asyncagent_properties.py`
+    - Test file: `source/testroots/ccai/tests/singlehost/agentkit/test_asyncagent_properties.py`
 
   - [x] 11.3 Write unit tests for AsyncAgent
     - Create a concrete TestAsyncAgent subclass for testing
@@ -303,7 +303,7 @@ Incremental implementation of the Core Agent Framework for the `automojo-agent-k
     - Test synchronous start() calls async_start()
     - Test all six sync-to-async delegations
     - Test _run_async creates event loop when none exists
-    - Test file: `source/testroots/automojo/tests/singlehost/agentkit/test_asyncagent.py`
+    - Test file: `source/testroots/ccai/tests/singlehost/agentkit/test_asyncagent.py`
     - _Requirements: 10.2, 10.3, 10.4, 10.5, 10.7_
 
 - [x] 12. Checkpoint — Ensure all tests pass
@@ -313,17 +313,17 @@ Incremental implementation of the Core Agent Framework for the `automojo-agent-k
   - [-] 13.1 Write property test for string representations (Property 26)
     - **Property 26: String representations contain required information** — verify repr/str for Agent, AgentIdentity, AgentStateMachine, AgentAddress, AgentRegistry, TransitionRecord
     - **Validates: Requirements 1.9, 1.10, 2.9, 2.10, 4.10, 4.11, 7.11, 7.12, 5.4, 9.11, 9.12**
-    - Test file: `source/testroots/automojo/tests/singlehost/agentkit/test_stringrepresentations_properties.py`
+    - Test file: `source/testroots/ccai/tests/singlehost/agentkit/test_stringrepresentations_properties.py`
 
   - [x] 13.2 Write integration tests for extension point and plugin discovery
-    - Test Agent._initialize_plugins() with mocked automojo-extension PluginManager (using automojo.testbase.mocking.Mock)
+    - Test Agent._initialize_plugins() with mocked codecraftai-extension PluginManager (using ccai.testbase.mocking.Mock)
     - Test plugin load failure logging at WARNING level
     - Test extensions property returns loaded extensions
-    - Test file: `source/testroots/automojo/tests/singlehost/agentkit/test_agent_integration.py`
+    - Test file: `source/testroots/ccai/tests/singlehost/agentkit/test_agent_integration.py`
     - _Requirements: 13.1, 13.2, 13.3, 13.4_
 
 - [ ] 14. Wire package exports
-  - [x] 14.1 Update `source/packages/automojo/agentkit/__init__.py` to export all core framework classes
+  - [x] 14.1 Update `source/packages/ccai/agentkit/__init__.py` to export all core framework classes
     - Export LifecycleState, ConcurrencyModel, TransitionRecord
     - Export AgentKitError, ConfigurationError, SemanticError, LifecycleError
     - Export ConfigurationValidationError, PluginLoadError
@@ -341,8 +341,8 @@ Incremental implementation of the Core Agent Framework for the `automojo-agent-k
 - Checkpoints ensure incremental validation
 - Property tests validate universal correctness properties (26 total across Properties 1–26)
 - Unit tests validate specific examples, edge cases, and integration with external packages
-- All mocking uses `automojo.testbase.mocking.Mock` per project conventions
-- Tests reside under `source/testroots/automojo/tests/singlehost/agentkit/` mirroring the source hierarchy
+- All mocking uses `ccai.testbase.mocking.Mock` per project conventions
+- Tests reside under `source/testroots/ccai/tests/singlehost/agentkit/` mirroring the source hierarchy
 - Agent tests require a concrete TestAgent subclass since Agent is abstract
 - AsyncAgent tests require a concrete TestAsyncAgent subclass since AsyncAgent is abstract
 - AgentRegistry tests must call `_reset_singleton()` in teardown to avoid test pollution

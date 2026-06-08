@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The Observability & Debugging feature extends the `automojo-agent-kit` SDK with a comprehensive system for monitoring, tracing, measuring, recording, and debugging agent execution. It defines a structured logging system with correlation identifiers for tracing log entries across agent operations, a distributed tracing layer compatible with OpenTelemetry for tracking execution across agent boundaries, a metrics collection system for capturing latency, token usage, error rates, and custom counters, an execution recording and replay system for inspecting agent behavior after the fact, and a debug mode with step-through execution for interactive development and troubleshooting. The system integrates with the Agent base class so agents produce observability data throughout their lifecycle, with the Tool system so tool executions are traced and metered, with the LLM Integration system so LLM requests are traced with token usage metrics, with the Memory & Context Management system so memory operations are observable, with the Communication & Messaging system so message exchanges are traced across agents, with the Workflow & Orchestration system so workflow step executions are traced and metered, with `automojo-extension` so observability backends and exporters can be discovered and loaded as plugins, with `automojo-credentials` for exporter authentication, with `automojo-dataprofiles` for data profile management, and with `automojo-this-app` for settings and environment configuration.
+The Observability & Debugging feature extends the `codecraftai-agent-kit` SDK with a comprehensive system for monitoring, tracing, measuring, recording, and debugging agent execution. It defines a structured logging system with correlation identifiers for tracing log entries across agent operations, a distributed tracing layer compatible with OpenTelemetry for tracking execution across agent boundaries, a metrics collection system for capturing latency, token usage, error rates, and custom counters, an execution recording and replay system for inspecting agent behavior after the fact, and a debug mode with step-through execution for interactive development and troubleshooting. The system integrates with the Agent base class so agents produce observability data throughout their lifecycle, with the Tool system so tool executions are traced and metered, with the LLM Integration system so LLM requests are traced with token usage metrics, with the Memory & Context Management system so memory operations are observable, with the Communication & Messaging system so message exchanges are traced across agents, with the Workflow & Orchestration system so workflow step executions are traced and metered, with `codecraftai-extension` so observability backends and exporters can be discovered and loaded as plugins, with `codecraftai-credentials` for exporter authentication, with `codecraftai-dataprofiles` for data profile management, and with `codecraftai-this-app` for settings and environment configuration.
 
 ## Glossary
 
@@ -32,10 +32,10 @@ The Observability & Debugging feature extends the `automojo-agent-kit` SDK with 
 - **DebugInspector**: A component that provides read-only access to the current agent state during a DebugSession pause, including lifecycle state, tool registry contents, LLM provider registry contents, memory store contents, workflow context, and the current correlation context.
 - **ObservabilityConfiguration**: A configuration object that defines the logging format, log level, tracing enablement, metrics enablement, recording enablement, debug mode enablement, exporter settings, and sampling rates for an Agent's observability system.
 - **ObservabilityPipeline**: A component that coordinates the StructuredLogger, Tracer, MetricsCollector, and ExecutionRecorder for an Agent, routing observability data to configured exporters.
-- **ObservabilityExporterPlugin**: An exporter implementation (LogExporter, TraceExporter, or MetricsExporter) discovered and loaded through the `automojo-extension` ExtensionPoint mechanism, allowing external packages to contribute observability backends.
+- **ObservabilityExporterPlugin**: An exporter implementation (LogExporter, TraceExporter, or MetricsExporter) discovered and loaded through the `codecraftai-extension` ExtensionPoint mechanism, allowing external packages to contribute observability backends.
 - **Agent**: The base agent class defined in the Core Agent Framework that owns an ObservabilityPipeline and produces observability data throughout its lifecycle.
-- **ExtensionPoint**: An integration surface provided by `automojo-extension` that allows external plugins to register exporter implementations with an Agent.
-- **CredentialReference**: A named reference resolved through `automojo-credentials` that provides secure access to secrets required by exporters (API keys, authentication tokens for remote backends).
+- **ExtensionPoint**: An integration surface provided by `codecraftai-extension` that allows external plugins to register exporter implementations with an Agent.
+- **CredentialReference**: A named reference resolved through `codecraftai-credentials` that provides secure access to secrets required by exporters (API keys, authentication tokens for remote backends).
 - **ConfigurationError**: An exception raised for configuration-related problems, inherited from AgentKitError.
 - **SemanticError**: An exception raised for API misuse, inherited from AgentKitError.
 - **ObservabilityError**: An exception raised when an observability operation fails due to an exporter error, recording error, or pipeline configuration error.
@@ -88,7 +88,7 @@ The Observability & Debugging feature extends the `automojo-agent-kit` SDK with 
 4. WHEN a log method is called, THE StructuredLogger SHALL create a StructuredLogEntry containing the current timestamp, the log level, the message, the logger name, the correlation identifier from the CorrelationContext, the agent identifier, and any additional metadata key-value pairs passed as keyword arguments.
 5. THE StructuredLogger SHALL provide a set_correlation_context method that accepts a CorrelationContext and updates the active correlation context for subsequent log entries.
 6. THE StructuredLogger SHALL provide a read-only property for the current CorrelationContext.
-7. THE StructuredLogger SHALL use the logger hierarchy rooted at `automojo.agentkit.observability` for delegating log output.
+7. THE StructuredLogger SHALL use the logger hierarchy rooted at `ccai.agentkit.observability` for delegating log output.
 8. THE StructuredLogger SHALL provide a __repr__ method that includes the class name, agent identifier, and logger name.
 9. THE StructuredLogger SHALL provide a __str__ method that returns a human-readable summary including the agent identifier and logger name.
 
@@ -121,7 +121,7 @@ The Observability & Debugging feature extends the `automojo-agent-kit` SDK with 
 6. THE LogExporter base class SHALL accept an optional list of CredentialReference names at construction time, declaring which credentials the exporter requires.
 7. THE framework SHALL provide a ConsoleLogExporter that writes formatted log entries to standard output.
 8. THE framework SHALL provide a FileLogExporter that writes formatted log entries to a specified file path.
-9. WHEN the FileLogExporter is constructed with a file path, THE FileLogExporter SHALL resolve the file path relative to the AppContext directory provided by `automojo-this-app`.
+9. WHEN the FileLogExporter is constructed with a file path, THE FileLogExporter SHALL resolve the file path relative to the AppContext directory provided by `codecraftai-this-app`.
 10. IF a LogExporter export operation fails, THEN THE LogExporter SHALL raise an ObservabilityError that includes the exporter class name and the underlying error detail.
 11. THE LogExporter base class SHALL provide a __repr__ method that includes the class name and the LogFormatter format name.
 12. THE LogExporter base class SHALL provide a __str__ method that returns a human-readable summary including the exporter class name and format name.
@@ -220,7 +220,7 @@ The Observability & Debugging feature extends the `automojo-agent-kit` SDK with 
 5. THE TraceExporter base class SHALL accept an optional list of CredentialReference names at construction time, declaring which credentials the exporter requires.
 6. THE framework SHALL provide a ConsoleTraceExporter that writes completed TraceSpan objects as formatted text to standard output.
 7. THE framework SHALL provide a FileTraceExporter that writes completed TraceSpan objects as JSON lines to a specified file path.
-8. WHEN the FileTraceExporter is constructed with a file path, THE FileTraceExporter SHALL resolve the file path relative to the AppContext directory provided by `automojo-this-app`.
+8. WHEN the FileTraceExporter is constructed with a file path, THE FileTraceExporter SHALL resolve the file path relative to the AppContext directory provided by `codecraftai-this-app`.
 9. IF a TraceExporter export operation fails, THEN THE TraceExporter SHALL raise an ObservabilityError that includes the exporter class name and the underlying error detail.
 10. THE TraceExporter base class SHALL provide a __repr__ method that includes the class name.
 11. THE TraceExporter base class SHALL provide a __str__ method that returns a human-readable summary including the exporter class name.
@@ -327,7 +327,7 @@ The Observability & Debugging feature extends the `automojo-agent-kit` SDK with 
 5. THE MetricsExporter base class SHALL accept an optional list of CredentialReference names at construction time, declaring which credentials the exporter requires.
 6. THE framework SHALL provide a ConsoleMetricsExporter that writes MetricMeasurement objects as formatted text to standard output.
 7. THE framework SHALL provide a FileMetricsExporter that writes MetricMeasurement objects as JSON lines to a specified file path.
-8. WHEN the FileMetricsExporter is constructed with a file path, THE FileMetricsExporter SHALL resolve the file path relative to the AppContext directory provided by `automojo-this-app`.
+8. WHEN the FileMetricsExporter is constructed with a file path, THE FileMetricsExporter SHALL resolve the file path relative to the AppContext directory provided by `codecraftai-this-app`.
 9. IF a MetricsExporter export operation fails, THEN THE MetricsExporter SHALL raise an ObservabilityError that includes the exporter class name and the underlying error detail.
 10. THE MetricsExporter base class SHALL provide a __repr__ method that includes the class name.
 11. THE MetricsExporter base class SHALL provide a __str__ method that returns a human-readable summary including the exporter class name.
@@ -497,12 +497,12 @@ The Observability & Debugging feature extends the `automojo-agent-kit` SDK with 
 2. THE ObservabilityConfiguration SHALL support loading configuration from a Python dictionary.
 3. THE ObservabilityConfiguration SHALL support loading configuration from a JSON file path.
 4. THE ObservabilityConfiguration SHALL support loading configuration from a YAML file path.
-5. WHEN a configuration file path is provided, THE ObservabilityConfiguration SHALL resolve the file path relative to the AppContext directory provided by `automojo-this-app`.
+5. WHEN a configuration file path is provided, THE ObservabilityConfiguration SHALL resolve the file path relative to the AppContext directory provided by `codecraftai-this-app`.
 6. THE ObservabilityConfiguration SHALL validate all required fields are present during loading and raise a ConfigurationError when required fields are missing.
 7. IF an invalid log level is provided, THEN THE ObservabilityConfiguration SHALL raise a ConfigurationError identifying the invalid log level and listing the valid log levels.
 8. IF an invalid log format is provided, THEN THE ObservabilityConfiguration SHALL raise a ConfigurationError identifying the invalid log format and listing the valid log formats.
 9. IF the sampling rate is outside the range 0.0 to 1.0, THEN THE ObservabilityConfiguration SHALL raise a ConfigurationError indicating that the sampling rate must be between 0.0 and 1.0 inclusive.
-10. THE ObservabilityConfiguration SHALL support CredentialReference entries for exporter authentication that are resolved through `automojo-credentials` at initialization time.
+10. THE ObservabilityConfiguration SHALL support CredentialReference entries for exporter authentication that are resolved through `codecraftai-credentials` at initialization time.
 11. IF a CredentialReference cannot be resolved, THEN THE ObservabilityConfiguration SHALL raise a ConfigurationError that identifies the unresolvable credential name.
 12. THE ObservabilityConfiguration SHALL provide an as_dict method that returns a dictionary representation of the configuration, excluding resolved credential values.
 13. THE ObservabilityConfiguration SHALL provide a to_json method that returns a JSON string representation of the configuration, excluding resolved credential values.
@@ -548,7 +548,7 @@ The Observability & Debugging feature extends the `automojo-agent-kit` SDK with 
 2. THE Agent base class SHALL expose a read-only debug_session property that returns the Agent's DebugSession instance, or None when debug mode is not enabled.
 3. WHEN an Agent transitions to the INITIALIZED state, THE Agent SHALL construct the ObservabilityPipeline from the Agent's ObservabilityConfiguration.
 4. WHEN an Agent transitions to the INITIALIZED state and debug mode is enabled in the ObservabilityConfiguration, THE Agent SHALL construct a DebugSession.
-5. WHEN an Agent transitions to the INITIALIZED state, THE Agent SHALL discover and register all ObservabilityExporterPlugin instances from `automojo-extension` ExtensionPoint entries targeting the Agent.
+5. WHEN an Agent transitions to the INITIALIZED state, THE Agent SHALL discover and register all ObservabilityExporterPlugin instances from `codecraftai-extension` ExtensionPoint entries targeting the Agent.
 6. WHEN a lifecycle state transition occurs, THE ObservabilityPipeline SHALL create a trace span for the transition, log the transition through the StructuredLogger, record the transition through the ExecutionRecorder, and update the lifecycle transition counter metric.
 7. WHEN a tool execution occurs, THE ObservabilityPipeline SHALL create a child trace span for the execution, log the execution through the StructuredLogger, record the execution through the ExecutionRecorder, and update the tool execution duration histogram and error counter metrics.
 8. WHEN an LLM completion request occurs, THE ObservabilityPipeline SHALL create a child trace span for the request, log the request through the StructuredLogger, record the request through the ExecutionRecorder, and update the LLM request duration histogram, token usage counters, and error counter metrics.
@@ -557,13 +557,13 @@ The Observability & Debugging feature extends the `automojo-agent-kit` SDK with 
 
 ### Requirement 28: Observability Exporter Plugin Integration
 
-**User Story:** As a developer, I want to distribute observability exporters as plugins through `automojo-extension`, so that exporter packages can be installed and discovered automatically by agents.
+**User Story:** As a developer, I want to distribute observability exporters as plugins through `codecraftai-extension`, so that exporter packages can be installed and discovered automatically by agents.
 
 #### Acceptance Criteria
 
-1. THE framework SHALL define an ExtensionPoint named "automojo.agentkit.log_exporters" through `automojo-extension` for registering LogExporter plugin implementations.
-2. THE framework SHALL define an ExtensionPoint named "automojo.agentkit.trace_exporters" through `automojo-extension` for registering TraceExporter plugin implementations.
-3. THE framework SHALL define an ExtensionPoint named "automojo.agentkit.metrics_exporters" through `automojo-extension` for registering MetricsExporter plugin implementations.
+1. THE framework SHALL define an ExtensionPoint named "ccai.agentkit.log_exporters" through `codecraftai-extension` for registering LogExporter plugin implementations.
+2. THE framework SHALL define an ExtensionPoint named "ccai.agentkit.trace_exporters" through `codecraftai-extension` for registering TraceExporter plugin implementations.
+3. THE framework SHALL define an ExtensionPoint named "ccai.agentkit.metrics_exporters" through `codecraftai-extension` for registering MetricsExporter plugin implementations.
 4. WHEN an Agent is initialized, THE Agent SHALL query the observability exporter ExtensionPoints and register all discovered exporter instances with the Agent's ObservabilityPipeline.
 5. IF an ObservabilityExporterPlugin fails to load, THEN THE Agent SHALL log the failure at WARNING level including the plugin name and the error detail, and continue loading remaining plugins.
 6. IF an ObservabilityExporterPlugin provides an exporter that conflicts with an already registered exporter of the same type and name, THEN THE Agent SHALL log the conflict at WARNING level and skip the conflicting plugin exporter.

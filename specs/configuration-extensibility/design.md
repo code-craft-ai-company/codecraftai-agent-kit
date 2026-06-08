@@ -16,14 +16,14 @@ The system provides:
 - `ConfigurationSerializer` for round-trip serialization of configuration dictionaries to JSON and YAML
 - Agent integration properties and methods: `configuration_manager`, `feature_flags`, `plugin_manager`, `get_config`, `is_feature_enabled`
 
-All classes live under `source/packages/automojo/agentkit/` with filenames in all-lowercase (no underscores), following the project naming conventions. The system integrates with:
+All classes live under `source/packages/ccai/agentkit/` with filenames in all-lowercase (no underscores), following the project naming conventions. The system integrates with:
 
 - Core Agent Framework — `Agent` base class, `AgentConfiguration`, `LifecycleState`, `AgentStateMachine`
-- `automojo-configuration` — Hierarchical configuration loading, merging, and schema validation
-- `automojo-extension` — Plugin discovery, loading, and ExtensionPoint registration
-- `automojo-credentials` — CredentialReference resolution for secrets in configuration values
-- `automojo-this-app` — AppContext for settings, environment variables, and directory-based file path resolution
-- `automojo-dataprofiles` — DataProfileReference resolution
+- `codecraftai-configuration` — Hierarchical configuration loading, merging, and schema validation
+- `codecraftai-extension` — Plugin discovery, loading, and ExtensionPoint registration
+- `codecraftai-credentials` — CredentialReference resolution for secrets in configuration values
+- `codecraftai-this-app` — AppContext for settings, environment variables, and directory-based file path resolution
+- `codecraftai-dataprofiles` — DataProfileReference resolution
 - Observability & Debugging — StructuredLogger, CorrelationContext for tracing configuration and plugin events
 - Security & Access Control — AuditLogger for auditing configuration changes
 
@@ -33,7 +33,7 @@ The design prioritizes debuggability over performance and readability over conci
 
 ```mermaid
 graph TD
-    subgraph automojo.agentkit - Configuration & Extensibility
+    subgraph ccai.agentkit - Configuration & Extensibility
         ConfigurationManager[ConfigurationManager]
         ConfigurationLayer[ConfigurationLayer]
         ConfigurationLayerSource[ConfigurationLayerSource enum]
@@ -64,10 +64,10 @@ graph TD
     end
 
     subgraph External Packages
-        AutomojoConfig[automojo-configuration]
-        Extension[automojo-extension]
-        Credentials[automojo-credentials]
-        AppContext[automojo-this-app]
+        CodeCraftAIConfig[codecraftai-configuration]
+        Extension[codecraftai-extension]
+        Credentials[codecraftai-credentials]
+        AppContext[codecraftai-this-app]
     end
 
     Agent --> ConfigurationManager
@@ -77,7 +77,7 @@ graph TD
     ConfigurationManager --> ConfigurationSchema
     ConfigurationManager --> ConfigurationChangeEvent
     ConfigurationManager --> HotReloadMonitor
-    ConfigurationManager --> AutomojoConfig
+    ConfigurationManager --> CodeCraftAIConfig
     ConfigurationManager --> Credentials
     ConfigurationLayer --> ConfigurationLayerSource
     ConfigurationSchema --> ConfigurationSchemaField
@@ -103,14 +103,14 @@ graph TD
 sequenceDiagram
     participant Agent
     participant CM as ConfigurationManager
-    participant AutomojoConfig as automojo-configuration
-    participant Credentials as automojo-credentials
+    participant CodeCraftAIConfig as codecraftai-configuration
+    participant Credentials as codecraftai-credentials
     participant Schema as ConfigurationSchema
     participant Listeners as ChangeListeners
 
     Agent->>CM: load_from_file(path)
-    CM->>AutomojoConfig: load and parse file
-    AutomojoConfig-->>CM: configuration dict
+    CM->>CodeCraftAIConfig: load and parse file
+    CodeCraftAIConfig-->>CM: configuration dict
     CM->>Credentials: resolve credential references
     CM->>CM: create ConfigurationLayer(FILE)
     CM->>CM: merge layers by priority
@@ -167,11 +167,11 @@ stateDiagram-v2
 
 1. `ConfigurationManager` as a per-agent component (not singleton) — configuration is scoped to individual agents, consistent with `ToolRegistry` pattern from the Tool & Capability System.
 2. `ConfigurationLayer` as an immutable value object — layers are created once and merged, never mutated in place. This simplifies change detection and debugging.
-3. Delegation to `automojo-configuration` for merge semantics and schema validation — the agentkit layer adds agent-specific lifecycle integration, not duplicate configuration logic.
+3. Delegation to `codecraftai-configuration` for merge semantics and schema validation — the agentkit layer adds agent-specific lifecycle integration, not duplicate configuration logic.
 4. `HotReloadMonitor` as a separate component from `ConfigurationManager` — separates monitoring concerns from configuration management, each with clear responsibilities.
 5. `FeatureFlagRegistry` as a per-agent instance — feature flags are scoped to individual agents, allowing different agents to have different flag configurations.
 6. `FeatureFlagEvaluator` with three-tier precedence (runtime override > configuration > default) — provides predictable evaluation order that supports both development overrides and production configuration.
-7. `PluginManager` delegates discovery and loading to `automojo-extension` — the agentkit layer adds agent-specific lifecycle hooks, dependency resolution, and health monitoring on top.
+7. `PluginManager` delegates discovery and loading to `codecraftai-extension` — the agentkit layer adds agent-specific lifecycle hooks, dependency resolution, and health monitoring on top.
 8. `ConfigurationSerializer` excludes resolved credential values — prevents accidental credential leakage in serialized output, consistent with `AgentConfiguration` credential handling in the Core Agent Framework.
 9. `ConfigurationValidationError` and `PluginLoadError` inherit from `AgentKitError` — consistent with the Core Agent Framework and Tool & Capability System exception hierarchies.
 10. Serialization follows naming conventions: `as_dict`, `to_json`/`to_yaml`, `from_json`/`from_yaml` — consistent with all other agentkit classes.
@@ -352,7 +352,7 @@ class ConfigurationSchema:
     """
         Declarative schema definition describing the expected structure, types,
         constraints, and default values of an Agent's configuration.
-        Delegates validation to automojo-configuration schema validation.
+        Delegates validation to codecraftai-configuration schema validation.
     """
 
     def __init__(self, name: str, fields: list = None):
@@ -480,7 +480,7 @@ class ConfigurationManager:
         Manages the complete configuration lifecycle for an Agent.
         Coordinates hierarchical configuration loading, schema validation,
         credential resolution, feature flag evaluation, and hot-reload monitoring.
-        Delegates configuration loading and merging to automojo-configuration.
+        Delegates configuration loading and merging to codecraftai-configuration.
     """
 
     def __init__(self, agent_identifier: str, schema: ConfigurationSchema = None):
@@ -489,7 +489,7 @@ class ConfigurationManager:
         self._layers = []
         self._merged_configuration = {}
         self._change_listeners = []
-        self._logger = logging.getLogger("automojo.agentkit.configuration")
+        self._logger = logging.getLogger("ccai.agentkit.configuration")
         return
 
     @property
@@ -542,7 +542,7 @@ class ConfigurationManager:
     def load_from_file(self, file_path: str) -> None:
         """
             Loads configuration from a JSON or YAML file as a FILE layer.
-            Resolves the file path relative to AppContext from automojo-this-app.
+            Resolves the file path relative to AppContext from codecraftai-this-app.
 
             :param file_path: Path to the configuration file.
 
@@ -643,7 +643,7 @@ class HotReloadMonitor:
         self._policy = policy
         self._is_active = False
         self._change_count = 0
-        self._logger = logging.getLogger("automojo.agentkit.configuration")
+        self._logger = logging.getLogger("ccai.agentkit.configuration")
         return
 
     @property
@@ -721,7 +721,7 @@ class FeatureFlagRegistry:
     def __init__(self):
         self._flags = {}
         self._overrides = {}
-        self._logger = logging.getLogger("automojo.agentkit.featureflags")
+        self._logger = logging.getLogger("ccai.agentkit.featureflags")
         return
 
     def register(self, flag: FeatureFlag) -> None:
@@ -760,7 +760,7 @@ class FeatureFlagRegistry:
     def load_from_json_file(self, file_path: str) -> None:
         """
             Loads FeatureFlag definitions from a JSON file.
-            Resolves file path relative to AppContext from automojo-this-app.
+            Resolves file path relative to AppContext from codecraftai-this-app.
 
             :param file_path: Path to the JSON file.
         """
@@ -769,7 +769,7 @@ class FeatureFlagRegistry:
     def load_from_yaml_file(self, file_path: str) -> None:
         """
             Loads FeatureFlag definitions from a YAML file.
-            Resolves file path relative to AppContext from automojo-this-app.
+            Resolves file path relative to AppContext from codecraftai-this-app.
 
             :param file_path: Path to the YAML file.
         """
@@ -1038,7 +1038,7 @@ class PluginManager:
     """
         Coordinates plugin discovery, loading, validation, and lifecycle
         management for an Agent. Delegates discovery and loading to
-        automojo-extension and adds agent-specific lifecycle integration.
+        codecraftai-extension and adds agent-specific lifecycle integration.
     """
 
     def __init__(self, agent_identifier: str,
@@ -1046,7 +1046,7 @@ class PluginManager:
         self._agent_identifier = agent_identifier
         self._plugin_configuration = plugin_configuration
         self._plugins = {}
-        self._logger = logging.getLogger("automojo.agentkit.plugins")
+        self._logger = logging.getLogger("ccai.agentkit.plugins")
         return
 
     @property
@@ -1058,7 +1058,7 @@ class PluginManager:
 
     def discover(self) -> list:
         """
-            Scans configured search paths and the automojo-extension registry
+            Scans configured search paths and the codecraftai-extension registry
             for available plugins.
 
             :returns: A list of PluginDescriptor objects.
@@ -1067,7 +1067,7 @@ class PluginManager:
 
     def load_plugin(self, plugin_name: str) -> None:
         """
-            Loads a plugin through automojo-extension, validates it,
+            Loads a plugin through codecraftai-extension, validates it,
             and transitions status to LOADED.
 
             :param plugin_name: Name of the plugin to load.

@@ -42,16 +42,16 @@ def migrate_file(filepath):
 
     testbase_imports = []
     if import_names:
-        testbase_imports.append('from automojo.testbase.properties import {}'.format(', '.join(import_names)))
-    testbase_imports.append('from automojo.testbase.properties import strategies as st')
+        testbase_imports.append('from ccai.testbase.properties import {}'.format(', '.join(import_names)))
+    testbase_imports.append('from ccai.testbase.properties import strategies as st')
     if needs_composite:
-        testbase_imports.append('from automojo.testbase.properties.strategies import composite')
+        testbase_imports.append('from ccai.testbase.properties.strategies import composite')
 
     # Find where to insert the new imports
     lines = content.split('\n')
     insert_idx = None
     for i, line in enumerate(lines):
-        if line.startswith('from automojo.') or line.startswith('import automojo.'):
+        if line.startswith('from ccai.') or line.startswith('import ccai.'):
             insert_idx = i
             break
 
@@ -122,12 +122,12 @@ def migrate_file(filepath):
     content = re.sub(r'allow_infinity=False,\s*', '', content)
 
     # Stage 6: Docstring Updates
-    content = content.replace('(using Hypothesis)', '(using automojo.testbase.properties)')
-    content = content.replace('using Hypothesis', 'using automojo.testbase.properties')
+    content = content.replace('(using Hypothesis)', '(using ccai.testbase.properties)')
+    content = content.replace('using Hypothesis', 'using ccai.testbase.properties')
 
     # Stage 7: Entrypoint Block
     if 'if __name__ == "__main__"' not in content:
-        content = content.rstrip() + '\n\n\nif __name__ == "__main__":\n    from automojo.testbase.entrypoints import generic_test_entrypoint\n    generic_test_entrypoint()\n'
+        content = content.rstrip() + '\n\n\nif __name__ == "__main__":\n    from ccai.testbase.entrypoints import generic_test_entrypoint\n    generic_test_entrypoint()\n'
 
     with open(filepath, 'w') as f:
         f.write(content)

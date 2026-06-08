@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The Cross-Platform Runtime feature extends the `automojo-agent-kit` SDK with a platform abstraction layer that enables agents to run across cloud providers (AWS, Azure, GCP) and local environments through a unified API surface. It defines abstract base classes for platform services (compute, storage, messaging), a platform detection and auto-configuration system, platform-specific adapter implementations for each supported provider, and portable deployment descriptors that define how agents are deployed across platforms. The system integrates with the Agent base class so agents can access platform services through a consistent interface, with AgentConfiguration for platform-specific settings, with `automojo-extension` for platform adapter plugin discovery, with `automojo-credentials` for cloud provider authentication, with `automojo-this-app` for environment configuration and settings, and with the Testing & Quality feature whose PlatformTestHarness and SimulatedPlatformService classes simulate the real platform abstractions defined here.
+The Cross-Platform Runtime feature extends the `codecraftai-agent-kit` SDK with a platform abstraction layer that enables agents to run across cloud providers (AWS, Azure, GCP) and local environments through a unified API surface. It defines abstract base classes for platform services (compute, storage, messaging), a platform detection and auto-configuration system, platform-specific adapter implementations for each supported provider, and portable deployment descriptors that define how agents are deployed across platforms. The system integrates with the Agent base class so agents can access platform services through a consistent interface, with AgentConfiguration for platform-specific settings, with `codecraftai-extension` for platform adapter plugin discovery, with `codecraftai-credentials` for cloud provider authentication, with `codecraftai-this-app` for environment configuration and settings, and with the Testing & Quality feature whose PlatformTestHarness and SimulatedPlatformService classes simulate the real platform abstractions defined here.
 
 ## Glossary
 
@@ -28,9 +28,9 @@ The Cross-Platform Runtime feature extends the `automojo-agent-kit` SDK with a p
 - **InvocationResult**: An immutable object representing the result of a compute invocation, containing a status string (one of "success", "error", "timeout"), a response payload as a Python object, an optional error message, the execution duration in seconds, and a request identifier.
 - **Agent**: The base agent class defined in the Core Agent Framework that holds a reference to a PlatformRuntime for accessing platform services.
 - **AgentConfiguration**: The configuration object defined in the Core Agent Framework, extended with PlatformConfiguration for platform-specific settings.
-- **ExtensionPoint**: An integration surface provided by `automojo-extension` that allows external plugins to register PlatformAdapter implementations.
-- **CredentialReference**: A named reference resolved through `automojo-credentials` that provides secure access to cloud provider credentials (AWS access keys, Azure service principals, GCP service account keys).
-- **AppContext**: The application context provided by `automojo-this-app` that supplies settings, environment variables, and directory-based presence for platform detection and configuration loading.
+- **ExtensionPoint**: An integration surface provided by `codecraftai-extension` that allows external plugins to register PlatformAdapter implementations.
+- **CredentialReference**: A named reference resolved through `codecraftai-credentials` that provides secure access to cloud provider credentials (AWS access keys, Azure service principals, GCP service account keys).
+- **AppContext**: The application context provided by `codecraftai-this-app` that supplies settings, environment variables, and directory-based presence for platform detection and configuration loading.
 - **ConfigurationError**: An exception raised for configuration-related problems, inherited from AgentKitError.
 - **SemanticError**: An exception raised for API misuse, inherited from AgentKitError.
 - **PlatformError**: An exception raised when a platform operation fails due to a service error, connectivity issue, or authentication failure, inherited from AgentKitError.
@@ -80,9 +80,9 @@ The Cross-Platform Runtime feature extends the `automojo-agent-kit` SDK with a p
 2. THE PlatformConfiguration SHALL support loading configuration from a Python dictionary.
 3. THE PlatformConfiguration SHALL support loading configuration from a JSON file path.
 4. THE PlatformConfiguration SHALL support loading configuration from a YAML file path.
-5. WHEN a configuration file path is provided, THE PlatformConfiguration SHALL resolve the file path relative to the AppContext directory provided by `automojo-this-app`.
+5. WHEN a configuration file path is provided, THE PlatformConfiguration SHALL resolve the file path relative to the AppContext directory provided by `codecraftai-this-app`.
 6. THE PlatformConfiguration SHALL validate all required fields are present during loading and raise a ConfigurationError when required fields are missing.
-7. WHEN the PlatformConfiguration contains CredentialReference entries, THE PlatformConfiguration SHALL resolve each CredentialReference through `automojo-credentials` at initialization time.
+7. WHEN the PlatformConfiguration contains CredentialReference entries, THE PlatformConfiguration SHALL resolve each CredentialReference through `codecraftai-credentials` at initialization time.
 8. IF a CredentialReference cannot be resolved, THEN THE PlatformConfiguration SHALL raise a ConfigurationError that identifies the unresolvable credential name.
 9. THE PlatformConfiguration SHALL provide an as_dict method that returns a dictionary representation of the configuration, excluding resolved credential values.
 10. THE PlatformConfiguration SHALL provide a to_json method that returns a JSON string representation of the configuration, excluding resolved credential values.
@@ -275,7 +275,7 @@ The Cross-Platform Runtime feature extends the `automojo-agent-kit` SDK with a p
 2. THE LocalPlatformAdapter SHALL provide a LocalComputeService that implements ComputeService using subprocess execution for function invocation.
 3. THE LocalPlatformAdapter SHALL provide a LocalStorageService that implements StorageService using the local file system for object storage, storing objects under a configurable base directory.
 4. THE LocalPlatformAdapter SHALL provide a LocalMessagingService that implements MessagingService using in-memory queues for message exchange.
-5. WHEN the LocalStorageService base directory is not configured, THE LocalStorageService SHALL use a directory under the AppContext directory provided by `automojo-this-app`.
+5. WHEN the LocalStorageService base directory is not configured, THE LocalStorageService SHALL use a directory under the AppContext directory provided by `codecraftai-this-app`.
 6. THE LocalMessagingService SHALL support concurrent access to in-memory queues using appropriate synchronization primitives.
 7. THE LocalComputeService SHALL support configuring a timeout in seconds for subprocess execution, defaulting to 30 seconds.
 
@@ -355,7 +355,7 @@ The Cross-Platform Runtime feature extends the `automojo-agent-kit` SDK with a p
 1. THE DeploymentDescriptorParser SHALL provide a parse_json method that accepts a JSON string and returns a DeploymentDescriptor instance.
 2. THE DeploymentDescriptorParser SHALL provide a parse_yaml method that accepts a YAML string and returns a DeploymentDescriptor instance.
 3. THE DeploymentDescriptorParser SHALL provide a parse_file method that accepts a file path string, detects the format from the file extension (.json or .yaml/.yml), and returns a DeploymentDescriptor instance.
-4. WHEN a deployment descriptor file path is provided, THE DeploymentDescriptorParser SHALL resolve the file path relative to the AppContext directory provided by `automojo-this-app`.
+4. WHEN a deployment descriptor file path is provided, THE DeploymentDescriptorParser SHALL resolve the file path relative to the AppContext directory provided by `codecraftai-this-app`.
 5. THE DeploymentDescriptorParser SHALL validate the parsed descriptor against a schema, raising a DeploymentDescriptorError when required fields are missing or field values are invalid.
 6. IF the file extension is not recognized, THEN THE DeploymentDescriptorParser SHALL raise a DeploymentDescriptorError identifying the unrecognized extension and listing the supported extensions.
 7. THE DeploymentDescriptorPrinter SHALL provide a print_json method that accepts a DeploymentDescriptor and returns a JSON string.
@@ -399,12 +399,12 @@ The Cross-Platform Runtime feature extends the `automojo-agent-kit` SDK with a p
 
 ### Requirement 23: Extension Point Integration
 
-**User Story:** As a developer, I want the platform runtime to support extensibility through `automojo-extension`, so that plugins can register custom platform adapters for additional platforms.
+**User Story:** As a developer, I want the platform runtime to support extensibility through `codecraftai-extension`, so that plugins can register custom platform adapters for additional platforms.
 
 #### Acceptance Criteria
 
-1. THE framework SHALL define an ExtensionPoint named "automojo.agentkit.platform.adapters" through `automojo-extension` for registering PlatformAdapter implementations.
-2. WHEN the PlatformRuntime create_auto method is called, THE PlatformRuntime SHALL discover and load all registered PlatformAdapter implementations from the "automojo.agentkit.platform.adapters" ExtensionPoint.
+1. THE framework SHALL define an ExtensionPoint named "ccai.agentkit.platform.adapters" through `codecraftai-extension` for registering PlatformAdapter implementations.
+2. WHEN the PlatformRuntime create_auto method is called, THE PlatformRuntime SHALL discover and load all registered PlatformAdapter implementations from the "ccai.agentkit.platform.adapters" ExtensionPoint.
 3. WHEN a registered plugin provides a PlatformAdapter for a PlatformType that matches the detected platform, THE PlatformRuntime SHALL use the plugin-provided adapter.
 4. IF a platform adapter plugin fails to load, THEN THE framework SHALL log the failure at WARNING level including the plugin name and the error detail, and continue loading remaining plugins.
 
@@ -414,7 +414,7 @@ The Cross-Platform Runtime feature extends the `automojo-agent-kit` SDK with a p
 
 #### Acceptance Criteria
 
-1. THE framework SHALL use the Python standard logging module with a logger hierarchy rooted at `automojo.agentkit.platform`.
+1. THE framework SHALL use the Python standard logging module with a logger hierarchy rooted at `ccai.agentkit.platform`.
 2. WHEN a PlatformDetector detects the platform, THE framework SHALL log at INFO level including the detected platform type and the environment indicators.
 3. WHEN a PlatformRuntime is initialized, THE framework SHALL log at INFO level including the platform type, region, and the list of initialized service names.
 4. WHEN a platform service operation fails, THE framework SHALL log at WARNING level including the service name, operation name, platform type, and error detail.

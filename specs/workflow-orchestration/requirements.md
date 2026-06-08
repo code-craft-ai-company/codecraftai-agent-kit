@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The Workflow & Orchestration feature extends the `automojo-agent-kit` SDK with a system for defining, executing, checkpointing, and resuming multi-step workflows composed as directed acyclic graphs (DAGs). It provides a workflow definition abstraction with typed steps and edges, conditional branching and looping constructs, parallel task execution, workflow checkpointing and resumption for fault tolerance, and human-in-the-loop approval gates for supervised automation. The system integrates with the Agent base class so agents can define and execute workflows, with the Tool system so workflow steps can invoke tools, with the LLM Integration system so workflow steps can make LLM completion requests, with the Memory & Context Management system so workflow state can be persisted, with the Communication & Messaging system so workflows can coordinate across agents, with `automojo-extension` so workflow step plugins can be discovered and loaded, with `automojo-credentials` for credential management within workflow steps, with `automojo-dataprofiles` for data profile management, and with `automojo-this-app` for settings and environment configuration.
+The Workflow & Orchestration feature extends the `codecraftai-agent-kit` SDK with a system for defining, executing, checkpointing, and resuming multi-step workflows composed as directed acyclic graphs (DAGs). It provides a workflow definition abstraction with typed steps and edges, conditional branching and looping constructs, parallel task execution, workflow checkpointing and resumption for fault tolerance, and human-in-the-loop approval gates for supervised automation. The system integrates with the Agent base class so agents can define and execute workflows, with the Tool system so workflow steps can invoke tools, with the LLM Integration system so workflow steps can make LLM completion requests, with the Memory & Context Management system so workflow state can be persisted, with the Communication & Messaging system so workflows can coordinate across agents, with `codecraftai-extension` so workflow step plugins can be discovered and loaded, with `codecraftai-credentials` for credential management within workflow steps, with `codecraftai-dataprofiles` for data profile management, and with `codecraftai-this-app` for settings and environment configuration.
 
 ## Glossary
 
@@ -37,8 +37,8 @@ The Workflow & Orchestration feature extends the `automojo-agent-kit` SDK with a
 - **LlmResponse**: The LLM response object defined in the LLM Integration feature, returned by LLM completion within an LlmStep.
 - **MemoryStore**: The memory store abstraction defined in the Memory & Context Management feature, used by the CheckpointManager for persisting workflow checkpoints.
 - **Transport**: The transport abstraction defined in the Communication & Messaging feature, used by AgentStep for cross-agent communication.
-- **ExtensionPoint**: An integration surface provided by `automojo-extension` that allows external plugins to register WorkflowStep implementations with an Agent.
-- **CredentialReference**: A named reference resolved through `automojo-credentials` that provides secure access to secrets required by workflow steps.
+- **ExtensionPoint**: An integration surface provided by `codecraftai-extension` that allows external plugins to register WorkflowStep implementations with an Agent.
+- **CredentialReference**: A named reference resolved through `codecraftai-credentials` that provides secure access to secrets required by workflow steps.
 - **ConfigurationError**: An exception raised for configuration-related problems, inherited from AgentKitError.
 - **SemanticError**: An exception raised for API misuse, inherited from AgentKitError.
 - **WorkflowDefinitionError**: An exception raised when a WorkflowDefinition is structurally invalid (contains cycles, missing start step, disconnected nodes).
@@ -345,7 +345,7 @@ The Workflow & Orchestration feature extends the `automojo-agent-kit` SDK with a
 2. THE WorkflowConfiguration SHALL support loading configuration from a Python dictionary.
 3. THE WorkflowConfiguration SHALL support loading configuration from a JSON file path.
 4. THE WorkflowConfiguration SHALL support loading configuration from a YAML file path.
-5. WHEN a configuration file path is provided, THE WorkflowConfiguration SHALL resolve the file path relative to the AppContext directory provided by `automojo-this-app`.
+5. WHEN a configuration file path is provided, THE WorkflowConfiguration SHALL resolve the file path relative to the AppContext directory provided by `codecraftai-this-app`.
 6. THE WorkflowConfiguration SHALL validate all required fields are present during loading and raise a ConfigurationError when required fields are missing.
 7. IF the maximum parallel workers value is less than 1, THEN THE WorkflowConfiguration SHALL raise a ConfigurationError indicating that the maximum parallel workers must be at least 1.
 8. IF the default approval timeout value is less than or equal to 0, THEN THE WorkflowConfiguration SHALL raise a ConfigurationError indicating that the approval timeout must be a positive value.
@@ -372,19 +372,19 @@ The Workflow & Orchestration feature extends the `automojo-agent-kit` SDK with a
 5. IF the requested workflow name and version combination is not found in the Agent's WorkflowRegistry, THEN THE execute_workflow method SHALL raise a SemanticError that includes the requested workflow name, version, and the agent identity.
 6. THE Agent base class SHALL provide a resume_workflow method that accepts a workflow execution identifier and an optional workflow name, loads the checkpoint, and resumes execution, returning a WorkflowResult.
 7. WHEN an Agent transitions to the INITIALIZED state, THE Agent SHALL construct the WorkflowRegistry, WorkflowExecutor, CheckpointManager, and ApprovalGate from the Agent's WorkflowConfiguration.
-8. WHEN an Agent transitions to the INITIALIZED state, THE Agent SHALL discover and register all WorkflowStep plugins from `automojo-extension` ExtensionPoint entries targeting the Agent.
+8. WHEN an Agent transitions to the INITIALIZED state, THE Agent SHALL discover and register all WorkflowStep plugins from `codecraftai-extension` ExtensionPoint entries targeting the Agent.
 9. WHEN an Agent transitions to the STOPPED state, THE Agent's WorkflowRegistry SHALL be cleared of all registered workflows.
 10. WHEN an Agent transitions to the STOPPED state, THE Agent SHALL cancel all pending ApprovalRequest objects in the ApprovalGate.
 11. IF the Agent's WorkflowConfiguration is not provided, THEN THE Agent SHALL default to a WorkflowConfiguration with default values.
 
 ### Requirement 19: Workflow Step Plugin Integration
 
-**User Story:** As a developer, I want to distribute custom workflow steps as plugins through `automojo-extension`, so that step packages can be installed and discovered automatically by agents.
+**User Story:** As a developer, I want to distribute custom workflow steps as plugins through `codecraftai-extension`, so that step packages can be installed and discovered automatically by agents.
 
 #### Acceptance Criteria
 
-1. THE framework SHALL define an ExtensionPoint named "automojo.agentkit.workflow_steps" through `automojo-extension` for registering WorkflowStep plugin implementations.
-2. WHEN an Agent is initialized, THE Agent SHALL query the "automojo.agentkit.workflow_steps" ExtensionPoint and register all discovered WorkflowStep types as available step types for workflow construction.
+1. THE framework SHALL define an ExtensionPoint named "ccai.agentkit.workflow_steps" through `codecraftai-extension` for registering WorkflowStep plugin implementations.
+2. WHEN an Agent is initialized, THE Agent SHALL query the "ccai.agentkit.workflow_steps" ExtensionPoint and register all discovered WorkflowStep types as available step types for workflow construction.
 3. IF a WorkflowStep plugin fails to load, THEN THE Agent SHALL log the failure at WARNING level including the plugin name and the error detail, and continue loading remaining plugins.
 4. IF a WorkflowStep plugin provides a step type that conflicts with an already registered step type, THEN THE Agent SHALL log the conflict at WARNING level including both step type names and skip the conflicting plugin step.
 
@@ -434,7 +434,7 @@ The Workflow & Orchestration feature extends the `automojo-agent-kit` SDK with a
 
 #### Acceptance Criteria
 
-1. THE framework SHALL use the Python standard logging module with a logger hierarchy under `automojo.agentkit.workflow`.
+1. THE framework SHALL use the Python standard logging module with a logger hierarchy under `ccai.agentkit.workflow`.
 2. WHEN a workflow execution begins, THE WorkflowExecutor SHALL log at INFO level including the workflow name, execution identifier, and agent identifier.
 3. WHEN a workflow execution completes, THE WorkflowExecutor SHALL log at INFO level including the workflow name, execution identifier, execution status, and total duration.
 4. WHEN a workflow execution fails, THE WorkflowExecutor SHALL log at WARNING level including the workflow name, execution identifier, the failed step identifier, and error detail.

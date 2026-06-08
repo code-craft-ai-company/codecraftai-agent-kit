@@ -2,19 +2,19 @@
 
 ## Introduction
 
-The Testing & Quality feature extends the `automojo-agent-kit` SDK with a comprehensive testing infrastructure and quality assurance toolkit for verifying agent behavior, mocking subsystem dependencies, recording and replaying agent execution deterministically, testing agent invariants with property-based techniques, and integration testing platform adapters against simulated environments. It defines an agent behavior testing framework with test fixtures, assertion helpers, and test utilities specific to agent lifecycle, tool execution, LLM interactions, and workflow execution; mock provider implementations for all major subsystem interfaces (LlmProvider, ToolExecutor, Transport, MemoryStore) that integrate with the `testbase` testing framework and its mocking module; a deterministic replay system for recording agent execution traces and replaying them for debugging and regression testing; property-based testing support for defining and verifying agent invariants (state machine transitions, configuration validation, serialization round-trips) using the automojo.testbase.properties engine; and integration test harnesses that provide simulated platform environments (AWS, Azure, GCP, local) for testing platform-specific adapters. The system integrates with the Agent base class so test fixtures can create, configure, and exercise agents in isolation, with the Tool & Capability System so tool execution can be mocked and asserted, with the LLM Integration system so LLM completion requests can be mocked with deterministic responses, with the Memory & Context Management system so memory backends can be mocked, with the Communication & Messaging system so transports can be mocked, with the Workflow & Orchestration system so workflow execution can be tested step-by-step, with the Observability & Debugging system so execution recordings feed into replay testing, with the Error Handling & Resilience system so retry and circuit breaker behavior can be tested deterministically, with `automojo-extension` so test plugins and custom test harnesses can be discovered and loaded, with `automojo-credentials` for mock credential injection, with `automojo-dataprofiles` for mock data profile injection, and with `automojo-this-app` for test environment configuration.
+The Testing & Quality feature extends the `codecraftai-agent-kit` SDK with a comprehensive testing infrastructure and quality assurance toolkit for verifying agent behavior, mocking subsystem dependencies, recording and replaying agent execution deterministically, testing agent invariants with property-based techniques, and integration testing platform adapters against simulated environments. It defines an agent behavior testing framework with test fixtures, assertion helpers, and test utilities specific to agent lifecycle, tool execution, LLM interactions, and workflow execution; mock provider implementations for all major subsystem interfaces (LlmProvider, ToolExecutor, Transport, MemoryStore) that integrate with the `testbase` testing framework and its mocking module; a deterministic replay system for recording agent execution traces and replaying them for debugging and regression testing; property-based testing support for defining and verifying agent invariants (state machine transitions, configuration validation, serialization round-trips) using the ccai.testbase.properties engine; and integration test harnesses that provide simulated platform environments (AWS, Azure, GCP, local) for testing platform-specific adapters. The system integrates with the Agent base class so test fixtures can create, configure, and exercise agents in isolation, with the Tool & Capability System so tool execution can be mocked and asserted, with the LLM Integration system so LLM completion requests can be mocked with deterministic responses, with the Memory & Context Management system so memory backends can be mocked, with the Communication & Messaging system so transports can be mocked, with the Workflow & Orchestration system so workflow execution can be tested step-by-step, with the Observability & Debugging system so execution recordings feed into replay testing, with the Error Handling & Resilience system so retry and circuit breaker behavior can be tested deterministically, with `codecraftai-extension` so test plugins and custom test harnesses can be discovered and loaded, with `codecraftai-credentials` for mock credential injection, with `codecraftai-dataprofiles` for mock data profile injection, and with `codecraftai-this-app` for test environment configuration.
 
 ## Glossary
 
 - **AgentTestFixture**: A component that creates and configures an Agent instance in an isolated test environment with mock dependencies, providing setup and teardown lifecycle management for agent behavior tests. The AgentTestFixture integrates with the `testbase` framework as a resource factory.
 - **AgentTestContext**: A mutable context object that carries test-specific state during agent behavior tests, containing the Agent under test, registered mock providers, captured events, and assertion state. The AgentTestContext is yielded by the AgentTestFixture resource factory.
 - **AgentAssertions**: A utility class providing agent-specific assertion methods for verifying lifecycle state, tool execution results, LLM responses, memory contents, message delivery, and workflow outcomes. The AgentAssertions integrates with `testbase` assertion conventions.
-- **MockLlmProvider**: A mock implementation of the LlmProvider interface that returns preconfigured deterministic responses for LLM completion requests, supporting response sequencing, conditional responses based on input patterns, and call recording for assertion. The MockLlmProvider integrates with `automojo.testbase.mocking`.
-- **MockToolExecutor**: A mock implementation of the ToolExecutor interface that returns preconfigured deterministic results for tool execution requests, supporting result sequencing, conditional results based on input patterns, and call recording for assertion. The MockToolExecutor integrates with `automojo.testbase.mocking`.
-- **MockTransport**: A mock implementation of the Transport interface that simulates message sending and receiving without network dependencies, supporting message capture, delivery simulation, and call recording for assertion. The MockTransport integrates with `automojo.testbase.mocking`.
-- **MockMemoryStore**: A mock implementation of the MemoryStore interface that stores memory entries in process memory with full query support, providing a lightweight backend for testing memory-dependent agent behavior. The MockMemoryStore integrates with `automojo.testbase.mocking`.
-- **MockCredentialProvider**: A mock implementation that provides test credential values without requiring `automojo-credentials` infrastructure, allowing agents to resolve CredentialReference entries in test environments.
-- **MockDataProfileProvider**: A mock implementation that provides test data profile values without requiring `automojo-dataprofiles` infrastructure, allowing agents to resolve DataProfileReference entries in test environments.
+- **MockLlmProvider**: A mock implementation of the LlmProvider interface that returns preconfigured deterministic responses for LLM completion requests, supporting response sequencing, conditional responses based on input patterns, and call recording for assertion. The MockLlmProvider integrates with `ccai.testbase.mocking`.
+- **MockToolExecutor**: A mock implementation of the ToolExecutor interface that returns preconfigured deterministic results for tool execution requests, supporting result sequencing, conditional results based on input patterns, and call recording for assertion. The MockToolExecutor integrates with `ccai.testbase.mocking`.
+- **MockTransport**: A mock implementation of the Transport interface that simulates message sending and receiving without network dependencies, supporting message capture, delivery simulation, and call recording for assertion. The MockTransport integrates with `ccai.testbase.mocking`.
+- **MockMemoryStore**: A mock implementation of the MemoryStore interface that stores memory entries in process memory with full query support, providing a lightweight backend for testing memory-dependent agent behavior. The MockMemoryStore integrates with `ccai.testbase.mocking`.
+- **MockCredentialProvider**: A mock implementation that provides test credential values without requiring `codecraftai-credentials` infrastructure, allowing agents to resolve CredentialReference entries in test environments.
+- **MockDataProfileProvider**: A mock implementation that provides test data profile values without requiring `codecraftai-dataprofiles` infrastructure, allowing agents to resolve DataProfileReference entries in test environments.
 - **MockEmbeddingProvider**: A mock implementation of the EmbeddingProvider interface that returns deterministic embedding vectors for testing semantic search and memory retrieval without external embedding services.
 - **ExecutionTrace**: An immutable object representing a complete recording of agent execution events, containing the agent identifier, a start timestamp, an end timestamp, and an ordered list of ExecutionTraceEvent objects. The ExecutionTrace is compatible with the ExecutionRecording from the Observability & Debugging feature.
 - **ExecutionTraceEvent**: An immutable object representing a single recorded event during agent execution, containing a sequence number, a timestamp, an event type string (one of "lifecycle", "tool_call", "tool_result", "llm_request", "llm_response", "memory_operation", "message_send", "message_receive", "workflow_step", "state_change", "error"), the agent identifier, and a payload dictionary with event-specific data.
@@ -22,8 +22,8 @@ The Testing & Quality feature extends the `automojo-agent-kit` SDK with a compre
 - **ExecutionTraceReplayer**: A component that reads an ExecutionTrace and replays the recorded events against an Agent instance, feeding recorded LLM responses and tool results back into the agent to reproduce the exact execution path. The replayer supports step-by-step replay with inspection at each event.
 - **ReplayConfiguration**: A configuration object that defines replay behavior, including whether to enforce strict event ordering, whether to fail on unexpected events, and the tolerance for timing differences.
 - **AgentInvariant**: An abstract base class representing a property-based invariant that must hold for an Agent across random inputs. Concrete implementations define specific invariants such as state machine transition validity, configuration round-trip fidelity, and serialization consistency.
-- **InvariantTestRunner**: A component that executes AgentInvariant definitions using the automojo.testbase.properties engine, generating random inputs according to defined strategies and verifying that the invariant holds for all generated cases.
-- **InvariantStrategy**: A component that provides automojo.testbase.properties strategies for generating random agent-related data including AgentConfiguration dictionaries, AgentIdentity fields, LifecycleState sequences, ToolSchema definitions, LlmMessage sequences, MemoryEntry objects, and WorkflowDefinition graphs.
+- **InvariantTestRunner**: A component that executes AgentInvariant definitions using the ccai.testbase.properties engine, generating random inputs according to defined strategies and verifying that the invariant holds for all generated cases.
+- **InvariantStrategy**: A component that provides ccai.testbase.properties strategies for generating random agent-related data including AgentConfiguration dictionaries, AgentIdentity fields, LifecycleState sequences, ToolSchema definitions, LlmMessage sequences, MemoryEntry objects, and WorkflowDefinition graphs.
 - **InvariantResult**: An immutable object encapsulating the outcome of an invariant test run, containing the invariant name, a pass/fail flag, the number of test cases executed, an optional counterexample dictionary when the invariant fails, and the execution duration.
 - **PlatformTestHarness**: An abstract base class representing a simulated platform environment for integration testing of platform-specific adapters. Concrete implementations provide simulated AWS, Azure, GCP, and local environments with mock service endpoints.
 - **SimulatedPlatformService**: An abstract base class representing a simulated cloud service within a PlatformTestHarness, providing mock endpoints for compute, storage, and messaging services that platform adapters interact with.
@@ -56,10 +56,10 @@ The Testing & Quality feature extends the `automojo-agent-kit` SDK with a compre
 - **ExecutionRecord**: The execution record defined in the Observability & Debugging feature, compatible with ExecutionTraceEvent.
 - **RetryPolicy**: The retry policy defined in the LLM Integration feature, tested for deterministic behavior in mock environments.
 - **CircuitBreaker**: The circuit breaker defined in the Error Handling & Resilience feature, tested for state transition behavior in mock environments.
-- **ExtensionPoint**: An integration surface provided by `automojo-extension` that allows external plugins to register test harness and mock implementations.
-- **CredentialReference**: A named reference resolved through `automojo-credentials` in production, resolved through MockCredentialProvider in test environments.
-- **DataProfileReference**: A named reference resolved through `automojo-dataprofiles` in production, resolved through MockDataProfileProvider in test environments.
-- **AppContext**: The application context provided by `automojo-this-app` that supplies settings and directory-based presence, configured by AgentTestFixture for test isolation.
+- **ExtensionPoint**: An integration surface provided by `codecraftai-extension` that allows external plugins to register test harness and mock implementations.
+- **CredentialReference**: A named reference resolved through `codecraftai-credentials` in production, resolved through MockCredentialProvider in test environments.
+- **DataProfileReference**: A named reference resolved through `codecraftai-dataprofiles` in production, resolved through MockDataProfileProvider in test environments.
+- **AppContext**: The application context provided by `codecraftai-this-app` that supplies settings and directory-based presence, configured by AgentTestFixture for test isolation.
 - **ConfigurationError**: An exception raised for configuration-related problems, inherited from AgentKitError.
 - **SemanticError**: An exception raised for API misuse, inherited from AgentKitError.
 - **TestingError**: An exception raised when a testing infrastructure operation fails due to a fixture setup error, replay mismatch, or invariant configuration error, inherited from AgentKitError.
@@ -81,7 +81,7 @@ The Testing & Quality feature extends the `automojo-agent-kit` SDK with a compre
 5. THE AgentTestFixture SHALL accept an optional list of mock LLM response sequences to configure the MockLlmProvider during setup.
 6. WHEN the AgentTestFixture resource factory yields, THE Agent SHALL be in the INITIALIZED LifecycleState, ready for test execution.
 7. WHEN the AgentTestFixture resource factory completes, THE AgentTestFixture SHALL stop the Agent and clean up all mock dependencies.
-8. THE AgentTestFixture SHALL configure the AppContext from `automojo-this-app` to use a temporary directory for test isolation, preventing test configuration from interfering with production configuration.
+8. THE AgentTestFixture SHALL configure the AppContext from `codecraftai-this-app` to use a temporary directory for test isolation, preventing test configuration from interfering with production configuration.
 9. THE AgentTestFixture SHALL provide a __repr__ method that includes the class name and the agent identifier of the Agent under test.
 10. THE AgentTestFixture SHALL provide a __str__ method that returns a human-readable summary including the agent identifier and the list of registered mock provider types.
 
@@ -197,7 +197,7 @@ The Testing & Quality feature extends the `automojo-agent-kit` SDK with a compre
 
 ### Requirement 8: Mock Credential Provider
 
-**User Story:** As a developer, I want a mock credential provider that supplies test credentials without requiring `automojo-credentials` infrastructure, so that agents can resolve credential references in test environments.
+**User Story:** As a developer, I want a mock credential provider that supplies test credentials without requiring `codecraftai-credentials` infrastructure, so that agents can resolve credential references in test environments.
 
 #### Acceptance Criteria
 
@@ -213,7 +213,7 @@ The Testing & Quality feature extends the `automojo-agent-kit` SDK with a compre
 
 ### Requirement 9: Mock Data Profile Provider
 
-**User Story:** As a developer, I want a mock data profile provider that supplies test data profiles without requiring `automojo-dataprofiles` infrastructure, so that agents can resolve data profile references in test environments.
+**User Story:** As a developer, I want a mock data profile provider that supplies test data profiles without requiring `codecraftai-dataprofiles` infrastructure, so that agents can resolve data profile references in test environments.
 
 #### Acceptance Criteria
 
@@ -325,11 +325,11 @@ The Testing & Quality feature extends the `automojo-agent-kit` SDK with a compre
 
 ### Requirement 15: Agent Invariant Definition
 
-**User Story:** As a developer, I want to define property-based invariants for agent behavior, so that I can verify that agent properties hold across random inputs using the automojo.testbase.properties engine.
+**User Story:** As a developer, I want to define property-based invariants for agent behavior, so that I can verify that agent properties hold across random inputs using the ccai.testbase.properties engine.
 
 #### Acceptance Criteria
 
-1. THE AgentInvariant base class SHALL define an abstract interface that includes a name property, a description property, a strategy method that returns an automojo.testbase.properties strategy for generating test inputs, and a verify method that accepts generated inputs and raises an InvariantViolationError when the invariant does not hold.
+1. THE AgentInvariant base class SHALL define an abstract interface that includes a name property, a description property, a strategy method that returns an ccai.testbase.properties strategy for generating test inputs, and a verify method that accepts generated inputs and raises an InvariantViolationError when the invariant does not hold.
 2. THE AgentInvariant base class SHALL require all subclasses to provide an implementation for the strategy and verify methods.
 3. THE framework SHALL provide a StateMachineTransitionInvariant that verifies all valid state transitions in the AgentStateMachine produce the expected target state, and all invalid transitions raise a SemanticError.
 4. THE framework SHALL provide a ConfigurationRoundTripInvariant that verifies FOR ALL valid AgentConfiguration dictionaries, converting to JSON and then parsing back produces an equivalent AgentConfiguration object.
@@ -342,33 +342,33 @@ The Testing & Quality feature extends the `automojo-agent-kit` SDK with a compre
 
 ### Requirement 16: Invariant Strategy Generators
 
-**User Story:** As a developer, I want automojo.testbase.properties strategies for generating random agent-related data, so that I can use property-based testing to verify agent invariants across diverse inputs.
+**User Story:** As a developer, I want ccai.testbase.properties strategies for generating random agent-related data, so that I can use property-based testing to verify agent invariants across diverse inputs.
 
 #### Acceptance Criteria
 
-1. THE InvariantStrategy SHALL provide an automojo.testbase.properties strategy for generating valid AgentConfiguration dictionaries with random identity fields, behavior settings, and optional credential and data profile references.
-2. THE InvariantStrategy SHALL provide an automojo.testbase.properties strategy for generating valid AgentIdentity instances with random identifier strings, name strings, version strings, and tag dictionaries.
-3. THE InvariantStrategy SHALL provide an automojo.testbase.properties strategy for generating valid LifecycleState transition sequences that follow the AgentStateMachine transition rules.
-4. THE InvariantStrategy SHALL provide an automojo.testbase.properties strategy for generating valid ToolSchema definitions with random parameter names, types, required flags, and default values.
-5. THE InvariantStrategy SHALL provide an automojo.testbase.properties strategy for generating valid LlmMessage instances with random role values, content strings, and metadata dictionaries.
-6. THE InvariantStrategy SHALL provide an automojo.testbase.properties strategy for generating valid LlmConversation instances with random sequences of LlmMessage objects.
-7. THE InvariantStrategy SHALL provide an automojo.testbase.properties strategy for generating valid MemoryEntry instances with random content, tags, metadata, scope, and timestamps.
-8. THE InvariantStrategy SHALL provide an automojo.testbase.properties strategy for generating valid Message instances with random sender, recipient, payload, headers, and message pattern values.
+1. THE InvariantStrategy SHALL provide an ccai.testbase.properties strategy for generating valid AgentConfiguration dictionaries with random identity fields, behavior settings, and optional credential and data profile references.
+2. THE InvariantStrategy SHALL provide an ccai.testbase.properties strategy for generating valid AgentIdentity instances with random identifier strings, name strings, version strings, and tag dictionaries.
+3. THE InvariantStrategy SHALL provide an ccai.testbase.properties strategy for generating valid LifecycleState transition sequences that follow the AgentStateMachine transition rules.
+4. THE InvariantStrategy SHALL provide an ccai.testbase.properties strategy for generating valid ToolSchema definitions with random parameter names, types, required flags, and default values.
+5. THE InvariantStrategy SHALL provide an ccai.testbase.properties strategy for generating valid LlmMessage instances with random role values, content strings, and metadata dictionaries.
+6. THE InvariantStrategy SHALL provide an ccai.testbase.properties strategy for generating valid LlmConversation instances with random sequences of LlmMessage objects.
+7. THE InvariantStrategy SHALL provide an ccai.testbase.properties strategy for generating valid MemoryEntry instances with random content, tags, metadata, scope, and timestamps.
+8. THE InvariantStrategy SHALL provide an ccai.testbase.properties strategy for generating valid Message instances with random sender, recipient, payload, headers, and message pattern values.
 9. ALL strategies SHALL constrain generated values to valid ranges and formats as defined by the corresponding class constructors, avoiding generation of values that would be rejected at construction time.
 
 ### Requirement 17: Invariant Test Runner
 
-**User Story:** As a developer, I want a test runner that executes agent invariants using the automojo.testbase.properties engine and reports results, so that I can integrate property-based testing into the `testbase` test suite.
+**User Story:** As a developer, I want a test runner that executes agent invariants using the ccai.testbase.properties engine and reports results, so that I can integrate property-based testing into the `testbase` test suite.
 
 #### Acceptance Criteria
 
 1. THE InvariantTestRunner SHALL accept a list of AgentInvariant instances at construction time.
-2. THE InvariantTestRunner SHALL provide a run method that executes all configured invariants using the automojo.testbase.properties engine and returns a list of InvariantResult objects.
-3. THE InvariantTestRunner SHALL accept an optional max_examples integer parameter that controls the number of test cases automojo.testbase.properties generates per invariant, defaulting to 100.
+2. THE InvariantTestRunner SHALL provide a run method that executes all configured invariants using the ccai.testbase.properties engine and returns a list of InvariantResult objects.
+3. THE InvariantTestRunner SHALL accept an optional max_examples integer parameter that controls the number of test cases ccai.testbase.properties generates per invariant, defaulting to 100.
 4. WHEN an invariant holds for all generated test cases, THE InvariantTestRunner SHALL return an InvariantResult with a pass flag of True and the count of test cases executed.
 5. WHEN an invariant fails for a generated test case, THE InvariantTestRunner SHALL return an InvariantResult with a pass flag of False, the counterexample dictionary, and the count of test cases executed before failure.
 6. THE InvariantTestRunner SHALL provide a run_single method that accepts an AgentInvariant instance and returns a single InvariantResult.
-7. THE InvariantTestRunner SHALL log each invariant execution at INFO level including the invariant name, test case count, and pass/fail result, using the logger hierarchy under `automojo.agentkit.testing`.
+7. THE InvariantTestRunner SHALL log each invariant execution at INFO level including the invariant name, test case count, and pass/fail result, using the logger hierarchy under `ccai.agentkit.testing`.
 8. THE InvariantTestRunner SHALL provide a __repr__ method that includes the class name and the count of configured invariants.
 9. THE InvariantTestRunner SHALL provide a __str__ method that returns a human-readable summary including the count of configured invariants.
 
@@ -490,7 +490,7 @@ The Testing & Quality feature extends the `automojo-agent-kit` SDK with a compre
 
 #### Acceptance Criteria
 
-1. THE testing framework SHALL use the Python standard logging module with a logger hierarchy rooted at `automojo.agentkit.testing`.
+1. THE testing framework SHALL use the Python standard logging module with a logger hierarchy rooted at `ccai.agentkit.testing`.
 2. WHEN an AgentTestFixture creates an Agent for testing, THE framework SHALL log at INFO level including the agent identifier and the list of registered mock provider types.
 3. WHEN an ExecutionTraceRecorder captures an event, THE framework SHALL log at DEBUG level including the event type, sequence number, and agent identifier.
 4. WHEN an ExecutionTraceReplayer replays an event, THE framework SHALL log at INFO level including the event type, sequence number, and agent identifier.
@@ -501,13 +501,13 @@ The Testing & Quality feature extends the `automojo-agent-kit` SDK with a compre
 
 ### Requirement 26: Extension Point Integration for Testing
 
-**User Story:** As a developer, I want the testing framework to support extensibility through `automojo-extension`, so that plugins can register custom test harnesses, mock providers, and invariant definitions.
+**User Story:** As a developer, I want the testing framework to support extensibility through `codecraftai-extension`, so that plugins can register custom test harnesses, mock providers, and invariant definitions.
 
 #### Acceptance Criteria
 
-1. THE framework SHALL define an ExtensionPoint named "automojo.agentkit.testing.harnesses" through `automojo-extension` for registering PlatformTestHarness implementations.
-2. THE framework SHALL define an ExtensionPoint named "automojo.agentkit.testing.invariants" through `automojo-extension` for registering AgentInvariant implementations.
-3. WHEN the InvariantTestRunner is initialized, THE InvariantTestRunner SHALL discover and load all registered AgentInvariant instances from the "automojo.agentkit.testing.invariants" ExtensionPoint.
+1. THE framework SHALL define an ExtensionPoint named "ccai.agentkit.testing.harnesses" through `codecraftai-extension` for registering PlatformTestHarness implementations.
+2. THE framework SHALL define an ExtensionPoint named "ccai.agentkit.testing.invariants" through `codecraftai-extension` for registering AgentInvariant implementations.
+3. WHEN the InvariantTestRunner is initialized, THE InvariantTestRunner SHALL discover and load all registered AgentInvariant instances from the "ccai.agentkit.testing.invariants" ExtensionPoint.
 4. IF a testing plugin fails to load, THEN THE framework SHALL log the failure at WARNING level including the plugin name and the error detail, and continue loading remaining plugins.
 
 ### Requirement 27: Testing String Representations

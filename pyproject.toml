@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "automojo-agent-kit"
-description = "Automation Mojo - Agent Kit"
+name = "codecraftai-agent-kit"
+description = "Code Craft AI - Agent Kit"
 version = "0.0.1"
 authors = []
 readme = "README.rst"
@@ -17,10 +17,10 @@ packages = [{include="mojo", from="source/packages"}]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
-automojo-arcli = { git = "https://github.com/automationmojo/automojo-arcli.git", branch = "main" }
-automojo-this-app = { git = "https://github.com/automationmojo/automojo-this-app.git", branch = "main" }
-automojo-credentials = { git = "https://github.com/automationmojo/automojo-credentials.git", branch = "main" }
-automojo-testbase = { git = "https://github.com/automationmojo/automojo-testbase.git", branch = "main" }
+codecraftai-arcli = { git = "https://github.com/automationmojo/codecraftai-arcli.git", branch = "main" }
+codecraftai-this-app = { git = "https://github.com/automationmojo/codecraftai-this-app.git", branch = "main" }
+codecraftai-credentials = { git = "https://github.com/automationmojo/codecraftai-credentials.git", branch = "main" }
+codecraftai-testbase = { git = "https://github.com/automationmojo/codecraftai-testbase.git", branch = "main" }
 
 
 [tool.poetry.group.dev.dependencies]
