@@ -11,6 +11,7 @@ import time
 
 from datetime import datetime
 
+from ccai.agentkit.errors import SemanticError
 from ccai.agentkit.retryattempt import RetryAttempt
 from ccai.agentkit.retrypolicy import RetryPolicy
 from ccai.agentkit.retryresult import RetryResult
@@ -69,6 +70,11 @@ class RetryExecutor:
                     elapsed_time=elapsed
                 )
                 return result
+
+            except SemanticError:
+                # SemanticError signals API misuse and must never be fed through
+                # retry/swallow logic -- let it bubble immediately.
+                raise
 
             except Exception as exc:
                 should_retry = self._retry_policy.should_retry(exc, attempt_number)

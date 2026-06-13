@@ -259,7 +259,11 @@ class WorkflowExecutor:
                         step_id, fork_result.error, execution_id
                     )
 
-                # Execute parallel branches.
+                # Execute parallel branches. _execute_parallel_branches appends
+                # each branch step result to step_results, so the count of newly
+                # added branch steps is the growth in the list length.
+                step_count_before_branches = len(step_results)
+
                 branch_result = self._execute_parallel_branches(
                     workflow=workflow,
                     branch=branch,
@@ -276,11 +280,8 @@ class WorkflowExecutor:
                         execution_id
                     )
 
-                steps_since_checkpoint += len(
-                    [sr for sr in step_results
-                     if sr.step_id not in completed_step_ids
-                     or sr.step_id in completed_step_ids]
-                )
+                branch_steps_added = len(step_results) - step_count_before_branches
+                steps_since_checkpoint += branch_steps_added
 
                 # Save checkpoint if interval reached.
                 steps_since_checkpoint = self._maybe_save_checkpoint(

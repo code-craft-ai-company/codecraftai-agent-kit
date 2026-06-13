@@ -133,6 +133,14 @@ class HttpRequestTool(Tool):
             response_headers = dict(response.getheaders())
             response_body = response.read().decode("utf-8")
 
+        except urllib.error.HTTPError as http_err:
+            # HTTPError is a subclass of URLError and MUST be caught first; a
+            # 4xx/5xx is a real HTTP response whose status/headers/body we return
+            # rather than reclassifying it as a connection error below.
+            status_code = http_err.code
+            response_headers = dict(http_err.headers.items())
+            response_body = http_err.read().decode("utf-8")
+
         except urllib.error.URLError as url_err:
             if isinstance(url_err.reason, TimeoutError) or "timed out" in str(url_err):
                 err_msg_lines = [
@@ -151,11 +159,6 @@ class HttpRequestTool(Tool):
             ]
             err_msg = os.linesep.join(err_msg_lines)
             raise ToolExecutionError(tool_name=self.TOOL_NAME, cause=ConnectionError(err_msg)) from url_err
-
-        except urllib.error.HTTPError as http_err:
-            status_code = http_err.code
-            response_headers = dict(http_err.headers.items())
-            response_body = http_err.read().decode("utf-8")
 
         rtnval = {
             "status_code": status_code,

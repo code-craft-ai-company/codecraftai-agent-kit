@@ -25,7 +25,7 @@ class TransportHealthCheck(HealthCheck):
     def check(self) -> HealthStatus:
         start = time.monotonic()
         try:
-            is_connected = self._transport.is_connected
+            is_connected = self._transport.is_connected()
             elapsed = time.monotonic() - start
             if is_connected:
                 return HealthStatus(self._name, "healthy", response_time=elapsed)

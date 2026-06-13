@@ -13,6 +13,7 @@ import os
 import time
 
 from ccai.agentkit.errors import ConfigurationError
+from ccai.agentkit.errors import SemanticError
 from ccai.agentkit.tool import Tool
 from ccai.agentkit.toolerrors import ToolValidationError
 from ccai.agentkit.toolresult import ToolResult
@@ -140,6 +141,11 @@ class ToolExecutor:
             return rtnval
 
         except ToolValidationError:
+            raise
+
+        except SemanticError:
+            # SemanticError signals API misuse and must never be swallowed into
+            # a failure ToolResult -- let it bubble to the caller.
             raise
 
         except Exception as exec_err:

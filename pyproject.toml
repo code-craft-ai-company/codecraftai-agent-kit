@@ -2,30 +2,38 @@
 name = "codecraftai-agent-kit"
 description = "Code Craft AI - Agent Kit"
 version = "0.0.1"
-authors = []
+authors = ["Myron Walker <myron.walker@gmail.com>"]
 readme = "README.rst"
-license = "LICENSE.txt"
+license = "LicenseRef-CodeCraftAI-Dual-License"
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
+    "License :: Other/Proprietary License",
     "Operating System :: POSIX"
 ]
 keywords = [
     "python"
 ]
-packages = [{include="mojo", from="source/packages"}]
+packages = [{include="ccai", from="source/packages"}]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
 codecraftai-arcli = { git = "https://github.com/automationmojo/codecraftai-arcli.git", branch = "main" }
 codecraftai-this-app = { git = "https://github.com/automationmojo/codecraftai-this-app.git", branch = "main" }
 codecraftai-credentials = { git = "https://github.com/automationmojo/codecraftai-credentials.git", branch = "main" }
-codecraftai-testbase = { git = "https://github.com/automationmojo/codecraftai-testbase.git", branch = "main" }
+codecraftai-extension = { git = "https://github.com/automationmojo/codecraftai-extension.git", branch = "main" }
+pyyaml = "^6.0.1"
+msgpack = { version = "^1.0.0", optional = true }
+protobuf = { version = "^4.21.0", optional = true }
 
+[tool.poetry.extras]
+msgpack = ["msgpack"]
+protobuf = ["protobuf"]
+serialization = ["msgpack", "protobuf"]
 
 [tool.poetry.group.dev.dependencies]
-
-[tool.poetry.group.dbio.dependencies]
+pytest = "^9.0.2"
+codecraftai-testbase = { git = "https://github.com/automationmojo/codecraftai-testbase.git", branch = "main" }
+codecraftai-xmodules = { git = "https://github.com/automationmojo/codecraftai-xmodules.git", branch = "main" }
 
 [build-system]
 requires = ["poetry-core"]
