@@ -328,8 +328,8 @@ def test_as_dict_includes_non_empty_optional_fields():
         "as_dict headers mismatch"
     assert result["options"] == {"tls": True}, \
         "as_dict options mismatch"
-    assert result["credential_references"] == {"cert": "ref-cert"}, \
-        "as_dict credential_references mismatch"
+    assert result["credential_references"] == ["cert"], \
+        "as_dict should include only credential reference names, not their (secret) values"
     return
 
 

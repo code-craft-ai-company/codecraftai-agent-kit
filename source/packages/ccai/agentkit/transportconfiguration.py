@@ -228,7 +228,7 @@ class TransportConfiguration:
             rtnval["options"] = dict(self._options)
 
         if len(self._credential_references) > 0:
-            rtnval["credential_references"] = dict(self._credential_references)
+            rtnval["credential_references"] = sorted(self._credential_references.keys())
 
         return rtnval
 
@@ -285,6 +285,9 @@ class TransportConfiguration:
         timeout = config_data.get("timeout", 30.0)
         options = config_data.get("options", None)
         credential_references = config_data.get("credential_references", None)
+        if isinstance(credential_references, (list, tuple)):
+            reference_names = credential_references
+            credential_references = {name: None for name in reference_names}
 
         rtnval = cls(
             protocol_type=protocol_type,

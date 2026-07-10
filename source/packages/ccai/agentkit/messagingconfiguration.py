@@ -205,7 +205,7 @@ class MessagingConfiguration:
             rtnval["pubsub_settings"] = dict(self._pubsub_settings)
 
         if len(self._credential_references) > 0:
-            rtnval["credential_references"] = dict(self._credential_references)
+            rtnval["credential_references"] = sorted(self._credential_references.keys())
 
         if len(self._options) > 0:
             rtnval["options"] = dict(self._options)
@@ -248,6 +248,9 @@ class MessagingConfiguration:
         transport_configurations = config_data.get("transport_configurations", None)
         pubsub_settings = config_data.get("pubsub_settings", None)
         credential_references = config_data.get("credential_references", None)
+        if isinstance(credential_references, (list, tuple)):
+            reference_names = credential_references
+            credential_references = {name: None for name in reference_names}
         options = config_data.get("options", None)
 
         rtnval = cls(
