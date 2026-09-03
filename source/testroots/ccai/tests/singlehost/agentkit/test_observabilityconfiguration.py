@@ -206,38 +206,36 @@ def test_as_dict_returns_all_fields():
     return
 
 
-def test_credential_manager_missing_key_raises_configuration_error():
+def test_credential_manager_missing_key_terminates_with_core_configuration_error():
     """
-        Verify that a real CredentialManager missing the key is translated
-        into the kit's ConfigurationError carrying the credential name.
-
-        CredentialManager.lookup_credential raises the core
-        ConfigurationError, which derives from BaseException; a bare
-        ``except Exception`` would let it escape untranslated.
+        Verify that a real CredentialManager missing the key is NOT
+        translated: the core ConfigurationError derives from BaseException
+        by design so that a wrong configuration terminates the run past any
+        ordinary handler, and the kit must let it propagate unchanged.
     """
     from ccai.credentials.credentialmanager import CredentialManager
+    from ccai.errors.exceptions import ConfigurationError as CoreConfigurationError
 
     mock_app_context = Mock()
     mock_app_context.configure(recursive=True)
     mock_app_ctx = mock_app_context.mock_context()
     mock_app_ctx.set_attribute("credential_manager", CredentialManager())
 
-    raised = False
-    error_message = ""
+    caught = None
     try:
         ObservabilityConfiguration.from_dict(
             {"credentials": {"api_key": {"provider": "vault", "key": "nonexistent-key"}}},
             app_context=mock_app_context,
         )
-    except ConfigurationError as exc:
-        raised = True
-        error_message = exc.message
+    except CoreConfigurationError as exc:
+        caught = exc
 
-    assert raised is True, (
-        "Expected the kit's ConfigurationError when the CredentialManager "
-        "has no such key"
+    assert caught is not None, (
+        "Expected the core ConfigurationError to propagate unchanged when "
+        "the CredentialManager has no such key"
     )
-    assert "api_key" in error_message and "nonexistent-key" in error_message
+    assert not isinstance(caught, ConfigurationError)
+    assert "nonexistent-key" in str(caught)
     return
 
 

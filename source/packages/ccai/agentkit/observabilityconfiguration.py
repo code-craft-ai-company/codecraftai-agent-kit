@@ -17,9 +17,6 @@ from typing import Any, Optional
 import yaml
 
 from ccai.agentkit.errors import ConfigurationError
-# The credentials manager raises the core ConfigurationError, which derives
-# from BaseException; it must be named explicitly to be translated below.
-from ccai.errors.exceptions import ConfigurationError as CoreConfigurationError
 
 
 class ObservabilityConfiguration:
@@ -366,7 +363,10 @@ class ObservabilityConfiguration:
             try:
                 credential_manager = app_context.credential_manager
                 resolved_cred = credential_manager.lookup_credential(key)
-            except (Exception, CoreConfigurationError) as exc:
+            # A core ccai.errors ConfigurationError (e.g. a missing vault key)
+            # derives from BaseException and deliberately passes through this
+            # handler: a wrong configuration must terminate the run.
+            except Exception as exc:
                 err_msg_lines = [
                     "Failed to resolve credential reference."
                 ]

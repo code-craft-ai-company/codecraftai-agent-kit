@@ -436,13 +436,15 @@ def test_resolve_credentials_unresolvable_raises_configuration_error():
     return
 
 
-def test_resolve_credentials_credential_manager_missing_key_raises_configuration_error():
+def test_resolve_credentials_credential_manager_missing_key_terminates():
     """
-        Verify that a real CredentialManager missing the key is translated
-        into the kit's ConfigurationError (the manager raises the core
-        ConfigurationError, a BaseException subclass).
+        Verify that a real CredentialManager missing the key is NOT
+        translated: the core ConfigurationError derives from BaseException
+        by design so that a wrong configuration terminates the run, and
+        resolve_credentials must let it propagate unchanged.
     """
     from ccai.credentials.credentialmanager import CredentialManager
+    from ccai.errors.exceptions import ConfigurationError as CoreConfigurationError
 
     config = PlatformConfiguration(
         platform_type=PlatformType.GCP,
@@ -452,14 +454,15 @@ def test_resolve_credentials_credential_manager_missing_key_raises_configuration
     caught = None
     try:
         config.resolve_credentials(CredentialManager())
-    except ConfigurationError as exc:
+    except CoreConfigurationError as exc:
         caught = exc
 
     assert caught is not None, (
-        "resolve_credentials should raise the kit's ConfigurationError when "
-        "the CredentialManager has no such key"
+        "resolve_credentials must let the core ConfigurationError propagate "
+        "when the CredentialManager has no such key"
     )
-    assert "bad-cred" in caught.message
+    assert not isinstance(caught, ConfigurationError)
+    assert "bad-cred" in str(caught)
     return
 
 
