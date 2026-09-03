@@ -521,6 +521,45 @@ def test_missing_app_context_raises_error_when_credentials_need_resolving():
     return
 
 
+def test_credential_manager_missing_key_raises_configuration_error():
+    """
+        Verify that a real CredentialManager missing the key is translated
+        into the kit's ConfigurationError carrying the credential name.
+
+        CredentialManager.lookup_credential raises the core
+        ConfigurationError, which derives from BaseException; a bare
+        ``except Exception`` would let it escape untranslated.
+    """
+    from ccai.credentials.credentialmanager import CredentialManager
+
+    mock_app_context = Mock()
+    mock_app_context.configure(recursive=True)
+    mock_app_ctx = mock_app_context.mock_context()
+    mock_app_ctx.set_attribute("credential_manager", CredentialManager())
+
+    config_data = {
+        "identity": {"name": "test-agent", "version": "1.0"},
+        "credentials": {
+            "missing_cred": {"provider": "vault", "key": "nonexistent-key"}
+        },
+    }
+
+    raised = False
+    error_message = ""
+    try:
+        AgentConfiguration.from_dict(config_data, app_context=mock_app_context)
+    except ConfigurationError as exc:
+        raised = True
+        error_message = exc.message
+
+    assert raised is True, (
+        "Expected the kit's ConfigurationError when the CredentialManager "
+        "has no such key"
+    )
+    assert "missing_cred" in error_message and "nonexistent-key" in error_message
+    return
+
+
 def test_unresolvable_credential_reference_raises_error():
     """
         Verify that an unresolvable CredentialReference raises ConfigurationError.

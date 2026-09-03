@@ -206,6 +206,41 @@ def test_as_dict_returns_all_fields():
     return
 
 
+def test_credential_manager_missing_key_raises_configuration_error():
+    """
+        Verify that a real CredentialManager missing the key is translated
+        into the kit's ConfigurationError carrying the credential name.
+
+        CredentialManager.lookup_credential raises the core
+        ConfigurationError, which derives from BaseException; a bare
+        ``except Exception`` would let it escape untranslated.
+    """
+    from ccai.credentials.credentialmanager import CredentialManager
+
+    mock_app_context = Mock()
+    mock_app_context.configure(recursive=True)
+    mock_app_ctx = mock_app_context.mock_context()
+    mock_app_ctx.set_attribute("credential_manager", CredentialManager())
+
+    raised = False
+    error_message = ""
+    try:
+        ObservabilityConfiguration.from_dict(
+            {"credentials": {"api_key": {"provider": "vault", "key": "nonexistent-key"}}},
+            app_context=mock_app_context,
+        )
+    except ConfigurationError as exc:
+        raised = True
+        error_message = exc.message
+
+    assert raised is True, (
+        "Expected the kit's ConfigurationError when the CredentialManager "
+        "has no such key"
+    )
+    assert "api_key" in error_message and "nonexistent-key" in error_message
+    return
+
+
 def test_as_dict_excludes_resolved_credentials():
     """
         Verify that as_dict does not include resolved credential secret values.
