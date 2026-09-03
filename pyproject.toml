@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "codecraftai-agent-kit"
 description = "Code Craft AI - Agent Kit"
-version = "1.0.0"
+version = "1.0.1"
 authors = ["Myron Walker <myron.walker@gmail.com>"]
 readme = "README.rst"
 license = "LicenseRef-CodeCraftAI-Dual-License"

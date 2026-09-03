@@ -144,12 +144,14 @@ def test_property_26a_agentidentity_repr(name, version):
         "repr should contain identifier {!r}, got: {!r}".format(identity.identifier, repr_str)
     )
 
-    has_name = name in repr_str
+    # The name and version appear in repr form, so a value containing quote or
+    # backslash characters is present as its escaped literal rather than verbatim.
+    has_name = repr(name) in repr_str
     assert has_name is True, (
         "repr should contain name {!r}, got: {!r}".format(name, repr_str)
     )
 
-    has_version = version in repr_str
+    has_version = repr(version) in repr_str
     assert has_version is True, (
         "repr should contain version {!r}, got: {!r}".format(version, repr_str)
     )
