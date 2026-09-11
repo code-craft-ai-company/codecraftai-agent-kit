@@ -412,8 +412,10 @@ def test_multiple_concurrent_requests():
     assert handler.pending_count == 2, \
         "pending_count should be 2 with two concurrent requests"
 
-    # Deliver responses in reverse order
-    sent_b = transport.sent_messages[1]
+    # The two threads race to send, so the sent messages are looked up by
+    # request identifier rather than by position. Deliver B's response first.
+    sent_by_identifier = {msg.identifier: msg for msg in transport.sent_messages}
+    sent_b = sent_by_identifier["req-b"]
     response_b = _create_response_message(
         correlation_id=sent_b.correlation_id,
         identifier="resp-b",
@@ -422,7 +424,7 @@ def test_multiple_concurrent_requests():
 
     time.sleep(0.1)
 
-    sent_a = transport.sent_messages[0]
+    sent_a = sent_by_identifier["req-a"]
     response_a = _create_response_message(
         correlation_id=sent_a.correlation_id,
         identifier="resp-a",
