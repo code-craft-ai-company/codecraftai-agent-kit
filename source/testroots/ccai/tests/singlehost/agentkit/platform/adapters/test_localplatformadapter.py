@@ -171,8 +171,11 @@ def test_compute_invoke_success():
     assert "hello" in result.response, (
         "response should contain 'hello', got: {!r}".format(result.response)
     )
-    assert result.duration > 0, (
-        "duration should be positive, got: {}".format(result.duration)
+    # A trivial subprocess can finish inside one tick of a coarse clock
+    # (Windows reports ~15 ms granularity), so the duration is checked for
+    # being recorded, not for being strictly positive.
+    assert result.duration >= 0, (
+        "duration should be recorded, got: {}".format(result.duration)
     )
     assert len(result.request_id) > 0, (
         "request_id should be non-empty"
