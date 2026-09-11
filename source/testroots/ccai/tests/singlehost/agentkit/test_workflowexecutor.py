@@ -16,6 +16,8 @@
     :synopsis: Unit tests for WorkflowExecutor.
 """
 
+import time
+
 from ccai.agentkit.parallelbranch import ParallelBranch
 from ccai.agentkit.stepexecutionstatus import StepExecutionStatus
 from ccai.agentkit.stepresult import StepResult
@@ -43,16 +45,19 @@ class _RecordingStep(WorkflowStep):
     """
 
     def __init__(self, step_id, name, execution_log=None, output=None,
-                 should_fail=False, **kwargs):
+                 should_fail=False, delay=0.0, **kwargs):
         super().__init__(step_id=step_id, name=name, step_type="test",
                          **kwargs)
         self._execution_log = execution_log if execution_log is not None else []
         self._output = output or {}
         self._should_fail = should_fail
+        self._delay = delay
         return
 
     def execute(self, context):
         self._execution_log.append(self.step_id)
+        if self._delay > 0.0:
+            time.sleep(self._delay)
         if self._should_fail:
             rtnval = StepResult(
                 step_id=self.step_id,
@@ -97,12 +102,13 @@ class _SimpleRetryPolicy:
 # Helper: build a simple linear workflow A -> B -> C
 # =========================================================================
 
-def _build_linear_workflow(execution_log, outputs=None):
+def _build_linear_workflow(execution_log, outputs=None, delay=0.0):
     """
         Builds a linear workflow: step_a -> step_b -> step_c.
 
         :param execution_log: Shared list for recording execution order.
         :param outputs: Optional dict mapping step_id to output dict.
+        :param delay: Optional number of seconds step_a sleeps while executing.
 
         :returns: A WorkflowDefinition.
     """
@@ -112,7 +118,8 @@ def _build_linear_workflow(execution_log, outputs=None):
     step_a = _RecordingStep(
         step_id="step_a", name="Step A",
         execution_log=execution_log,
-        output=outputs.get("step_a", {"a_result": "done"})
+        output=outputs.get("step_a", {"a_result": "done"}),
+        delay=delay
     )
     step_b = _RecordingStep(
         step_id="step_b", name="Step B",
@@ -763,9 +770,14 @@ def test_workflow_result_completed_status():
     """
         Verify that a successfully completed workflow returns a
         WorkflowResult with COMPLETED status and correct step results.
+
+        One step sleeps for a short, deterministic delay so the executor's
+        monotonic clock is guaranteed to advance even where its resolution
+        is coarse (Windows reports roughly 16 ms ticks), which keeps the
+        positive-duration check meaningful on every platform.
     """
     execution_log = []
-    workflow = _build_linear_workflow(execution_log)
+    workflow = _build_linear_workflow(execution_log, delay=0.05)
 
     executor = WorkflowExecutor()
     result = executor.execute(workflow=workflow, inputs={})

@@ -224,23 +224,24 @@ def test_count_returns_number_of_entries():
 
 def test_store_raises_resilience_error_on_io_failure():
     """
-        Verify that store raises ResilienceError when the directory is
-        not writable.
+        Verify that store raises ResilienceError when the entry file
+        cannot be written.  The entry path is occupied by a directory so
+        that opening it for writing fails on every platform; POSIX
+        permission bits are ignored on Windows.
         Validates: Requirement 13.10
     """
     base = tempfile.mkdtemp()
     try:
         store = FileDeadLetterStore(base)
-        os.chmod(base, 0o444)
 
-        entry = _make_entry()
+        entry = _make_entry(identifier="blocked-write")
+        os.makedirs(os.path.join(base, "blocked-write.json"))
+
         raised = False
         try:
             store.store(entry)
         except ResilienceError:
             raised = True
-        finally:
-            os.chmod(base, 0o755)
 
         assert raised, "should raise ResilienceError on write failure"
     finally:
@@ -251,25 +252,22 @@ def test_store_raises_resilience_error_on_io_failure():
 def test_retrieve_raises_resilience_error_on_io_failure():
     """
         Verify that retrieve raises ResilienceError when a file cannot
-        be read.
+        be read.  The entry path is occupied by a directory, which exists
+        but cannot be opened for reading on any platform; POSIX
+        permission bits are ignored on Windows.
         Validates: Requirement 13.10
     """
     base = tempfile.mkdtemp()
     try:
         store = FileDeadLetterStore(base)
-        entry = _make_entry(identifier="bad-read")
-        store.store(entry)
 
-        filepath = os.path.join(base, "bad-read.json")
-        os.chmod(filepath, 0o000)
+        os.makedirs(os.path.join(base, "bad-read.json"))
 
         raised = False
         try:
             store.retrieve("bad-read")
         except ResilienceError:
             raised = True
-        finally:
-            os.chmod(filepath, 0o644)
 
         assert raised, "should raise ResilienceError on read failure"
     finally:

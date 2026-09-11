@@ -443,13 +443,17 @@ def test_filememorystore_load_failure_raises_memorystoreerror():
 
 def test_filememorystore_write_failure_raises_memorystoreerror():
     """
-        Writing to a read-only directory raises MemoryStoreError.
+        A write failure while storing an entry raises MemoryStoreError.
+
+        The entry file path is occupied by a directory so that opening it
+        for writing fails on every platform; POSIX permission bits are
+        ignored on Windows.
     """
     tmpdir = _make_tmpdir()
     try:
         store = FileMemoryStore(store_name="test-store", directory_path=tmpdir)
 
-        os.chmod(tmpdir, 0o444)
+        os.makedirs(os.path.join(tmpdir, "fail-write.json"))
 
         entry = _create_entry(identifier="fail-write", content="should fail")
 
@@ -461,11 +465,10 @@ def test_filememorystore_write_failure_raises_memorystoreerror():
             raised = True
             caught_error = exc
 
-        assert raised, "Writing to a read-only directory should raise MemoryStoreError."
+        assert raised, "A write failure while storing should raise MemoryStoreError."
         assert caught_error.store_name == "test-store", "Error should reference the store name."
         assert caught_error.operation == "store", "Error operation should be 'store'."
     finally:
-        os.chmod(tmpdir, 0o755)
         _cleanup_tmpdir(tmpdir)
     return
 

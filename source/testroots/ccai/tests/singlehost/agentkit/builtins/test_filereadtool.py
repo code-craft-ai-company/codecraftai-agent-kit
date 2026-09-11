@@ -12,6 +12,10 @@ import os
 import shutil
 import tempfile
 
+from unittest import mock
+
+import ccai.agentkit.builtins.filereadtool as filereadtool_module
+
 from ccai.testbase.properties import given
 from ccai.testbase.properties import strategies as st
 
@@ -172,6 +176,12 @@ def test_filereadtool_permission_error_raises_tool_execution_error():
         FileReadTool raises ToolExecutionError when the file cannot be
         read due to a permission error.
 
+        The permission failure is provoked by patching the ``open`` call
+        made inside the ``filereadtool`` module so that it raises
+        PermissionError.  POSIX permission bits (``chmod 0o000``) are
+        ignored on Windows, so they cannot be used to provoke the failure
+        on every platform.
+
         **Validates: Requirements 9.4**
     """
     temp_dir = tempfile.mkdtemp()
@@ -182,8 +192,6 @@ def test_filereadtool_permission_error_raises_tool_execution_error():
         with open(file_path, mode="w", encoding="utf-8") as fh:
             fh.write("secret content")
 
-        os.chmod(file_path, 0o000)
-
         tool = FileReadTool()
 
         inputs = {
@@ -191,14 +199,17 @@ def test_filereadtool_permission_error_raises_tool_execution_error():
             "encoding": "utf-8",
         }
 
+        permission_error = PermissionError(13, "Permission denied", file_path)
+
         raised = False
         caught_error = None
 
-        try:
-            tool.execute(inputs=inputs)
-        except ToolExecutionError as exec_err:
-            raised = True
-            caught_error = exec_err
+        with mock.patch.object(filereadtool_module, "open", create=True, side_effect=permission_error):
+            try:
+                tool.execute(inputs=inputs)
+            except ToolExecutionError as exec_err:
+                raised = True
+                caught_error = exec_err
 
         assert raised is True, (
             "Expected ToolExecutionError for permission denied"
@@ -208,8 +219,6 @@ def test_filereadtool_permission_error_raises_tool_execution_error():
             "tool_name mismatch: {!r}".format(caught_error.tool_name)
         )
     finally:
-        # Restore permissions for cleanup
-        os.chmod(os.path.join(temp_dir, "noperm_test.txt"), 0o644)
         shutil.rmtree(temp_dir, ignore_errors=True)
 
     return
