@@ -5,7 +5,7 @@
 """
 
 import json
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 
 from ccai.agentkit.memoryquery import MemoryQuery
 from ccai.agentkit.memoryscope import MemoryScope

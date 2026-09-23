@@ -45,8 +45,6 @@ _payload_strategy = st.dictionaries(
 
 _event_type_strategy = st.sampled_from(["lifecycle", "tool", "llm", "memory", "workflow"])
 
-_sequence_number_strategy = st.integers(min_value=1, max_value=1000000)
-
 
 def _build_record(seq, event_type, agent_id, correlation_id, timestamp, payload):
     """
@@ -97,11 +95,11 @@ def test_executionrecording_json_round_trip(agent_id, start_time, end_time, even
     reconstructed = ExecutionRecording.from_json(json_str)
 
     assert reconstructed.agent_id == agent_id, (
-        "Round-trip agent_id mismatch: expected {rm -rf .output}, got {rm -rf .output}".format(agent_id, reconstructed.agent_id))
+        "Round-trip agent_id mismatch: expected {!r}, got {!r}".format(agent_id, reconstructed.agent_id))
     assert reconstructed.start_time == start_time, (
-        "Round-trip start_time mismatch: expected {rm -rf .output}, got {rm -rf .output}".format(start_time, reconstructed.start_time))
+        "Round-trip start_time mismatch: expected {!r}, got {!r}".format(start_time, reconstructed.start_time))
     assert reconstructed.end_time == end_time, (
-        "Round-trip end_time mismatch: expected {rm -rf .output}, got {rm -rf .output}".format(end_time, reconstructed.end_time))
+        "Round-trip end_time mismatch: expected {!r}, got {!r}".format(end_time, reconstructed.end_time))
 
     assert len(reconstructed.records) == len(original.records), (
         "Round-trip record count mismatch: expected {}, got {}".format(len(original.records), len(reconstructed.records)))
@@ -170,7 +168,7 @@ def test_executionrecording_filter_by_event_type_correctness(agent_id, start_tim
 
     for record in filtered_records:
         assert record.event_type == filter_type, (
-            "Filtered record has wrong event_type: expected {rm -rf .output}, got {rm -rf .output}".format(filter_type, record.event_type))
+            "Filtered record has wrong event_type: expected {!r}, got {!r}".format(filter_type, record.event_type))
 
     return
 

@@ -19,8 +19,6 @@ import abc
 import os
 import sys
 
-from typing import Optional
-
 from ccai.agentkit.logformatter import LogFormatter
 from ccai.agentkit.observabilityerror import ObservabilityError
 from ccai.agentkit.structuredlogentry import StructuredLogEntry

@@ -21,7 +21,6 @@ from ccai.agentkit.stepexecutionstatus import StepExecutionStatus
 from ccai.agentkit.stepresult import StepResult
 from ccai.agentkit.workflowconfiguration import WorkflowConfiguration
 from ccai.agentkit.workflowdefinition import WorkflowDefinition
-from ccai.agentkit.workflowedge import WorkflowEdge
 from ccai.agentkit.workflowregistry import WorkflowRegistry
 from ccai.agentkit.workflowstep import WorkflowStep
 

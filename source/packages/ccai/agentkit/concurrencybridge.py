@@ -11,7 +11,6 @@
 import asyncio
 
 from typing import Callable
-from typing import Optional
 
 from ccai.agentkit.concurrencymodel import ConcurrencyModel
 from ccai.agentkit.transitionrecord import TransitionRecord

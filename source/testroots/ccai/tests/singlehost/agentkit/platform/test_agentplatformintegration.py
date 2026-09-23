@@ -13,8 +13,6 @@
     :synopsis: Unit tests for Agent platform integration.
 """
 
-import os
-
 from ccai.agentkit.agent import Agent
 from ccai.agentkit.agentconfiguration import AgentConfiguration
 from ccai.agentkit.agentregistry import AgentRegistry

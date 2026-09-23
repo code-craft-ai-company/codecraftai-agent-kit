@@ -12,7 +12,7 @@
 
 import ccai.testbase as testbase
 
-from ccai.testbase.properties import given, assume
+from ccai.testbase.properties import given
 from ccai.testbase.properties import strategies as st
 from ccai.testbase.properties.strategies import composite
 
@@ -22,7 +22,6 @@ from ccai.agentkit.workflowedge import WorkflowEdge
 from ccai.agentkit.workflowerrors import WorkflowDefinitionError
 from ccai.agentkit.stepexecutionstatus import StepExecutionStatus
 from ccai.agentkit.stepresult import StepResult
-from ccai.agentkit.workflowcontext import WorkflowContext
 
 
 # ---------------------------------------------------------------------------
@@ -65,14 +64,6 @@ def _make_step(step_id: str) -> _TestStep:
 # ---------------------------------------------------------------------------
 # Strategies
 # ---------------------------------------------------------------------------
-
-_step_id_alphabet = "abcdefghijklmnopqrstuvwxyz0123456789"
-
-_step_id = st.text(
-    min_size=1,
-    max_size=8,
-    alphabet=_step_id_alphabet
-)
 
 _version_str = st.text(
     min_size=1,

@@ -7,7 +7,6 @@
     Subclasses implement the abstract lifecycle methods.
 """
 
-import abc
 import threading
 
 from concurrent.futures import Future
@@ -17,7 +16,6 @@ from typing import Optional
 from ccai.agentkit.agent import Agent
 from ccai.agentkit.agentconfiguration import AgentConfiguration
 from ccai.agentkit.concurrencymodel import ConcurrencyModel
-from ccai.agentkit.lifecyclestate import LifecycleState
 
 
 class PooledAgent(Agent):

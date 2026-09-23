@@ -7,7 +7,6 @@
 """
 
 import threading
-import time
 
 from ccai.agentkit.agent import Agent
 from ccai.agentkit.agentconfiguration import AgentConfiguration
@@ -151,7 +150,7 @@ def test_threaded_agent_cannot_instantiate_directly():
     try:
         config_data = {"identity": {"name": "abstract-threaded", "version": "1.0"}}
         config = AgentConfiguration.from_dict(config_data)
-        agent = ThreadedAgent(configuration=config)
+        ThreadedAgent(configuration=config)
     except TypeError:
         raised = True
 

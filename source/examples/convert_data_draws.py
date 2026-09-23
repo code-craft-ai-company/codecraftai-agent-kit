@@ -101,7 +101,6 @@ def convert_file(filepath):
                 # Match: var = data.draw(strategy)
                 m = re.match(r'^(\s+)(\w+)\s*=\s*data\.draw\((.+)\)\s*$', bl)
                 if m:
-                    indent = m.group(1)
                     var_name = m.group(2)
                     strategy = m.group(3)
                     draw_calls.append((var_name, strategy, bl))

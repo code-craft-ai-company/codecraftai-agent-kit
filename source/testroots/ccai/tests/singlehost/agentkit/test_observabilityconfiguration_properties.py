@@ -31,8 +31,6 @@ _sampling_rate_strategy = st.floats(min_value=0.0, max_value=1.0)
 
 _bool_strategy = st.booleans()
 
-_short_text = st.text(min_size=1, max_size=50)
-
 _exporter_settings_strategy = st.dictionaries(
     keys=st.text(min_size=1, max_size=20),
     values=st.text(min_size=0, max_size=50),

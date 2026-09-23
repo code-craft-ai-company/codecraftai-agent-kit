@@ -9,7 +9,6 @@
 """
 
 from datetime import datetime
-from typing import Optional
 
 from ccai.agentkit.errors import SemanticError
 from ccai.agentkit.metricmeasurement import MetricMeasurement

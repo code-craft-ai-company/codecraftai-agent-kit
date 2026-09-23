@@ -4,7 +4,6 @@
 
 from ccai.testbase.mocking import Mock
 
-from ccai.agentkit.selfhealingaction import SelfHealingAction
 from ccai.agentkit.selfhealingpolicy import SelfHealingPolicy
 
 

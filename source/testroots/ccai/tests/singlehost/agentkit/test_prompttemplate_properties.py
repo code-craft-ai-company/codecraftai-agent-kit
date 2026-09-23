@@ -50,12 +50,6 @@ _variable_name = st.text(
     max_size=10,
 )
 
-_variable_value = st.text(
-    alphabet="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ",
-    min_size=1,
-    max_size=20,
-)
-
 
 @composite
 def _prompt_template_no_vars(draw):

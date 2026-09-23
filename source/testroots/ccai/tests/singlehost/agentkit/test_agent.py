@@ -8,7 +8,6 @@
 """
 
 import logging
-import os
 
 from ccai.testbase.properties import given
 from ccai.testbase.properties import strategies as st
@@ -17,7 +16,6 @@ from ccai.agentkit.agent import Agent
 from ccai.agentkit.agentconfiguration import AgentConfiguration
 from ccai.agentkit.agentidentity import AgentIdentity
 from ccai.agentkit.agentregistry import AgentRegistry
-from ccai.agentkit.agentstatemachine import AgentStateMachine
 from ccai.agentkit.errors import SemanticError
 from ccai.agentkit.lifecyclestate import LifecycleState
 from ccai.agentkit.transitionrecord import TransitionRecord
@@ -636,7 +634,7 @@ def test_abstract_method_enforcement():
     try:
         config_data = {"identity": {"name": "abstract-test", "version": "1.0"}}
         config = AgentConfiguration.from_dict(config_data)
-        agent = Agent(configuration=config)
+        Agent(configuration=config)
     except TypeError:
         raised = True
 

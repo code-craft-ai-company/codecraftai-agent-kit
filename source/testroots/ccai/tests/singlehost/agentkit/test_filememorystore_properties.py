@@ -11,7 +11,6 @@
     **Validates: Requirements 6.3, 6.4, 6.7**
 """
 
-import os
 import shutil
 import tempfile
 

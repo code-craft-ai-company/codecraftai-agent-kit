@@ -11,8 +11,6 @@
     class may not yet have all observability methods available.
 """
 
-from typing import Optional
-
 
 class DebugInspector:
     """

@@ -6,7 +6,6 @@ from ccai.testbase.mocking import Mock
 
 from ccai.agentkit.errors import SemanticError
 from ccai.agentkit.healthcheckregistry import HealthCheckRegistry
-from ccai.agentkit.healthstatus import HealthStatus
 from ccai.agentkit.transporthealthcheck import TransportHealthCheck
 
 

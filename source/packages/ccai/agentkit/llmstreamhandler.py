@@ -29,7 +29,6 @@ class LLMStreamHandler(abc.ABC):
 
             :param chunk: The LLMStreamChunk with partial content.
         """
-        ...
 
     @abc.abstractmethod
     def on_complete(self, response) -> None:
@@ -39,7 +38,6 @@ class LLMStreamHandler(abc.ABC):
             :param response: The final assembled LLMResponse including
                 complete TokenUsage.
         """
-        ...
 
     @abc.abstractmethod
     def on_error(self, error: Exception) -> None:
@@ -48,4 +46,3 @@ class LLMStreamHandler(abc.ABC):
 
             :param error: The exception that occurred.
         """
-        ...

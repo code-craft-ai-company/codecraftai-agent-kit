@@ -39,12 +39,6 @@ _COMPARISON_OPS = {
     ast.NotIn: lambda left, right: left not in right,
 }
 
-# Mapping of AST boolean operator types to Python logical functions.
-_BOOL_OPS = {
-    ast.And: all,
-    ast.Or: any,
-}
-
 # Mapping of AST unary operator types to Python unary functions.
 _UNARY_OPS = {
     ast.Not: operator.not_,

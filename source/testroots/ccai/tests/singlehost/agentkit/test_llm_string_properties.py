@@ -67,8 +67,6 @@ _valid_role = st.sampled_from(["system", "user", "assistant", "tool"])
 
 _pos_int = st.integers(min_value=0, max_value=100000)
 
-_pos_float = st.floats(min_value=0.0, max_value=1e6)
-
 _currency = st.sampled_from(["USD", "EUR", "GBP", "JPY"])
 
 

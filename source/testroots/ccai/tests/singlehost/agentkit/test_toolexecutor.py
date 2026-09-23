@@ -237,7 +237,6 @@ def test_property_12_toolexecutor_validates_input_and_rejects_invalid_inputs(tes
         invalid_inputs = {}
         for param_def in params:
             param_name = param_def["name"]
-            param_type = param_def["type"]
             invalid_inputs[param_name] = wrong_value
 
     executor = ToolExecutor()
@@ -335,7 +334,6 @@ def test_property_13_toolexecutor_validates_output_and_rejects_invalid_outputs(t
         bad_output = {}
         for param_def in output_params:
             param_name = param_def["name"]
-            param_type = param_def["type"]
             bad_output[param_name] = wrong_value
 
     def bad_execute(inputs, credentials):

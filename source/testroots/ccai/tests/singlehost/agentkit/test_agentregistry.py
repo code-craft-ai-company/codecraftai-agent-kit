@@ -10,7 +10,7 @@
 import threading
 
 
-from ccai.testbase.properties import given, assume
+from ccai.testbase.properties import given
 from ccai.testbase.properties import strategies as st
 from ccai.testbase.properties.strategies import composite
 

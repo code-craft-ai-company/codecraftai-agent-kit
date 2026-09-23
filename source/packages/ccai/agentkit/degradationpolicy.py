@@ -5,8 +5,6 @@
 
 import json
 
-from typing import Optional
-
 from ccai.agentkit.degradationlevel import DegradationLevel
 from ccai.agentkit.degradationstrategy import DegradationStrategy
 

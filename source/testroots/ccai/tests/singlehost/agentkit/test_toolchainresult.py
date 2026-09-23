@@ -58,8 +58,8 @@ duration_strategy = st.floats(
 # Strategy for generating optional exceptions
 error_strategy = st.one_of(
     st.none(),
-    st.text(min_size=1, max_size=50).map(lambda msg: RuntimeError(msg)),
-    st.text(min_size=1, max_size=50).map(lambda msg: ValueError(msg)),
+    st.text(min_size=1, max_size=50).map(RuntimeError),
+    st.text(min_size=1, max_size=50).map(ValueError),
 )
 
 # Strategy for generating a valid tool name for ToolResult
@@ -95,7 +95,7 @@ tool_result_strategy = st.builds(
     ),
     error=st.one_of(
         st.none(),
-        st.text(min_size=1, max_size=20).map(lambda msg: RuntimeError(msg)),
+        st.text(min_size=1, max_size=20).map(RuntimeError),
     ),
 )
 

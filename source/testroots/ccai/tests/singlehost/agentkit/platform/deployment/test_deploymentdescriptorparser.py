@@ -14,7 +14,6 @@ import tempfile
 
 import yaml
 
-from ccai.agentkit.platform.deployment.deploymentdescriptor import DeploymentDescriptor
 from ccai.agentkit.platform.deployment.deploymentdescriptorparser import DeploymentDescriptorParser
 from ccai.agentkit.platform.errors import DeploymentDescriptorError
 from ccai.agentkit.platform.platformtype import PlatformType

@@ -31,7 +31,11 @@ class HealthCheck(abc.ABC):
 
     @abc.abstractmethod
     def check(self) -> HealthStatus:
-        ...
+        """
+            Performs the health check against the monitored component or dependency.
+
+            :returns: The health status produced by the check.
+        """
 
     def __repr__(self) -> str:
         return "{}(name={!r})".format(self.__class__.__name__, self._name)

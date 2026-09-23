@@ -42,7 +42,6 @@ class DegradationStrategy(abc.ABC):
 
             :returns: A fallback result value.
         """
-        ...
 
     def __repr__(self) -> str:
         """

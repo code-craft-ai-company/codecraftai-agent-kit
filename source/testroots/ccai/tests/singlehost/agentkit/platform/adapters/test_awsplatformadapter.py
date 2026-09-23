@@ -15,7 +15,6 @@ import json
 import os
 
 from datetime import datetime
-from io import BytesIO
 
 from ccai.agentkit.platform.adapters.awsplatformadapter import AwsComputeService
 from ccai.agentkit.platform.adapters.awsplatformadapter import AwsMessagingService

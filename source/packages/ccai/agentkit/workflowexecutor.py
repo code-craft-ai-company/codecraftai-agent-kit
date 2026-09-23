@@ -33,7 +33,6 @@ from ccai.agentkit.workflowconfiguration import WorkflowConfiguration
 from ccai.agentkit.workflowcontext import WorkflowContext
 from ccai.agentkit.workflowdefinition import WorkflowDefinition
 from ccai.agentkit.workflowerrors import WorkflowCheckpointError
-from ccai.agentkit.workflowerrors import WorkflowExecutionError
 from ccai.agentkit.workflowexecutionstatus import WorkflowExecutionStatus
 from ccai.agentkit.workflowresult import WorkflowResult
 
@@ -532,7 +531,6 @@ class WorkflowExecutor:
                 futures[future] = branch_steps
 
             for future in as_completed(futures):
-                branch_steps = futures[future]
                 try:
                     branch_results = future.result()
                 except Exception as ex:

@@ -76,6 +76,8 @@ def test_open_state_rejects_requests():
     try:
         cb.execute(lambda: (_ for _ in ()).throw(ValueError("fail")))
     except ValueError:
+        # Expected: the deliberately failing call is recorded by the circuit breaker;
+        # the propagated exception itself is not what this test verifies.
         pass
 
     assert cb.state is CircuitBreakerState.OPEN, "state should be OPEN"
@@ -104,6 +106,8 @@ def test_open_to_half_open_after_timeout():
     try:
         cb.execute(lambda: (_ for _ in ()).throw(ValueError("fail")))
     except ValueError:
+        # Expected: the deliberately failing call is recorded by the circuit breaker;
+        # the propagated exception itself is not what this test verifies.
         pass
 
     time.sleep(0.02)
@@ -130,6 +134,8 @@ def test_half_open_to_closed_on_success_threshold():
     try:
         cb.execute(lambda: (_ for _ in ()).throw(ValueError("fail")))
     except ValueError:
+        # Expected: the deliberately failing call is recorded by the circuit breaker;
+        # the propagated exception itself is not what this test verifies.
         pass
 
     time.sleep(0.02)
@@ -156,6 +162,8 @@ def test_half_open_failure_returns_to_open():
     try:
         cb.execute(lambda: (_ for _ in ()).throw(ValueError("fail")))
     except ValueError:
+        # Expected: the deliberately failing call is recorded by the circuit breaker;
+        # the propagated exception itself is not what this test verifies.
         pass
 
     time.sleep(0.02)
@@ -164,6 +172,8 @@ def test_half_open_failure_returns_to_open():
     try:
         cb.execute(lambda: (_ for _ in ()).throw(ValueError("fail again")))
     except ValueError:
+        # Expected: the deliberately failing call is recorded by the circuit breaker;
+        # the propagated exception itself is not what this test verifies.
         pass
 
     assert cb.state is CircuitBreakerState.OPEN, "should return to OPEN on half-open failure"
@@ -180,6 +190,8 @@ def test_reset_returns_to_closed():
     try:
         cb.execute(lambda: (_ for _ in ()).throw(ValueError("fail")))
     except ValueError:
+        # Expected: the deliberately failing call is recorded by the circuit breaker;
+        # the propagated exception itself is not what this test verifies.
         pass
 
     assert cb.state is CircuitBreakerState.OPEN, "should be OPEN"
@@ -203,6 +215,8 @@ def test_events_recorded_on_transitions():
     try:
         cb.execute(lambda: (_ for _ in ()).throw(ValueError("fail")))
     except ValueError:
+        # Expected: the deliberately failing call is recorded by the circuit breaker;
+        # the propagated exception itself is not what this test verifies.
         pass
 
     events = cb.events

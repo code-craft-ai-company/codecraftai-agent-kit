@@ -355,7 +355,7 @@ def test_unsubscribe_only_removes_target():
         subscriber_agent_id="agent-a",
         handler=lambda msg: invocations_a.append(msg),
     )
-    sub_b = broker.subscribe(
+    broker.subscribe(
         topic="events.test",
         subscriber_agent_id="agent-b",
         handler=lambda msg: invocations_b.append(msg),

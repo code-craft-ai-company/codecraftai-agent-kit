@@ -11,8 +11,6 @@
 
 import abc
 
-from typing import Optional
-
 from ccai.agentkit.platform.platformtype import PlatformType
 from ccai.agentkit.platform.services.platformservice import PlatformService
 
@@ -54,7 +52,6 @@ class ComputeService(PlatformService, abc.ABC):
             :returns: An InvocationResult with the execution outcome.
             :raises: ComputeError
         """
-        ...
 
     @abc.abstractmethod
     def invoke_async(self, function_name: str, payload: dict) -> str:
@@ -67,7 +64,6 @@ class ComputeService(PlatformService, abc.ABC):
             :returns: A request identifier string for tracking.
             :raises: ComputeError
         """
-        ...
 
     @abc.abstractmethod
     def get_invocation_status(self, request_id: str) -> "InvocationResult":
@@ -79,7 +75,6 @@ class ComputeService(PlatformService, abc.ABC):
             :returns: An InvocationResult representing the current status.
             :raises: ComputeError
         """
-        ...
 
     @abc.abstractmethod
     def list_functions(self) -> list:
@@ -89,7 +84,6 @@ class ComputeService(PlatformService, abc.ABC):
             :returns: List of function name strings.
             :raises: ComputeError
         """
-        ...
 
     def __repr__(self) -> str:
         """

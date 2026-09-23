@@ -7,7 +7,6 @@
     the abstract lifecycle methods which are invoked on the agent's thread.
 """
 
-import abc
 import threading
 
 from typing import Optional
@@ -15,7 +14,6 @@ from typing import Optional
 from ccai.agentkit.agent import Agent
 from ccai.agentkit.agentconfiguration import AgentConfiguration
 from ccai.agentkit.concurrencymodel import ConcurrencyModel
-from ccai.agentkit.lifecyclestate import LifecycleState
 
 
 class ThreadedAgent(Agent):

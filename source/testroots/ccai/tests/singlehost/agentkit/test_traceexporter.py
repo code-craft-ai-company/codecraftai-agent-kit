@@ -15,8 +15,6 @@ import os
 import sys
 import tempfile
 
-from datetime import datetime
-
 from ccai.agentkit.traceexporter import TraceExporter, ConsoleTraceExporter, FileTraceExporter
 from ccai.agentkit.tracespan import TraceSpan
 from ccai.agentkit.tracecontext import TraceContext

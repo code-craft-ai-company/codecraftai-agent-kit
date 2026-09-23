@@ -4,8 +4,6 @@
     Tests CircuitBreakerEvent construction, properties, and serialization.
 """
 
-import json
-
 from datetime import datetime
 
 from ccai.agentkit.circuitbreakerevent import CircuitBreakerEvent

@@ -19,7 +19,6 @@ import time
 import uuid
 
 from datetime import datetime
-from typing import Optional
 
 from ccai.agentkit.platform.adapters.platformadapter import PlatformAdapter
 from ccai.agentkit.platform.errors import ComputeError
@@ -126,7 +125,6 @@ class LocalComputeService(ComputeService):
             )
 
         except Exception as exc:
-            duration = time.monotonic() - start_time
             err_msg_lines = [
                 "Local compute invocation failed.",
                 "  Function: {!r}".format(function_name),

@@ -7,8 +7,6 @@
     Feature: llm-integration
 """
 
-import os
-
 from ccai.agentkit.agent import Agent
 from ccai.agentkit.agentconfiguration import AgentConfiguration
 from ccai.agentkit.agentregistry import AgentRegistry
@@ -551,12 +549,10 @@ def test_complete_multiple_providers():
 
 import logging
 import logging.handlers
-import time
 
 from ccai.agentkit.fallbackchain import FallbackChain
 from ccai.agentkit.llmerrors import LLMRequestError
 from ccai.agentkit.retrypolicy import RetryPolicy
-from ccai.testbase.mocking import create_module_patch
 
 
 # ---------------------------------------------------------------------------

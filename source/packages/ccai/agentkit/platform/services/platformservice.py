@@ -10,8 +10,6 @@
 
 import abc
 
-from typing import Optional
-
 from ccai.agentkit.platform.platformtype import PlatformType
 
 
@@ -77,7 +75,6 @@ class PlatformService(abc.ABC):
 
             :returns: True if the service is available, False otherwise.
         """
-        ...
 
     @abc.abstractmethod
     def health_check(self) -> bool:
@@ -86,7 +83,6 @@ class PlatformService(abc.ABC):
 
             :returns: True if the service is healthy, False otherwise.
         """
-        ...
 
     def __repr__(self) -> str:
         """

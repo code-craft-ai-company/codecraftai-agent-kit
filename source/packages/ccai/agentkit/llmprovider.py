@@ -108,7 +108,6 @@ class LLMProvider(abc.ABC):
 
             :raises: LLMRequestError on provider-side failure.
         """
-        ...
 
     @abc.abstractmethod
     def complete_stream(self, conversation, handler, **kwargs):
@@ -122,7 +121,6 @@ class LLMProvider(abc.ABC):
 
             :raises: LLMRequestError on provider-side failure.
         """
-        ...
 
     def get_model_info(self) -> dict:
         """

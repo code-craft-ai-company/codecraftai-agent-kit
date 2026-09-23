@@ -4,8 +4,6 @@
     Tests the ConfigurationValidationError and PluginLoadError exception classes.
 """
 
-import os
-
 from ccai.agentkit.configurationerrors import ConfigurationValidationError
 from ccai.agentkit.configurationerrors import PluginLoadError
 from ccai.agentkit.errors import AgentKitError

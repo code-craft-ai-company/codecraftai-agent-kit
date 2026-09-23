@@ -268,7 +268,6 @@ def test_property_10_deregistration_removes_tool(test_data):
         **Validates: Requirements 4.3**
     """
     names, target_index = test_data
-    n = len(names)
 
     # Register all tools
     registry = ToolRegistry()

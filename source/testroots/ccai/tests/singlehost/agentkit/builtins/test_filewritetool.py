@@ -41,7 +41,7 @@ def test_filewritetool_writes_content_to_temp_file():
             "encoding": "utf-8",
         }
 
-        result = tool.execute(inputs=inputs)
+        tool.execute(inputs=inputs)
 
         file_exists = os.path.isfile(file_path)
         assert file_exists is True, (

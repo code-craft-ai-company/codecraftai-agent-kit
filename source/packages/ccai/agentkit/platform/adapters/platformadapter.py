@@ -47,7 +47,6 @@ class PlatformAdapter(abc.ABC):
 
             :returns: The PlatformType value.
         """
-        ...
 
     @abc.abstractmethod
     def get_compute_service(self) -> ComputeService:
@@ -56,7 +55,6 @@ class PlatformAdapter(abc.ABC):
 
             :returns: A ComputeService instance.
         """
-        ...
 
     @abc.abstractmethod
     def get_storage_service(self) -> StorageService:
@@ -65,7 +63,6 @@ class PlatformAdapter(abc.ABC):
 
             :returns: A StorageService instance.
         """
-        ...
 
     @abc.abstractmethod
     def get_messaging_service(self) -> MessagingService:
@@ -74,7 +71,6 @@ class PlatformAdapter(abc.ABC):
 
             :returns: A MessagingService instance.
         """
-        ...
 
     def get_all_services(self) -> list:
         """

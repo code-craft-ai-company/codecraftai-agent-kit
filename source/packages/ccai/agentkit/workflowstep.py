@@ -167,7 +167,6 @@ class WorkflowStep(abc.ABC):
 
             :returns: A StepResult with the execution outcome.
         """
-        ...
 
     def __repr__(self) -> str:
         """

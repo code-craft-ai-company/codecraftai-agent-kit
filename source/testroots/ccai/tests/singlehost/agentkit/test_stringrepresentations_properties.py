@@ -16,7 +16,6 @@ from datetime import timezone
 
 from ccai.testbase.properties import given
 from ccai.testbase.properties import strategies as st
-from ccai.testbase.properties.strategies import composite
 
 from ccai.agentkit.agent import Agent
 from ccai.agentkit.agentaddress import AgentAddress
@@ -440,7 +439,7 @@ def test_property_26h_agentregistry_repr(agent_count):
             }
         }
         config = AgentConfiguration.from_dict(config_data)
-        agent = StringTestAgent(configuration=config)
+        StringTestAgent(configuration=config)
 
     repr_str = repr(registry)
 
@@ -484,7 +483,7 @@ def test_property_26i_agentregistry_str(agent_count):
             }
         }
         config = AgentConfiguration.from_dict(config_data)
-        agent = StringTestAgent(configuration=config)
+        StringTestAgent(configuration=config)
 
     str_val = str(registry)
 

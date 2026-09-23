@@ -18,7 +18,6 @@ from ccai.testbase.properties.strategies import composite
 
 from ccai.agentkit.jsonoutputparser import JsonOutputParser
 from ccai.agentkit.llmerrors import LLMResponseParsingError
-from ccai.agentkit.outputparser import OutputParser
 from ccai.agentkit.outputschema import OutputSchema
 from ccai.agentkit.regexoutputparser import RegexOutputParser
 
@@ -174,10 +173,6 @@ _json_dict = st.dictionaries(
     max_size=5,
 )
 
-_invalid_json_text = st.text(min_size=1, max_size=50).filter(
-    lambda s: _is_not_valid_json(s)
-)
-
 
 def _is_not_valid_json(s: str) -> bool:
     """
@@ -188,6 +183,11 @@ def _is_not_valid_json(s: str) -> bool:
         return False
     except (json.JSONDecodeError, ValueError):
         return True
+
+
+_invalid_json_text = st.text(min_size=1, max_size=50).filter(
+    _is_not_valid_json
+)
 
 
 _group_name = st.text(

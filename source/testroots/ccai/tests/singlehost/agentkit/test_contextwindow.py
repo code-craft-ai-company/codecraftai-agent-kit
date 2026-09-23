@@ -221,7 +221,6 @@ def test_build_fifo_removes_oldest_non_system_messages():
 
     result = cw.build(conversation=conversation)
 
-    roles = [m.role for m in result.messages]
     contents = [m.content for m in result.messages]
 
     assert "sys" in contents, "system message should be preserved"

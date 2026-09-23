@@ -68,7 +68,6 @@ class MessageSerializer(abc.ABC):
             :raises MessageSerializationError: If the object cannot be
                 serialized.
         """
-        ...
 
     @abc.abstractmethod
     def deserialize(self, data: bytes) -> object:
@@ -81,7 +80,6 @@ class MessageSerializer(abc.ABC):
             :raises MessageSerializationError: If the bytes cannot be
                 deserialized.
         """
-        ...
 
     def __repr__(self) -> str:
         """

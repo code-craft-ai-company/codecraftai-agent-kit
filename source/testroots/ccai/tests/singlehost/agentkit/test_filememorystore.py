@@ -13,7 +13,7 @@
 import os
 import shutil
 import tempfile
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 from ccai.agentkit.embeddingprovider import EmbeddingProvider
 from ccai.agentkit.errors import SemanticError

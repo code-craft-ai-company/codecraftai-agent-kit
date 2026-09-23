@@ -19,7 +19,6 @@ from ccai.agentkit.toolchainresult import ToolChainResult
 from ccai.agentkit.toolexecutor import ToolExecutor
 from ccai.agentkit.toolregistry import ToolRegistry
 from ccai.agentkit.toolresult import ToolResult
-from ccai.agentkit.toolschema import ToolSchema
 
 
 # ---------------------------------------------------------------------------

@@ -22,8 +22,6 @@ from ccai.agentkit.agentregistry import AgentRegistry
 from ccai.agentkit.inmemorystore import InMemoryStore
 from ccai.agentkit.lifecyclestate import LifecycleState
 from ccai.agentkit.memoryconfiguration import MemoryConfiguration
-from ccai.agentkit.memorystore import MemoryStore
-from ccai.agentkit.memorystoreregistry import MemoryStoreRegistry
 
 
 # ---------------------------------------------------------------------------

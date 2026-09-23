@@ -93,7 +93,7 @@ def test_inmemorystore_store_retrieve_consistency(
         tags=tags,
     )
 
-    stored_entry = store.store(entry=entry)
+    store.store(entry=entry)
     retrieved_entry = store.retrieve(identifier=identifier)
 
     testbase.assert_true(

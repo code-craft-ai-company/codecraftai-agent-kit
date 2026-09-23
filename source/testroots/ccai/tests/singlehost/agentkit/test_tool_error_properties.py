@@ -38,9 +38,9 @@ error_list_strategy = st.lists(
 )
 
 cause_strategy = st.one_of(
-    st.text(min_size=1, max_size=50).map(lambda msg: RuntimeError(msg)),
-    st.text(min_size=1, max_size=50).map(lambda msg: ValueError(msg)),
-    st.text(min_size=1, max_size=50).map(lambda msg: TypeError(msg)),
+    st.text(min_size=1, max_size=50).map(RuntimeError),
+    st.text(min_size=1, max_size=50).map(ValueError),
+    st.text(min_size=1, max_size=50).map(TypeError),
 )
 
 

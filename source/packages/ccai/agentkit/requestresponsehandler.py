@@ -26,7 +26,6 @@ import uuid
 from typing import Optional
 
 from ccai.agentkit.message import Message
-from ccai.agentkit.messagepattern import MessagePattern
 from ccai.agentkit.messagingerrors import MessageTimeoutError
 from ccai.agentkit.transport import Transport
 

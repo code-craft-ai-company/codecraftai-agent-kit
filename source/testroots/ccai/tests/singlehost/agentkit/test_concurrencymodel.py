@@ -81,8 +81,6 @@ def test_concurrency_model_members_are_distinct():
 # **Validates: Requirements 13.8**
 # ---------------------------------------------------------------------------
 
-import asyncio
-
 from ccai.agentkit.agent import Agent
 from ccai.agentkit.agentconfiguration import AgentConfiguration
 from ccai.agentkit.agentregistry import AgentRegistry

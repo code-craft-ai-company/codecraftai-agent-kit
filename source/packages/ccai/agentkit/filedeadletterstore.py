@@ -2,7 +2,6 @@
     Defines the FileDeadLetterStore for JSON file-based dead letter storage.
 """
 
-import json
 import os
 
 from typing import Optional

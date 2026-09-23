@@ -14,7 +14,7 @@ import random
 from ccai.agentkit.tracer import Tracer
 from ccai.agentkit.tracecontext import TraceContext
 from ccai.agentkit.traceexporter import TraceExporter
-from ccai.testbase.mocking import Mock, create_module_patch
+from ccai.testbase.mocking import create_module_patch
 
 
 # ---- Helper Functions ----

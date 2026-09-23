@@ -15,8 +15,6 @@ import os
 import sys
 import tempfile
 
-from datetime import datetime
-
 from ccai.agentkit.metricsexporter import (
     MetricsExporter,
     ConsoleMetricsExporter,

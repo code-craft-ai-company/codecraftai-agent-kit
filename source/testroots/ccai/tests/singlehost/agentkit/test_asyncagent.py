@@ -14,7 +14,6 @@ from ccai.agentkit.agentregistry import AgentRegistry
 from ccai.agentkit.asyncagent import AsyncAgent
 from ccai.agentkit.concurrencymodel import ConcurrencyModel
 from ccai.agentkit.lifecyclestate import LifecycleState
-from ccai.agentkit.transitionrecord import TransitionRecord
 
 
 # ---------------------------------------------------------------------------
@@ -143,7 +142,7 @@ def test_async_agent_cannot_instantiate_directly():
     try:
         config_data = {"identity": {"name": "abstract-async", "version": "1.0"}}
         config = AgentConfiguration.from_dict(config_data)
-        agent = AsyncAgent(configuration=config)
+        AsyncAgent(configuration=config)
     except TypeError:
         raised = True
 

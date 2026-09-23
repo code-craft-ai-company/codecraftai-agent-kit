@@ -222,7 +222,6 @@ class ApprovalStep(WorkflowStep):
 
         # Request is still pending
         if self._timeout is not None:
-            duration = time.monotonic() - start_time
             self._logger.warning(
                 "ApprovalStep '%s' timed out for request '%s' after %s seconds.",
                 self._name, request_id, self._timeout

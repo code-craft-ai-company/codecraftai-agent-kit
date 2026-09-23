@@ -1785,7 +1785,6 @@ def test_mq_transport_receive_not_connected_raises_transport_error():
     mock_client = _create_mock_broker_client()
     cfg = _create_mq_configuration(broker_client=mock_client)
     transport = MessageQueueTransport(name="mq-test", configuration=cfg)
-    message = _create_test_message()
 
     raised = False
     try:

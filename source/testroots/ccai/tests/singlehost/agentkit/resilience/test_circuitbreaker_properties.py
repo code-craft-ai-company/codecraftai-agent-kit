@@ -141,6 +141,8 @@ def test_circuitbreaker_closed_to_open_on_failure_threshold(
         try:
             cb.execute(failing_callable)
         except RuntimeError:
+            # Expected: the deliberately failing call is recorded by the circuit breaker;
+            # the propagated exception itself is not what this test verifies.
             pass
 
     # After exactly failure_threshold failures, state must be OPEN
@@ -199,6 +201,8 @@ def test_circuitbreaker_open_state_rejects_all_requests(
         try:
             cb.execute(failing_callable)
         except RuntimeError:
+            # Expected: the deliberately failing call is recorded by the circuit breaker;
+            # the propagated exception itself is not what this test verifies.
             pass
 
     assert cb.state == CircuitBreakerState.OPEN, (
@@ -288,6 +292,8 @@ def test_circuitbreaker_reset_returns_to_closed(
             try:
                 cb.execute(failing_callable)
             except RuntimeError:
+                # Expected: the deliberately failing call is recorded by the circuit breaker;
+                # the propagated exception itself is not what this test verifies.
                 pass
 
     elif target_state == CircuitBreakerState.OPEN:
@@ -296,6 +302,8 @@ def test_circuitbreaker_reset_returns_to_closed(
             try:
                 cb.execute(failing_callable)
             except RuntimeError:
+                # Expected: the deliberately failing call is recorded by the circuit breaker;
+                # the propagated exception itself is not what this test verifies.
                 pass
         assert cb.state == CircuitBreakerState.OPEN, (
             "Expected OPEN before reset, got {}".format(cb.state)
@@ -307,6 +315,8 @@ def test_circuitbreaker_reset_returns_to_closed(
             try:
                 cb.execute(failing_callable)
             except RuntimeError:
+                # Expected: the deliberately failing call is recorded by the circuit breaker;
+                # the propagated exception itself is not what this test verifies.
                 pass
         assert cb.state == CircuitBreakerState.OPEN, (
             "Expected OPEN before HALF_OPEN transition, got {}".format(cb.state)
@@ -396,6 +406,8 @@ def test_circuitbreaker_event_count_matches_transition_count(
         try:
             cb.execute(failing_callable)
         except RuntimeError:
+            # Expected: the deliberately failing call is recorded by the circuit breaker;
+            # the propagated exception itself is not what this test verifies.
             pass
 
     assert cb.state == CircuitBreakerState.OPEN, (

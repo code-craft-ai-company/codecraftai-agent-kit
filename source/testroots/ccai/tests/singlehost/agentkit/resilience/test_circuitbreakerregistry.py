@@ -137,6 +137,8 @@ def test_reset_all():
     try:
         cb.execute(lambda: (_ for _ in ()).throw(ValueError("fail")))
     except ValueError:
+        # Expected: the deliberately failing call is recorded by the circuit breaker;
+        # the propagated exception itself is not what this test verifies.
         pass
 
     assert cb.state is CircuitBreakerState.OPEN, "should be OPEN"

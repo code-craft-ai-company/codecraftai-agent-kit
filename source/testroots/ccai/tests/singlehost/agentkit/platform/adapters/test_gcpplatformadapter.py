@@ -11,9 +11,7 @@
     :synopsis: Unit tests for GCP platform adapter and service implementations.
 """
 
-import json
 import os
-import uuid
 
 from datetime import datetime
 

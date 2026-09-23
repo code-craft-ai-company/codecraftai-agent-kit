@@ -179,7 +179,6 @@ class Tool(abc.ABC):
 
             :returns: Output dictionary.
         """
-        ...
 
     def __repr__(self) -> str:
         """

@@ -10,8 +10,6 @@ import logging
 import threading
 import time
 
-from datetime import datetime
-
 from ccai.agentkit.circuitbreakerconfiguration import CircuitBreakerConfiguration
 from ccai.agentkit.circuitbreakerevent import CircuitBreakerEvent
 from ccai.agentkit.circuitbreakerstate import CircuitBreakerState

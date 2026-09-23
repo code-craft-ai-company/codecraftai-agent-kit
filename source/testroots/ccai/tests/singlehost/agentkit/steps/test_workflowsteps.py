@@ -905,7 +905,6 @@ def test_approvalstep_repr_and_str():
 # ===================================================================
 
 from ccai.agentkit.workflowdefinition import WorkflowDefinition
-from ccai.agentkit.workflowedge import WorkflowEdge
 from ccai.agentkit.workflowstep import WorkflowStep as WorkflowStepBase
 from ccai.agentkit.stepresult import StepResult
 

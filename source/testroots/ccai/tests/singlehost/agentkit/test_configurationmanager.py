@@ -9,12 +9,10 @@
 """
 
 import json
-import logging
 import os
 import tempfile
 
 from ccai.agentkit.configurationchangeevent import ConfigurationChangeEvent
-from ccai.agentkit.configurationlayer import ConfigurationLayer
 from ccai.agentkit.configurationlayersource import ConfigurationLayerSource
 from ccai.agentkit.configurationmanager import ConfigurationManager
 from ccai.agentkit.errors import ConfigurationError

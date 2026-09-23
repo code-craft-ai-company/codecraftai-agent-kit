@@ -27,7 +27,6 @@ def process_file(filepath):
         # Detect @given( with data=st.data()
         if '@given(' in line and 'st.data()' in line:
             # Collect full decorator
-            dec_start = i
             dec_lines = []
             depth = 0
             j = i

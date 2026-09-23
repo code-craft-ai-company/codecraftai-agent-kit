@@ -177,7 +177,7 @@ class AsyncAgent(Agent):
         if loop is not None and loop.is_running():
             # We are inside a running event loop; create a task
             # The caller must await this or use the event loop to complete it
-            future = asyncio.ensure_future(coroutine)
+            asyncio.ensure_future(coroutine)
             # If we are in a sync context within an async loop, we cannot block.
             # This path is for when the sync method is called from async code.
             return

@@ -8,12 +8,8 @@
     Feature: communication-messaging
 """
 
-import logging
-import os
-
 from ccai.agentkit.addressresolver import AddressResolver
 from ccai.agentkit.agent import Agent
-from ccai.agentkit.agentaddress import AgentAddress
 from ccai.agentkit.agentconfiguration import AgentConfiguration
 from ccai.agentkit.agentregistry import AgentRegistry
 from ccai.agentkit.errors import SemanticError
@@ -25,7 +21,6 @@ from ccai.agentkit.messagepattern import MessagePattern
 from ccai.agentkit.messagerouter import MessageRouter
 from ccai.agentkit.messagingconfiguration import MessagingConfiguration
 from ccai.agentkit.pubsubbroker import PubSubBroker
-from ccai.agentkit.requestresponsehandler import RequestResponseHandler
 from ccai.agentkit.subscription import Subscription
 from ccai.agentkit.transport import Transport
 from ccai.agentkit.transportconfiguration import TransportConfiguration

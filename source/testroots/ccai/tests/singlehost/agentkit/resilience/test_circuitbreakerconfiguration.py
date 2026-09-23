@@ -4,8 +4,6 @@
     Tests CircuitBreakerConfiguration construction, properties, and serialization.
 """
 
-import json
-
 from ccai.agentkit.circuitbreakerconfiguration import CircuitBreakerConfiguration
 
 

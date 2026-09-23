@@ -18,7 +18,6 @@ from ccai.agentkit.agentconfiguration import AgentConfiguration
 from ccai.agentkit.agentregistry import AgentRegistry
 from ccai.agentkit.debugsession import DebugSession
 from ccai.agentkit.lifecyclestate import LifecycleState
-from ccai.agentkit.observabilityconfiguration import ObservabilityConfiguration
 from ccai.agentkit.observabilitypipeline import ObservabilityPipeline
 from ccai.agentkit.structuredlogger import StructuredLogger
 from ccai.agentkit.tracer import Tracer
@@ -400,7 +399,6 @@ def test_plugin_discovery_handles_registration_failure():
 
         # Make the pipeline's register_log_exporter raise an exception
         # by replacing it with a failing function
-        original_register = agent.observability.register_log_exporter
 
         def failing_register(exporter):
             """

@@ -7,20 +7,10 @@
     Feature: core-agent-framework
 """
 
-import os
-
 from ccai.agentkit.agent import Agent
 from ccai.agentkit.agentconfiguration import AgentConfiguration
-from ccai.agentkit.agentidentity import AgentIdentity
 from ccai.agentkit.agentregistry import AgentRegistry
-from ccai.agentkit.agentstatemachine import AgentStateMachine
-from ccai.agentkit.concurrencymodel import ConcurrencyModel
-from ccai.agentkit.errors import AgentKitError
-from ccai.agentkit.errors import ConfigurationError
-from ccai.agentkit.errors import LifecycleError
-from ccai.agentkit.errors import SemanticError
 from ccai.agentkit.lifecyclestate import LifecycleState
-from ccai.agentkit.transitionrecord import TransitionRecord
 
 
 # ---------------------------------------------------------------------------

@@ -10,7 +10,6 @@
                   5.10, 5.11, 5.12
 """
 
-import io
 import os
 import sys
 import tempfile
@@ -125,7 +124,6 @@ def test_console_exporter_writes_to_stdout():
     exporter = ConsoleLogExporter(formatter=formatter)
     entry = _create_test_entry()
 
-    captured = io.StringIO()
     patch = create_module_patch(sys, "stdout")
     mock_stdout = patch.activate()
     mock_stdout.configure(recursive=True)

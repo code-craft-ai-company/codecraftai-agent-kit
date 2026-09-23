@@ -483,6 +483,8 @@ def test_pending_count_decreases_after_response():
         try:
             result_holder[0] = handler.send_request(request, transport, timeout=5.0)
         except Exception:
+            # Worker-thread exceptions cannot reach the test thread; a failed send_request
+            # is detected by the pending_count assertions below.
             pass
 
     thread = threading.Thread(target=do_request)
@@ -516,6 +518,7 @@ def test_pending_count_decreases_after_timeout():
         try:
             handler.send_request(request, transport, timeout=0.2)
         except MessageTimeoutError:
+            # Expected: the request is meant to time out; the test verifies pending_count afterward.
             pass
 
     thread = threading.Thread(target=do_request)

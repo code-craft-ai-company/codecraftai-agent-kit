@@ -50,7 +50,6 @@ class OutputParser(abc.ABC):
             :returns: A parsed Python object.
             :raises: LLMResponseParsingError
         """
-        ...
 
     def parse(self, raw_text: str) -> object:
         """

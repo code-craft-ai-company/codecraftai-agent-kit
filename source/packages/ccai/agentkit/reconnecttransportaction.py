@@ -2,8 +2,6 @@
     Defines the ReconnectTransportAction for reconnecting a Transport instance.
 """
 
-from datetime import datetime
-
 from ccai.agentkit.healthstatus import HealthStatus
 from ccai.agentkit.selfhealingaction import SelfHealingAction
 from ccai.agentkit.selfhealingresult import SelfHealingResult

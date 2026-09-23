@@ -8,7 +8,6 @@
 """
 
 import json
-import os
 
 
 class ToolSchema:

@@ -26,7 +26,6 @@ def migrate_file(filepath):
     # Determine what we need to import
     needs_given = '@given' in content
     needs_settings = 'settings(' in content
-    needs_assume = '\nassume(' in content or ' assume(' in content or 'assume(' in content.split('\n')[0] if content else False
     # Better check for assume
     needs_assume = bool(re.search(r'\bassume\(', content))
     needs_composite = '@composite' in content

@@ -8,7 +8,6 @@ import uuid
 
 from datetime import datetime
 from typing import Dict
-from typing import List
 from typing import Optional
 
 

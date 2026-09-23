@@ -1543,6 +1543,9 @@ class Agent(abc.ABC):
                     reason="Agent stopped."
                 )
             except Exception:
+                # Best-effort cancellation during shutdown; a failure to reject one request
+                # must not prevent the remaining requests from being cancelled or the agent
+                # from stopping.
                 pass
 
         self._logger.info(

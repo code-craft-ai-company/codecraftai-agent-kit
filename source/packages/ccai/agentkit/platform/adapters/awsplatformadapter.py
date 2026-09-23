@@ -16,7 +16,6 @@ import time
 import uuid
 
 from datetime import datetime
-from typing import Optional
 
 from ccai.agentkit.platform.adapters.platformadapter import PlatformAdapter
 from ccai.agentkit.platform.errors import ComputeError
@@ -143,7 +142,6 @@ class AwsComputeService(ComputeService):
             )
 
             duration = time.monotonic() - start_time
-            status_code = response.get("StatusCode", 0)
             response_payload = response.get("Payload")
 
             if response_payload is not None:
@@ -173,7 +171,6 @@ class AwsComputeService(ComputeService):
             raise
 
         except Exception as exc:
-            duration = time.monotonic() - start_time
             err_msg_lines = [
                 "AWS Lambda invocation failed.",
                 "  Function: {!r}".format(function_name),

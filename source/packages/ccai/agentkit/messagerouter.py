@@ -21,7 +21,6 @@ import logging
 
 from typing import Callable
 from typing import List
-from typing import Optional
 
 from ccai.agentkit.message import Message
 from ccai.agentkit.messagepattern import MessagePattern

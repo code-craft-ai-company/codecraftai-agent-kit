@@ -8,8 +8,6 @@
     Requirements: 3.1-3.2, 6.1-6.15, 8.10-8.13
 """
 
-import json
-
 from ccai.agentkit.workflowedge import WorkflowEdge
 from ccai.agentkit.parallelbranch import ParallelBranch
 from ccai.agentkit.stepresult import StepResult

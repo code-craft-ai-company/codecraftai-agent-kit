@@ -18,8 +18,6 @@
 import json
 import os
 
-from typing import Optional
-
 import yaml
 
 from ccai.agentkit.errors import ConfigurationError

@@ -126,6 +126,8 @@ def test_circuit_breaker_logs_at_warning():
         try:
             cb.execute(lambda: (_ for _ in ()).throw(ValueError("fail")))
         except ValueError:
+            # Expected: the deliberately failing call is recorded by the circuit breaker;
+            # the propagated exception itself is not what this test verifies.
             pass
 
         warning_records = [r for r in handler.records if r.levelno == logging.WARNING]

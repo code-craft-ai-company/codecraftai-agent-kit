@@ -19,7 +19,6 @@ from ccai.testbase.properties.strategies import composite
 
 from ccai.agentkit.stepexecutionstatus import StepExecutionStatus
 from ccai.agentkit.stepresult import StepResult
-from ccai.agentkit.workflowcontext import WorkflowContext
 from ccai.agentkit.workflowdefinition import WorkflowDefinition
 from ccai.agentkit.workflowedge import WorkflowEdge
 from ccai.agentkit.workflowexecutor import WorkflowExecutor
@@ -29,8 +28,6 @@ from ccai.agentkit.workflowstep import WorkflowStep
 # ---------------------------------------------------------------------------
 # Minimal concrete WorkflowStep that records execution order
 # ---------------------------------------------------------------------------
-
-_global_execution_log = []
 
 
 class _OrderRecordingStep(WorkflowStep):

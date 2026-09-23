@@ -5,8 +5,6 @@
     SemanticError, and LifecycleError as specialized subclasses.
 """
 
-import os
-
 from typing import Optional
 
 

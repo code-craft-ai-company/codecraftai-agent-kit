@@ -24,10 +24,8 @@ from ccai.agentkit.lifecyclestate import LifecycleState
 from ccai.agentkit.llmconversation import LLMConversation
 from ccai.agentkit.llmmessage import LLMMessage
 from ccai.agentkit.memoryconfiguration import MemoryConfiguration
-from ccai.agentkit.memoryentry import MemoryEntry
 from ccai.agentkit.memoryquery import MemoryQuery
 from ccai.agentkit.memoryscope import MemoryScope
-from ccai.agentkit.memorystore import MemoryStore
 from ccai.agentkit.memorystoreregistry import MemoryStoreRegistry
 
 

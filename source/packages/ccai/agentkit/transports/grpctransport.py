@@ -296,8 +296,6 @@ class GrpcTransport(Transport):
             )
 
         try:
-            grpc_module = self._grpc_module
-
             message_data = message.as_dict()
             body_bytes = json.dumps(message_data).encode("utf-8")
 
@@ -305,7 +303,7 @@ class GrpcTransport(Transport):
 
             method = "/ccai.agentkit.messaging/Send"
 
-            response = self._channel.unary_unary(
+            self._channel.unary_unary(
                 method,
                 request_serializer=lambda x: x,
                 response_deserializer=lambda x: x

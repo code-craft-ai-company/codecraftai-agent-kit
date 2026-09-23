@@ -16,8 +16,6 @@
     registered exporters.
 """
 
-from typing import Optional
-
 from ccai.agentkit.builtinagentmetrics import register_builtin_agent_metrics
 from ccai.agentkit.correlationcontext import CorrelationContext
 from ccai.agentkit.executionrecorder import ExecutionRecorder
@@ -26,7 +24,6 @@ from ccai.agentkit.metricscollector import MetricsCollector
 from ccai.agentkit.metricsexporter import MetricsExporter
 from ccai.agentkit.metricsregistry import MetricsRegistry
 from ccai.agentkit.observabilityconfiguration import ObservabilityConfiguration
-from ccai.agentkit.observabilityerror import ObservabilityError
 from ccai.agentkit.structuredlogger import StructuredLogger
 from ccai.agentkit.tracer import Tracer
 from ccai.agentkit.traceexporter import TraceExporter

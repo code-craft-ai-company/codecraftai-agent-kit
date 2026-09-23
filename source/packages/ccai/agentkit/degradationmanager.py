@@ -6,8 +6,6 @@
 import logging
 
 from typing import Callable
-from typing import Dict
-from typing import List
 from typing import Optional
 
 from ccai.agentkit.degradationchangeevent import DegradationChangeEvent

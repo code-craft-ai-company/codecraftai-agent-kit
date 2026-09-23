@@ -82,7 +82,7 @@ def test_inmemorystore_store_and_retrieve():
     store = InMemoryStore(store_name="test-store")
     entry = _create_entry(identifier="abc-123", content="hello world")
 
-    stored = store.store(entry=entry)
+    store.store(entry=entry)
     retrieved = store.retrieve(identifier="abc-123")
 
     assert retrieved is not None, "Retrieved entry should not be None."
@@ -154,7 +154,7 @@ def test_inmemorystore_update_replaces_entry():
     store.store(entry=original)
 
     replacement = _create_entry(identifier="upd-1", content="updated content")
-    updated = store.update(identifier="upd-1", entry=replacement)
+    store.update(identifier="upd-1", entry=replacement)
 
     retrieved = store.retrieve(identifier="upd-1")
     assert retrieved is not None, "Updated entry should be retrievable."

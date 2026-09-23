@@ -2,8 +2,6 @@
     Unit tests for ResilienceConfiguration.
 """
 
-import json
-
 from ccai.agentkit.errors import ConfigurationError
 from ccai.agentkit.resilienceconfiguration import ResilienceConfiguration
 from ccai.agentkit.retrypolicy import RetryPolicy

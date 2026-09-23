@@ -7,7 +7,6 @@
 """
 
 import abc
-from typing import Optional
 
 from ccai.agentkit.errors import SemanticError
 
@@ -83,7 +82,6 @@ class EmbeddingProvider(abc.ABC):
             :returns: An embedding vector as a list of floats.
             :raises: SemanticError if text is empty.
         """
-        ...
 
     @abc.abstractmethod
     def embed_batch(self, texts: list) -> list:
@@ -94,7 +92,6 @@ class EmbeddingProvider(abc.ABC):
 
             :returns: A list of embedding vectors, each as a list of floats.
         """
-        ...
 
     def __repr__(self) -> str:
         rtnval = "{}(provider_name={!r}, dimension={})".format(

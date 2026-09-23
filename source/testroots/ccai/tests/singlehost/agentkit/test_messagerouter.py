@@ -390,7 +390,7 @@ def test_deregister_only_removes_target_handler():
     call_order = []
 
     reg_a = router.register_by_topic("events.user", lambda msg: call_order.append("a"))
-    reg_b = router.register_by_topic("events.user", lambda msg: call_order.append("b"))
+    router.register_by_topic("events.user", lambda msg: call_order.append("b"))
 
     router.deregister(reg_a)
 

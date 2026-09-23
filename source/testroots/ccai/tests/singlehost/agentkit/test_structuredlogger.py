@@ -9,14 +9,12 @@
     Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9
 """
 
-import logging
-
 from datetime import datetime
 
 from ccai.agentkit.correlationcontext import CorrelationContext
 from ccai.agentkit.structuredlogger import StructuredLogger
 from ccai.agentkit.structuredlogentry import StructuredLogEntry
-from ccai.testbase.mocking import Mock, create_instance_patch
+from ccai.testbase.mocking import create_instance_patch
 
 
 # ---- Helper Functions ----

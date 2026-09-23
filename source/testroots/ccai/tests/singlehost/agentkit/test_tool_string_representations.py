@@ -114,7 +114,7 @@ duration_strategy = st.floats(
 
 error_strategy = st.one_of(
     st.none(),
-    st.text(min_size=1, max_size=50).map(lambda msg: RuntimeError(msg)),
+    st.text(min_size=1, max_size=50).map(RuntimeError),
 )
 
 output_strategy = st.one_of(

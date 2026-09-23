@@ -12,16 +12,14 @@
 
 import ccai.testbase as testbase
 
-from ccai.testbase.properties import given, assume
+from ccai.testbase.properties import given
 from ccai.testbase.properties import strategies as st
 
 from ccai.agentkit.contextwindow import ContextWindow
 from ccai.agentkit.contextwindowstrategy import ContextWindowStrategy
 from ccai.agentkit.llmconversation import LLMConversation
 from ccai.agentkit.llmmessage import LLMMessage
-from ccai.agentkit.memoryentry import MemoryEntry
 from ccai.agentkit.memoryerrors import ContextWindowError
-from ccai.agentkit.memoryscope import MemoryScope
 
 
 # ---------------------------------------------------------------------------
@@ -42,23 +40,11 @@ def _simple_token_counter(text: str) -> int:
 # Strategies
 # ---------------------------------------------------------------------------
 
-_role = st.sampled_from(["user", "assistant"])
-
-_system_content = st.text(min_size=1, max_size=30, alphabet="abcdefghijklmnopqrstuvwxyz ")
-
-_message_content = st.text(min_size=1, max_size=30, alphabet="abcdefghijklmnopqrstuvwxyz ")
-
 _max_tokens = st.integers(min_value=50, max_value=500)
 
 _system_message_count = st.integers(min_value=0, max_value=3)
 
 _non_system_message_count = st.integers(min_value=1, max_value=10)
-
-_memory_content = st.text(min_size=1, max_size=20, alphabet="abcdefghijklmnopqrstuvwxyz ")
-
-_scope = st.sampled_from([MemoryScope.AGENT, MemoryScope.SHARED, MemoryScope.GLOBAL])
-
-_identifier = st.text(min_size=1, max_size=20, alphabet="abcdefghijklmnopqrstuvwxyz0123456789")
 
 
 # ---------------------------------------------------------------------------

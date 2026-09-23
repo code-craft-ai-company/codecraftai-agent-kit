@@ -144,7 +144,6 @@ class Transport(abc.ABC):
             :raises TransportError: If the connection cannot be
                 established.
         """
-        ...
 
     @abc.abstractmethod
     def disconnect(self) -> None:
@@ -157,7 +156,6 @@ class Transport(abc.ABC):
 
             :raises TransportError: If the disconnection fails.
         """
-        ...
 
     @abc.abstractmethod
     def send(self, message: Message) -> MessageEnvelope:
@@ -170,7 +168,6 @@ class Transport(abc.ABC):
 
             :raises TransportError: If the send operation fails.
         """
-        ...
 
     @abc.abstractmethod
     def receive(self) -> Message:
@@ -181,7 +178,6 @@ class Transport(abc.ABC):
 
             :raises TransportError: If the receive operation fails.
         """
-        ...
 
     def is_connected(self) -> bool:
         """

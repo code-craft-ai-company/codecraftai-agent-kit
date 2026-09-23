@@ -7,7 +7,6 @@ from ccai.testbase.mocking import Mock
 from ccai.agentkit.circuitbreaker import CircuitBreaker
 from ccai.agentkit.circuitbreakerconfiguration import CircuitBreakerConfiguration
 from ccai.agentkit.circuitbreakerhealthcheck import CircuitBreakerHealthCheck
-from ccai.agentkit.circuitbreakerstate import CircuitBreakerState
 from ccai.agentkit.memorystorehealthcheck import MemoryStoreHealthCheck
 from ccai.agentkit.transporthealthcheck import TransportHealthCheck
 
@@ -111,6 +110,8 @@ def test_circuit_breaker_health_check_open():
     try:
         cb.execute(lambda: (_ for _ in ()).throw(ValueError("fail")))
     except ValueError:
+        # Expected: the deliberately failing call is recorded by the circuit breaker;
+        # the propagated exception itself is not what this test verifies.
         pass
 
     check = CircuitBreakerHealthCheck("cb-check", cb)

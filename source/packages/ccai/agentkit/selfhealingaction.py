@@ -34,7 +34,6 @@ class SelfHealingAction(abc.ABC):
 
             :returns: A SelfHealingResult.
         """
-        ...
 
     def __repr__(self) -> str:
         return "{}(action_name={!r})".format(self.__class__.__name__, self._action_name)

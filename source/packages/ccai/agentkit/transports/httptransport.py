@@ -33,7 +33,6 @@ from typing import Optional
 
 from ccai.agentkit.message import Message
 from ccai.agentkit.messageenvelope import MessageEnvelope
-from ccai.agentkit.messagepattern import MessagePattern
 from ccai.agentkit.messagingerrors import TransportError
 from ccai.agentkit.transport import Transport
 from ccai.agentkit.transportconfiguration import TransportConfiguration

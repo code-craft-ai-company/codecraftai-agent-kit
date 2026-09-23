@@ -11,8 +11,6 @@
 
 import abc
 
-from typing import Optional
-
 from ccai.agentkit.platform.platformtype import PlatformType
 from ccai.agentkit.platform.services.platformservice import PlatformService
 
@@ -55,7 +53,6 @@ class MessagingService(PlatformService, abc.ABC):
             :returns: A message identifier string.
             :raises: MessagingError
         """
-        ...
 
     @abc.abstractmethod
     def receive_messages(self, queue_name: str, max_count: int = 1,
@@ -70,7 +67,6 @@ class MessagingService(PlatformService, abc.ABC):
             :returns: A list of QueueMessage objects.
             :raises: MessagingError
         """
-        ...
 
     @abc.abstractmethod
     def acknowledge_message(self, queue_name: str, receipt_handle: str) -> None:
@@ -82,7 +78,6 @@ class MessagingService(PlatformService, abc.ABC):
 
             :raises: MessagingError
         """
-        ...
 
     @abc.abstractmethod
     def create_queue(self, queue_name: str) -> None:
@@ -93,7 +88,6 @@ class MessagingService(PlatformService, abc.ABC):
 
             :raises: MessagingError
         """
-        ...
 
     @abc.abstractmethod
     def delete_queue(self, queue_name: str) -> None:
@@ -104,7 +98,6 @@ class MessagingService(PlatformService, abc.ABC):
 
             :raises: MessagingError
         """
-        ...
 
     @abc.abstractmethod
     def list_queues(self) -> list:
@@ -114,7 +107,6 @@ class MessagingService(PlatformService, abc.ABC):
             :returns: List of queue name strings.
             :raises: MessagingError
         """
-        ...
 
     def __repr__(self) -> str:
         """

@@ -114,6 +114,8 @@ def test_pipeline_execute_failure_enqueues_dead_letter():
             operation_name="test-op"
         )
     except ResilienceError:
+        # Expected: retries are exhausted and ResilienceError is raised; this test only
+        # verifies that the failure was enqueued to the dead letter queue.
         pass
 
     assert pipeline.dead_letter_queue.entry_count == 1, "should have 1 dead letter entry"
@@ -140,6 +142,8 @@ def test_pipeline_circuit_breaker_open_raises():
     try:
         cb.execute(lambda: (_ for _ in ()).throw(ValueError("fail")))
     except ValueError:
+        # Expected: the deliberately failing call is recorded by the circuit breaker;
+        # the propagated exception itself is not what this test verifies.
         pass
 
     raised = False

@@ -87,7 +87,6 @@ class MemoryStore(abc.ABC):
 
             :returns: The entry count as an integer.
         """
-        ...
 
     @abc.abstractmethod
     def store(self, entry: MemoryEntry) -> MemoryEntry:
@@ -100,7 +99,6 @@ class MemoryStore(abc.ABC):
             :returns: The stored MemoryEntry (potentially with generated embedding).
             :raises: MemoryStoreError, SemanticError
         """
-        ...
 
     @abc.abstractmethod
     def retrieve(self, identifier: str) -> Optional[MemoryEntry]:
@@ -112,7 +110,6 @@ class MemoryStore(abc.ABC):
             :returns: The MemoryEntry, or None if not found.
             :raises: MemoryStoreError
         """
-        ...
 
     @abc.abstractmethod
     def search(self, query: MemoryQuery) -> MemoryQueryResult:
@@ -124,7 +121,6 @@ class MemoryStore(abc.ABC):
             :returns: A MemoryQueryResult with matching entries.
             :raises: MemoryStoreError
         """
-        ...
 
     @abc.abstractmethod
     def update(self, identifier: str, entry: MemoryEntry) -> MemoryEntry:
@@ -137,7 +133,6 @@ class MemoryStore(abc.ABC):
             :returns: The updated MemoryEntry.
             :raises: MemoryStoreError
         """
-        ...
 
     @abc.abstractmethod
     def delete(self, identifier: str) -> None:
@@ -147,7 +142,6 @@ class MemoryStore(abc.ABC):
             :param identifier: The entry identifier to remove.
             :raises: MemoryStoreError
         """
-        ...
 
     @abc.abstractmethod
     def clear(self) -> None:
@@ -156,7 +150,6 @@ class MemoryStore(abc.ABC):
 
             :raises: MemoryStoreError
         """
-        ...
 
     def contains(self, identifier: str) -> bool:
         """

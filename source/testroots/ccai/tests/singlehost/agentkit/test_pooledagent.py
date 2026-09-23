@@ -164,7 +164,7 @@ def test_pooled_agent_cannot_instantiate_directly():
     try:
         config_data = {"identity": {"name": "abstract-pooled", "version": "1.0"}}
         config = AgentConfiguration.from_dict(config_data)
-        agent = PooledAgent(configuration=config)
+        PooledAgent(configuration=config)
     except TypeError:
         raised = True
 

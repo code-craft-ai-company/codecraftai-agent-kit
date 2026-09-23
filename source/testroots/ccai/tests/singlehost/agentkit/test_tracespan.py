@@ -8,13 +8,11 @@
 """
 
 import json
-import time
 
 from datetime import datetime
 
 from ccai.agentkit.errors import SemanticError
 from ccai.agentkit.tracecontext import TraceContext
-from ccai.agentkit.traceevent import TraceEvent
 from ccai.agentkit.tracespan import TraceSpan
 
 

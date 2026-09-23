@@ -26,7 +26,6 @@ from ccai.agentkit.lifecyclestate import LifecycleState
 from ccai.agentkit.resilienceconfiguration import ResilienceConfiguration
 from ccai.agentkit.resiliencepipeline import ResiliencePipeline
 from ccai.agentkit.retrypolicy import RetryPolicy
-from ccai.testbase.mocking import Mock
 
 
 # ---------------------------------------------------------------------------

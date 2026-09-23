@@ -19,7 +19,6 @@ from ccai.testbase.properties.strategies import composite
 
 from ccai.agentkit.errors import SemanticError
 from ccai.agentkit.metricdefinition import MetricDefinition
-from ccai.agentkit.metricscollector import MetricsCollector
 from ccai.agentkit.metricsregistry import MetricsRegistry
 from ccai.agentkit.metrictype import MetricType
 
@@ -38,12 +37,6 @@ _metric_name_strategy = st.text(
 def _unique_metric_names_strategy(draw, min_size=1, max_size=20):
     name_set = draw(st.sets(_metric_name_strategy, min_size=min_size, max_size=max_size))
     return list(name_set)
-
-_metric_type_strategy = st.sampled_from([
-    MetricType.COUNTER,
-    MetricType.GAUGE,
-    MetricType.HISTOGRAM,
-])
 
 
 # ---------------------------------------------------------------------------

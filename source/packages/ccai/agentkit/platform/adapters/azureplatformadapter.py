@@ -16,7 +16,6 @@ import time
 import uuid
 
 from datetime import datetime
-from typing import Optional
 
 from ccai.agentkit.platform.adapters.platformadapter import PlatformAdapter
 from ccai.agentkit.platform.errors import ComputeError
@@ -180,7 +179,6 @@ class AzureComputeService(ComputeService):
             raise
 
         except Exception as exc:
-            duration = time.monotonic() - start_time
             err_msg_lines = [
                 "Azure Functions invocation failed.",
                 "  Function: {!r}".format(function_name),

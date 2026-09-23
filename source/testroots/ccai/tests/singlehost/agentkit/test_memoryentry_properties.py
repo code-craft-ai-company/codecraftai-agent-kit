@@ -14,7 +14,6 @@ import json
 
 from ccai.testbase.properties import given
 from ccai.testbase.properties import strategies as st
-from ccai.testbase.properties.strategies import composite
 
 from ccai.agentkit.memoryentry import MemoryEntry
 from ccai.agentkit.memoryscope import MemoryScope

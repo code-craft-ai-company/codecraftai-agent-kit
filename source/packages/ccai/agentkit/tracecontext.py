@@ -149,10 +149,7 @@ class TraceContext:
                 )
             )
 
-        version = parts[0]
-        trace_id = parts[1]
-        span_id = parts[2]
-        flags_str = parts[3]
+        version, trace_id, span_id, flags_str = parts
 
         if len(trace_id) != 32:
             raise SemanticError(

@@ -16,14 +16,10 @@
 """
 
 import abc
-import json
 import os
 import sys
 
-from typing import Optional
-
 from ccai.agentkit.observabilityerror import ObservabilityError
-from ccai.agentkit.tracespan import TraceSpan
 
 
 class TraceExporter(abc.ABC):
