@@ -75,6 +75,9 @@ class RequestResponseHandler:
 
             :raises MessageTimeoutError: If no response is received within
                 the timeout duration.
+
+            If the transport send raises, the request is no longer tracked
+            as pending and the send error propagates to the caller.
         """
         effective_timeout = timeout if timeout is not None else self._default_timeout
 
@@ -89,6 +92,7 @@ class RequestResponseHandler:
             correlation_id=correlation_id,
             identifier=message.identifier,
             timestamp=message.timestamp,
+            serialization_format=message.serialization_format,
         )
 
         ready_event = threading.Event()
@@ -102,16 +106,27 @@ class RequestResponseHandler:
             "cancelled": False,
         }
 
+        # The request is tracked before it is sent so a reply that arrives
+        # while send is still returning is not lost.
         with self._lock:
             self._pending_requests[correlation_id] = pending_entry
+
+        send_completed = False
+        try:
+            transport.send(request_message)
+            send_completed = True
+        finally:
+            if send_completed is not True:
+                # The request never left, so no reply can come; stop tracking
+                # it so pending_count stays accurate.
+                with self._lock:
+                    self._pending_requests.pop(correlation_id, None)
 
         self._logger.info(
             "Request sent: message_id='%s', correlation_id='%s', "
             "timeout=%.1f",
             request_message.identifier, correlation_id, effective_timeout
         )
-
-        transport.send(request_message)
 
         response_received = ready_event.wait(timeout=effective_timeout)
 

@@ -18,12 +18,16 @@
 """
 
 import logging
+import os
 import time
 import uuid
 
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import List
 from typing import Optional
+from typing import Set
+from typing import Tuple
 
 from ccai.agentkit.checkpointmanager import CheckpointManager
 from ccai.agentkit.conditionevaluator import ConditionEvaluator
@@ -32,9 +36,16 @@ from ccai.agentkit.stepresult import StepResult
 from ccai.agentkit.workflowconfiguration import WorkflowConfiguration
 from ccai.agentkit.workflowcontext import WorkflowContext
 from ccai.agentkit.workflowdefinition import WorkflowDefinition
+from ccai.agentkit.workflowedge import WorkflowEdge
 from ccai.agentkit.workflowerrors import WorkflowCheckpointError
+from ccai.agentkit.workflowerrors import WorkflowDefinitionError
+from ccai.agentkit.workflowerrors import WorkflowExecutionError
 from ccai.agentkit.workflowexecutionstatus import WorkflowExecutionStatus
 from ccai.agentkit.workflowresult import WorkflowResult
+
+
+# The key used to track a traversed edge: (source_step_id, target_step_id).
+EdgeKey = Tuple[str, str]
 
 
 class WorkflowExecutor:
@@ -45,12 +56,36 @@ class WorkflowExecutor:
 
         The executor creates a WorkflowContext from the provided
         inputs, computes a topological execution order from the
-        DAG, and executes each step in order. For conditional
-        edges, the ConditionEvaluator evaluates expressions in
-        ascending priority order and the first true edge is
-        traversed. For unconditional edges with parallel branches,
-        branches are executed concurrently using a ThreadPoolExecutor
-        bounded by the configured max_parallel_workers.
+        DAG, and executes each step in order. For unconditional
+        edges with parallel branches, branches are executed
+        concurrently using a ThreadPoolExecutor bounded by the
+        configured max_parallel_workers.
+
+        When a step completes, its outgoing edges decide which
+        successors are traversed:
+
+        * An edge without a condition is unconditional and is always
+          traversed.
+        * The conditional edges are evaluated by the
+          ConditionEvaluator in ascending priority order and only the
+          first edge whose condition is True is traversed. The
+          conditions after the first match are not evaluated.
+        * When no conditional edge matches, none of the conditional
+          targets is traversed from that step and the workflow
+          continues with the edges that were traversed. It is not an
+          error.
+        * A default (else) branch is declared as a conditional edge
+          with the condition ``"True"`` and the largest priority value,
+          so it is evaluated last and taken only when no other
+          condition matched.
+
+        A step runs once every step before it in topological order
+        has been decided and at least one of its incoming edges was
+        traversed, so a merge step after a conditional branch runs
+        when any branch reaches it. A step with incoming edges, none
+        of which was traversed, is recorded with a SKIPPED StepResult
+        and its outgoing edges are not traversed, so the skip
+        propagates down the untaken path.
 
         Checkpoints are saved via the CheckpointManager at the
         configured interval. Failed steps are retried according
@@ -80,14 +115,21 @@ class WorkflowExecutor:
             generates a unique execution identifier, computes the
             topological execution order from the DAG, and executes
             each step in order. Conditional edges are evaluated in
-            ascending priority order. Parallel branches declared
-            in the workflow definition are executed concurrently.
+            ascending priority order and the first true edge is
+            traversed; steps on paths that are not traversed are
+            reported as SKIPPED. Parallel branches declared in the
+            workflow definition are executed concurrently.
 
             :param workflow: The WorkflowDefinition to execute.
             :param inputs: The initial input dictionary.
             :param agent: The executing Agent instance.
 
             :returns: A WorkflowResult with the execution outcome.
+
+            :raises WorkflowDefinitionError: When an edge condition
+                expression is invalid.
+            :raises WorkflowExecutionError: When an edge condition
+                references a step that has not been executed.
         """
         execution_id = str(uuid.uuid4())
         context = WorkflowContext(inputs=inputs, agent=agent)
@@ -127,7 +169,10 @@ class WorkflowExecutor:
             Loads the most recent checkpoint for the execution
             identifier, restores the WorkflowContext from the
             checkpoint state, skips completed steps, and continues
-            execution from the next step.
+            execution from the next step. The edges traversed from
+            the completed steps are re-derived by evaluating their
+            conditions against the restored context, so the resumed
+            execution follows the same conditional branches.
 
             :param execution_id: The workflow execution identifier.
             :param workflow: The WorkflowDefinition to resume.
@@ -226,6 +271,11 @@ class WorkflowExecutor:
                 calculation.
 
             :returns: A WorkflowResult with the execution outcome.
+
+            :raises WorkflowDefinitionError: When an edge condition
+                expression is invalid.
+            :raises WorkflowExecutionError: When an edge condition
+                references a step that has not been executed.
         """
         topo_order = self._compute_topological_order(workflow)
 
@@ -234,11 +284,44 @@ class WorkflowExecutor:
         for branch in workflow.parallel_branches:
             parallel_fork_map[branch.fork_step_id] = branch
 
+        # The keys of the edges that have been traversed so far and the
+        # identifiers of the steps that were skipped because none of
+        # their incoming edges was traversed.
+        traversed_edges: Set[EdgeKey] = set()
+        skipped_step_ids: Set[str] = set()
+
+        # When resuming, the steps completed before the checkpoint are not
+        # executed again. Re-derive the edges they traversed from the
+        # restored context, in the same topological order in which the
+        # conditions were originally evaluated.
+        for step_id in topo_order:
+            if step_id in completed_step_ids:
+                resumed_edges = self._select_traversed_edges(
+                    workflow, step_id, context
+                )
+                traversed_edges.update(resumed_edges)
+
         for step_id in topo_order:
             if step_id in completed_step_ids:
                 continue
 
+            if step_id in skipped_step_ids:
+                continue
+
             step = workflow.get_step(step_id)
+
+            # Every step before this one in topological order has been
+            # decided, so the step runs when one of its incoming edges was
+            # traversed and is skipped otherwise.
+            should_execute = self._should_execute_step(
+                step_id, workflow, traversed_edges
+            )
+
+            if should_execute is not True:
+                skipped_result = self._build_skipped_result(workflow, step)
+                step_results.append(skipped_result)
+                skipped_step_ids.add(step_id)
+                continue
 
             # Check if this is a fork step for a parallel branch.
             if step_id in parallel_fork_map:
@@ -258,6 +341,12 @@ class WorkflowExecutor:
                         step_id, fork_result.error, execution_id
                     )
 
+                # Decide which branch starts are traversed from the fork.
+                fork_edges = self._select_traversed_edges(
+                    workflow, step_id, context
+                )
+                traversed_edges.update(fork_edges)
+
                 # Execute parallel branches. _execute_parallel_branches appends
                 # each branch step result to step_results, so the count of newly
                 # added branch steps is the growth in the list length.
@@ -269,7 +358,10 @@ class WorkflowExecutor:
                     context=context,
                     execution_id=execution_id,
                     step_results=step_results,
-                    completed_step_ids=completed_step_ids
+                    completed_step_ids=completed_step_ids,
+                    traversed_edges=traversed_edges,
+                    skipped_step_ids=skipped_step_ids,
+                    topo_order=topo_order
                 )
 
                 if not branch_result:
@@ -289,15 +381,6 @@ class WorkflowExecutor:
                     steps_since_checkpoint
                 )
 
-                continue
-
-            # Determine which edges to follow from this step.
-            outgoing_edges = workflow.get_outgoing_edges(step_id)
-            should_execute = self._should_execute_step(
-                step_id, workflow, completed_step_ids
-            )
-
-            if not should_execute:
                 continue
 
             # Execute the step.
@@ -320,6 +403,12 @@ class WorkflowExecutor:
                 completed_step_ids, step_id,
                 steps_since_checkpoint
             )
+
+            # Determine which outgoing edges are traversed from this step.
+            selected_edges = self._select_traversed_edges(
+                workflow, step_id, context
+            )
+            traversed_edges.update(selected_edges)
 
         # Build successful result.
         duration = time.monotonic() - start_time
@@ -348,16 +437,25 @@ class WorkflowExecutor:
 
     def _should_execute_step(self, step_id: str,
                              workflow: WorkflowDefinition,
-                             completed_step_ids: set) -> bool:
+                             traversed_edges: Set[EdgeKey]) -> bool:
         """
-            Determines whether a step should be executed by checking
-            that all incoming edge sources have completed.
+            Determines whether a step should be executed once every
+            step before it in topological order has been decided.
+
+            A step without incoming edges (the start step) is always
+            executed. Any other step is executed when at least one of
+            its incoming edges was traversed. A step whose incoming
+            edges were all left untraversed, because their source
+            steps were skipped or their conditions did not match, is
+            not executed.
 
             :param step_id: The step identifier to check.
             :param workflow: The WorkflowDefinition.
-            :param completed_step_ids: The set of completed step IDs.
+            :param traversed_edges: The keys of the edges traversed so
+                far, as (source_step_id, target_step_id) tuples.
 
-            :returns: True if all predecessors have completed.
+            :returns: True if the step should be executed, False if it
+                should be skipped.
         """
         incoming_edges = workflow.get_incoming_edges(step_id)
 
@@ -365,10 +463,164 @@ class WorkflowExecutor:
             return True
 
         for edge in incoming_edges:
-            if edge.source_step_id not in completed_step_ids:
-                return False
+            edge_key = (edge.source_step_id, edge.target_step_id)
+            if edge_key in traversed_edges:
+                return True
 
-        return True
+        return False
+
+    def _select_traversed_edges(self, workflow: WorkflowDefinition,
+                                step_id: str,
+                                context: WorkflowContext) -> List[EdgeKey]:
+        """
+            Decides which outgoing edges of a completed step are
+            traversed.
+
+            Unconditional edges are always traversed. The conditional
+            edges are evaluated in ascending priority order and only
+            the first edge whose condition is True is traversed; the
+            conditions after the first match are not evaluated. When
+            no conditional edge matches, none of the conditional
+            targets is traversed from this step.
+
+            :param workflow: The WorkflowDefinition being executed.
+            :param step_id: The identifier of the completed step.
+            :param context: The WorkflowContext the conditions are
+                evaluated against.
+
+            :returns: The keys of the traversed edges, as
+                (source_step_id, target_step_id) tuples.
+
+            :raises WorkflowDefinitionError: When an edge condition
+                expression is invalid.
+            :raises WorkflowExecutionError: When an edge condition
+                references a step that has not been executed.
+        """
+        # get_outgoing_edges returns the edges sorted by ascending priority.
+        outgoing_edges = workflow.get_outgoing_edges(step_id)
+
+        selected_edges = []
+        matched_edge = None
+        conditional_edge_count = 0
+
+        for edge in outgoing_edges:
+            edge_key = (edge.source_step_id, edge.target_step_id)
+
+            if edge.condition is None:
+                selected_edges.append(edge_key)
+                continue
+
+            conditional_edge_count += 1
+
+            if matched_edge is not None:
+                self._logger.debug(
+                    "Edge condition not evaluated: workflow='%s', "
+                    "source_step_id='%s', target_step_id='%s', "
+                    "priority=%d, reason='edge to %s with priority %d "
+                    "already matched'.",
+                    workflow.name, edge.source_step_id,
+                    edge.target_step_id, edge.priority,
+                    matched_edge.target_step_id, matched_edge.priority
+                )
+                continue
+
+            condition_met = self._evaluate_edge_condition(
+                workflow, edge, context
+            )
+
+            if condition_met is True:
+                matched_edge = edge
+                selected_edges.append(edge_key)
+
+        if conditional_edge_count > 0 and matched_edge is None:
+            self._logger.info(
+                "No conditional edge matched: workflow='%s', "
+                "step_id='%s', conditional_edge_count=%d.",
+                workflow.name, step_id, conditional_edge_count
+            )
+
+        return selected_edges
+
+    def _evaluate_edge_condition(self, workflow: WorkflowDefinition,
+                                 edge: WorkflowEdge,
+                                 context: WorkflowContext) -> bool:
+        """
+            Evaluates the condition of a conditional edge against the
+            workflow context using the ConditionEvaluator.
+
+            Errors raised by the ConditionEvaluator are re-raised with
+            the workflow name and the edge that carries the condition,
+            which the evaluator itself does not know.
+
+            :param workflow: The WorkflowDefinition being executed.
+            :param edge: The conditional WorkflowEdge to evaluate.
+            :param context: The WorkflowContext to evaluate against.
+
+            :returns: True when the condition is satisfied, False
+                otherwise.
+
+            :raises WorkflowDefinitionError: When the condition
+                expression is invalid.
+            :raises WorkflowExecutionError: When the condition
+                references a step that has not been executed.
+        """
+        try:
+            condition_met = self._condition_evaluator.evaluate(
+                edge.condition, context
+            )
+        except WorkflowDefinitionError as def_err:
+            errmsg_lines = [
+                "The condition on edge '{}' -> '{}' is invalid.".format(
+                    edge.source_step_id, edge.target_step_id
+                ),
+                "    CONDITION: {}".format(edge.condition),
+                "    PRIORITY: {}".format(edge.priority),
+                "    DETAIL: {}".format(def_err.detail),
+            ]
+            detail = os.linesep.join(errmsg_lines)
+            raise WorkflowDefinitionError(
+                workflow_name=workflow.name, detail=detail
+            ) from def_err
+        except WorkflowExecutionError as exec_err:
+            raise WorkflowExecutionError(
+                workflow_name=workflow.name,
+                step_id=edge.source_step_id,
+                cause=exec_err
+            ) from exec_err
+
+        self._logger.info(
+            "Edge condition evaluated: workflow='%s', "
+            "source_step_id='%s', target_step_id='%s', priority=%d, "
+            "condition='%s', result=%s.",
+            workflow.name, edge.source_step_id, edge.target_step_id,
+            edge.priority, edge.condition, condition_met
+        )
+
+        return condition_met
+
+    def _build_skipped_result(self, workflow: WorkflowDefinition,
+                              step) -> StepResult:
+        """
+            Builds the SKIPPED StepResult for a step that is not
+            executed because none of its incoming edges was traversed.
+
+            :param workflow: The WorkflowDefinition being executed.
+            :param step: The WorkflowStep being skipped.
+
+            :returns: A StepResult with SKIPPED status.
+        """
+        self._logger.info(
+            "Step skipped: workflow='%s', step_id='%s', "
+            "step_name='%s', reason='no incoming edge was traversed'.",
+            workflow.name, step.step_id, step.name
+        )
+
+        skipped_result = StepResult(
+            step_id=step.step_id,
+            step_name=step.name,
+            status=StepExecutionStatus.SKIPPED
+        )
+        return skipped_result
 
     def _execute_single_step(self, workflow: WorkflowDefinition,
                              step, context: WorkflowContext,
@@ -473,14 +725,20 @@ class WorkflowExecutor:
                                    branch, context: WorkflowContext,
                                    execution_id: str,
                                    step_results: list,
-                                   completed_step_ids: set) -> bool:
+                                   completed_step_ids: set,
+                                   traversed_edges: Set[EdgeKey],
+                                   skipped_step_ids: Set[str],
+                                   topo_order: List[str]) -> bool:
         """
             Executes parallel branches concurrently from a fork step
             to a join step.
 
             Identifies all branch paths from the fork step, executes
             them concurrently using a ThreadPoolExecutor, and merges
-            results into the context. If any branch fails, remaining
+            results into the context. Each branch honours the edge
+            conditions in the same way as the main execution loop, so
+            a branch whose start edge from the fork was not traversed
+            is reported as SKIPPED. If any branch fails, remaining
             branches are cancelled.
 
             :param workflow: The WorkflowDefinition being executed.
@@ -489,9 +747,22 @@ class WorkflowExecutor:
             :param execution_id: The execution identifier.
             :param step_results: The accumulated step results list.
             :param completed_step_ids: The set of completed step IDs.
+            :param traversed_edges: The keys of the edges traversed so
+                far, including the edges traversed from the fork step.
+                The edges traversed inside the branches are added to it.
+            :param skipped_step_ids: The set of skipped step IDs. The
+                branch steps that are skipped are added to it.
+            :param topo_order: The topological order of the workflow
+                steps, used to order the steps inside each branch.
 
             :returns: True if all branches completed successfully,
                 False if any branch failed.
+
+            :raises WorkflowDefinitionError: When an edge condition
+                inside a branch is invalid.
+            :raises WorkflowExecutionError: When an edge condition
+                inside a branch references a step that has not been
+                executed.
         """
         fork_id = branch.fork_step_id
         join_id = branch.join_step_id
@@ -509,14 +780,27 @@ class WorkflowExecutor:
 
         max_workers = self._configuration.max_parallel_workers
 
+        topo_index = {}
+        for index, topo_step_id in enumerate(topo_order):
+            topo_index[topo_step_id] = index
+
         # Collect steps for each branch path (from branch start to
-        # just before the join step).
+        # just before the join step), in topological order so each step
+        # is decided after the steps it depends on.
         branch_step_lists = []
         for branch_start_id in branch_starts:
             branch_steps = self._collect_branch_steps(
                 workflow, branch_start_id, join_id
             )
-            branch_step_lists.append(branch_steps)
+            ordered_branch_steps = sorted(
+                branch_steps, key=topo_index.get
+            )
+            branch_step_lists.append(ordered_branch_steps)
+
+        # Each branch starts from an immutable snapshot of the edges traversed
+        # so far, because the main thread merges the edges traversed by the
+        # branches that finish into traversed_edges while others still run.
+        traversed_snapshot = frozenset(traversed_edges)
 
         all_success = True
 
@@ -526,13 +810,23 @@ class WorkflowExecutor:
             for branch_steps in branch_step_lists:
                 future = executor.submit(
                     self._execute_branch,
-                    workflow, branch_steps, context, execution_id
+                    workflow, branch_steps, context, execution_id,
+                    traversed_snapshot
                 )
                 futures[future] = branch_steps
 
             for future in as_completed(futures):
                 try:
-                    branch_results = future.result()
+                    branch_results, branch_traversed_edges = future.result()
+                except (WorkflowDefinitionError, WorkflowExecutionError):
+                    # An edge condition inside the branch could not be
+                    # evaluated. That is a problem with the workflow
+                    # definition, not a step failure, so let it propagate as
+                    # it does from the main execution loop.
+                    for other_future in futures:
+                        if other_future is not future:
+                            other_future.cancel()
+                    raise
                 except Exception as ex:
                     all_success = False
                     self._logger.warning(
@@ -546,8 +840,15 @@ class WorkflowExecutor:
                             other_future.cancel()
                     break
 
+                traversed_edges.update(branch_traversed_edges)
+
                 for br in branch_results:
                     step_results.append(br)
+
+                    if br.status == StepExecutionStatus.SKIPPED:
+                        skipped_step_ids.add(br.step_id)
+                        continue
+
                     completed_step_ids.add(br.step_id)
 
                     if not br.is_success:
@@ -611,23 +912,50 @@ class WorkflowExecutor:
     def _execute_branch(self, workflow: WorkflowDefinition,
                         branch_steps: list,
                         context: WorkflowContext,
-                        execution_id: str) -> list:
+                        execution_id: str,
+                        traversed_snapshot: frozenset) -> Tuple[list, Set[EdgeKey]]:
         """
             Executes a sequence of steps in a single branch.
 
+            Each step is executed when one of its incoming edges was
+            traversed and is reported as SKIPPED otherwise. After a
+            step completes, its outgoing edges are selected in the same
+            way as in the main execution loop.
+
             :param workflow: The WorkflowDefinition.
-            :param branch_steps: The ordered list of step IDs to
-                execute.
+            :param branch_steps: The list of step IDs to execute, in
+                topological order.
             :param context: The WorkflowContext (shared across
                 branches).
             :param execution_id: The execution identifier.
+            :param traversed_snapshot: The keys of the edges traversed
+                before the branches were started.
 
-            :returns: A list of StepResult objects for the branch.
+            :returns: A tuple of the list of StepResult objects for the
+                branch and the set of edge keys traversed so far,
+                including the edges traversed inside this branch.
+
+            :raises WorkflowDefinitionError: When an edge condition
+                inside the branch is invalid.
+            :raises WorkflowExecutionError: When an edge condition
+                inside the branch references a step that has not been
+                executed.
         """
         results = []
+        branch_traversed_edges = set(traversed_snapshot)
 
         for step_id in branch_steps:
             step = workflow.get_step(step_id)
+
+            should_execute = self._should_execute_step(
+                step_id, workflow, branch_traversed_edges
+            )
+
+            if should_execute is not True:
+                skipped_result = self._build_skipped_result(workflow, step)
+                results.append(skipped_result)
+                continue
+
             result = self._execute_single_step(
                 workflow, step, context, execution_id
             )
@@ -636,7 +964,12 @@ class WorkflowExecutor:
             if not result.is_success:
                 break
 
-        return results
+            selected_edges = self._select_traversed_edges(
+                workflow, step_id, context
+            )
+            branch_traversed_edges.update(selected_edges)
+
+        return results, branch_traversed_edges
 
     def _compute_topological_order(self, workflow: WorkflowDefinition) -> list:
         """

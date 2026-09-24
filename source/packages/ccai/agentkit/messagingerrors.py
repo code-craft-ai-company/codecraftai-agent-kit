@@ -2,6 +2,7 @@
     Exception classes for the Communication & Messaging feature.
 
     Provides TransportError for transport operation failures,
+    NoMessageAvailableError for a receive that finds no waiting message,
     MessageSerializationError for serialization and deserialization failures,
     MessageRoutingError for routing and address resolution failures,
     and MessageTimeoutError for request/response timeout conditions.
@@ -89,6 +90,21 @@ class TransportError(AgentKitError):
             self._cause_exception
         )
         return repr_str
+
+
+class NoMessageAvailableError(TransportError):
+    """
+        Raised by the receive method of a pull-based Transport, such as the
+        MessageQueueTransport, when no message is waiting to be received.
+
+        It derives from TransportError so code that catches TransportError
+        around receive keeps working. The Agent receive path treats it as
+        "nothing received yet" instead of as a failure.
+
+        :param transport_name: The name of the transport that had no message.
+        :param operation: The operation that found no message, 'receive'.
+        :param cause: An optional exception describing the empty source.
+    """
 
 
 class MessageSerializationError(AgentKitError):

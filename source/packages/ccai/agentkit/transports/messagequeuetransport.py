@@ -15,6 +15,11 @@
     - ``publish_queue``: the queue name used for sending messages
     - ``consume_queue``: the queue name used for receiving messages
 
+    Messages are serialized with the MessageSerializer for the message's
+    serialization format (JSON by default). Consumed messages are
+    deserialized with the serializer for the ``serialization_format``
+    option, or JSON when it is not set.
+
     Credential resolution for broker authentication is supported
     through the credential_references in the TransportConfiguration.
 
@@ -33,7 +38,6 @@
     Requirements: 19.1-19.9
 """
 
-import json
 import logging
 
 from typing import Dict
@@ -42,6 +46,7 @@ from typing import Optional
 
 from ccai.agentkit.message import Message
 from ccai.agentkit.messageenvelope import MessageEnvelope
+from ccai.agentkit.messagingerrors import NoMessageAvailableError
 from ccai.agentkit.messagingerrors import TransportError
 from ccai.agentkit.transport import Transport
 from ccai.agentkit.transportconfiguration import TransportConfiguration
@@ -264,18 +269,21 @@ class MessageQueueTransport(Transport):
             Sends a Message by publishing it to the configured
             publish queue.
 
-            The message is serialized to JSON bytes via its as_dict
-            method and published to the queue named by the
-            ``publish_queue`` option. If no publish queue is
-            configured, raises a TransportError.
+            The message dictionary from its as_dict method is
+            serialized with the MessageSerializer that
+            resolve_serializer returns for the message's
+            serialization_format (JSON by default) and published to the
+            queue named by the ``publish_queue`` option. If no publish
+            queue is configured, raises a TransportError.
 
             :param message: The Message to send.
 
             :returns: A MessageEnvelope with delivery metadata.
 
             :raises TransportError: If the transport is not connected,
-                if no publish queue is configured, or if the publish
-                operation fails.
+                if no publish queue is configured, if the message cannot
+                be serialized in its serialization format, or if the
+                publish operation fails.
         """
         if not self._connected or self._broker_client is None:
             errmsg = "Transport '{}' is not connected.".format(self._name)
@@ -306,8 +314,10 @@ class MessageQueueTransport(Transport):
             )
 
         try:
+            serializer = self.resolve_serializer(message.serialization_format)
+
             message_data = message.as_dict()
-            body_bytes = json.dumps(message_data).encode("utf-8")
+            body_bytes = serializer.serialize(message_data)
 
             self._broker_client.publish(self._publish_queue, body_bytes)
 
@@ -365,14 +375,19 @@ class MessageQueueTransport(Transport):
 
             Consumes a single message from the queue named by the
             ``consume_queue`` option. The consumed bytes are
-            deserialized from JSON into a Message instance. If no
-            consume queue is configured, raises a TransportError.
+            deserialized into a Message instance with the
+            MessageSerializer for the ``serialization_format`` option,
+            or JSON when it is not set. If no consume queue is
+            configured, raises a TransportError.
 
             :returns: The received Message.
 
+            :raises NoMessageAvailableError: If no message is available
+                on the consume queue. It is a TransportError subclass.
             :raises TransportError: If the transport is not connected,
                 if no consume queue is configured, if the consume
-                operation fails, or if no message is available.
+                operation fails, or if the consumed data cannot be
+                deserialized.
         """
         if not self._connected or self._broker_client is None:
             errmsg = "Transport '{}' is not connected.".format(self._name)
@@ -406,12 +421,15 @@ class MessageQueueTransport(Transport):
             raw_data = self._broker_client.consume(self._consume_queue)
 
             if raw_data is None:
-                self._mq_logger.warning(
-                    "Message queue transport receive failed: name=%s, "
-                    "reason=no message available, queue=%s",
+                # An empty queue is the normal result of polling, so it is
+                # logged at DEBUG and reported with the TransportError
+                # subclass that pollers recognise.
+                self._mq_logger.debug(
+                    "Message queue transport receive found no message: name=%s, "
+                    "queue=%s",
                     self._name, self._consume_queue
                 )
-                raise TransportError(
+                raise NoMessageAvailableError(
                     transport_name=self._name,
                     operation="receive",
                     cause=RuntimeError(
@@ -422,12 +440,15 @@ class MessageQueueTransport(Transport):
                     )
                 )
 
-            if isinstance(raw_data, bytes):
-                json_str = raw_data.decode("utf-8")
-            else:
-                json_str = str(raw_data)
+            serializer = self.resolve_serializer(direction="deserialize")
 
-            received_message = Message.from_json(json_str)
+            if isinstance(raw_data, bytes):
+                raw_bytes = raw_data
+            else:
+                raw_bytes = str(raw_data).encode("utf-8")
+
+            message_data = serializer.deserialize(raw_bytes)
+            received_message = Message.from_dict(message_data)
 
             self._mq_logger.info(
                 "Message queue transport message received: name=%s, "

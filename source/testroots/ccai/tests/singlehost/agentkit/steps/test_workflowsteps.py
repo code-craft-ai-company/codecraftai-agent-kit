@@ -17,7 +17,17 @@ import ccai.testbase as testbase
 
 from ccai.testbase.mocking import Mock
 
+from ccai.agentkit.agent import Agent
+from ccai.agentkit.agentaddress import AgentAddress
+from ccai.agentkit.agentconfiguration import AgentConfiguration
+from ccai.agentkit.agentregistry import AgentRegistry
+from ccai.agentkit.lifecyclestate import LifecycleState
+from ccai.agentkit.message import Message
+from ccai.agentkit.messageenvelope import MessageEnvelope
+from ccai.agentkit.messagepattern import MessagePattern
 from ccai.agentkit.stepexecutionstatus import StepExecutionStatus
+from ccai.agentkit.transport import Transport
+from ccai.agentkit.transportconfiguration import TransportConfiguration
 from ccai.agentkit.workflowcontext import WorkflowContext
 from ccai.agentkit.approvalgate import ApprovalGate
 from ccai.agentkit.workflowerrors import ApprovalTimeoutError
@@ -557,16 +567,30 @@ def test_agentstep_construction():
     return
 
 
+def _create_response_message(payload):
+    """
+        Creates a RESPONSE Message carrying the given payload.
+    """
+    response = Message(
+        sender=AgentAddress(agent_identifier="agent-worker", transport_name="test-transport"),
+        recipient=AgentAddress(agent_identifier="agent-caller", transport_name="test-transport"),
+        payload=payload,
+        pattern=MessagePattern.RESPONSE,
+        correlation_id="corr-001"
+    )
+    return response
+
+
 def test_agentstep_execute_success():
     """
-        Verifies AgentStep returns COMPLETED StepResult when
-        send_message returns a response dict.
+        Verifies AgentStep returns COMPLETED StepResult with the
+        response payload when request returns a response Message.
     """
     agent = Mock()
     agent.configure(recursive=True)
     agent.mock_context().mock_method(
-        "send_message",
-        return_value={"status": "done", "data": "result_data"}
+        "request",
+        return_value=_create_response_message({"status": "done", "data": "result_data"})
     )
 
     step = AgentStep(
@@ -614,12 +638,12 @@ def test_agentstep_execute_no_agent():
 def test_agentstep_execute_transport_error():
     """
         Verifies AgentStep returns FAILED StepResult when
-        send_message raises an exception.
+        request raises an exception.
     """
     agent = Mock()
     agent.configure(recursive=True)
     agent.mock_context().mock_method(
-        "send_message",
+        "request",
         side_effect=lambda *a, **kw: (_ for _ in ()).throw(
             ConnectionError("Transport connection refused")
         )
@@ -638,6 +662,211 @@ def test_agentstep_execute_transport_error():
         "Result status should be FAILED on transport error.")
     testbase.assert_true("Transport connection refused" in result.error,
         "Error should contain the exception message.")
+
+    return
+
+
+class _StepTestAgent(Agent):
+    """
+        Concrete Agent used to run AgentStep against the real request API.
+    """
+
+    def initialize(self) -> None:
+        self._perform_transition(LifecycleState.INITIALIZED, "on_initialize")
+        return
+
+    def start(self) -> None:
+        self._perform_transition(LifecycleState.RUNNING, "on_start")
+        return
+
+    def pause(self) -> None:
+        self._perform_transition(LifecycleState.PAUSED, "on_pause")
+        return
+
+    def resume(self) -> None:
+        self._perform_transition(LifecycleState.RUNNING, "on_resume")
+        return
+
+    def stop(self) -> None:
+        self._perform_transition(LifecycleState.STOPPED, "on_stop")
+        return
+
+    def reset(self) -> None:
+        self._perform_transition(LifecycleState.CREATED, "on_error")
+        return
+
+
+class _RespondingTransport(Transport):
+    """
+        Transport that records sent messages and, when a response
+        handler and payload are set, answers each REQUEST with a
+        correlated RESPONSE the way the target agent would.
+    """
+
+    def __init__(self, name, response_handler=None, response_payload=None):
+        configuration = TransportConfiguration(
+            protocol_type="http", host="localhost", port=8080
+        )
+        super().__init__(name=name, protocol_type="http", configuration=configuration)
+        self.sent_messages = []
+        self._response_handler = response_handler
+        self._response_payload = response_payload
+        return
+
+    def connect(self):
+        self._connected = True
+        return
+
+    def disconnect(self):
+        self._connected = False
+        return
+
+    def send(self, message):
+        self.sent_messages.append(message)
+
+        if self._response_handler is not None and message.pattern == MessagePattern.REQUEST:
+            response = Message(
+                sender=message.recipient,
+                recipient=message.sender,
+                payload=self._response_payload,
+                pattern=MessagePattern.RESPONSE,
+                correlation_id=message.correlation_id
+            )
+            self._response_handler.handle_response(response)
+
+        envelope = MessageEnvelope(
+            message=message,
+            transport_name=self._name,
+            attempt_count=1,
+            delivery_status="delivered"
+        )
+        return envelope
+
+    def receive(self):
+        return None
+
+
+def _create_agent_with_responding_transport(name, response_payload=None, respond=True):
+    """
+        Creates a _StepTestAgent with a _RespondingTransport named
+        'test-transport' and a static address for 'agent-worker'.
+
+        :returns: A tuple of the agent and the transport.
+    """
+    registry = AgentRegistry.instance()
+    registry._reset()
+
+    config = AgentConfiguration(identity={"name": name, "version": "1.0.0"})
+    agent = _StepTestAgent(configuration=config)
+
+    response_handler = None
+    if respond is True:
+        response_handler = agent._request_response_handler
+
+    transport = _RespondingTransport(
+        name="test-transport",
+        response_handler=response_handler,
+        response_payload=response_payload
+    )
+    agent.register_transport(transport=transport)
+    agent.address_resolver.register_address(
+        "agent-worker", "test-transport", {"host": "localhost", "port": 8080}
+    )
+    return agent, transport
+
+
+def test_agentstep_execute_with_timeout_awaits_response():
+    """
+        Verifies an AgentStep configured with a timeout sends a REQUEST
+        through the agent and completes with the response payload.
+    """
+    agent, transport = _create_agent_with_responding_transport(
+        name="agentstep-timeout-agent",
+        response_payload={"status": "done", "count": 2}
+    )
+
+    step = AgentStep(
+        step_id="as-006",
+        name="Delegate With Timeout",
+        target_agent_id="agent-worker",
+        transport_name="test-transport",
+        timeout=5.0
+    )
+
+    context = WorkflowContext(inputs={"task": "process"}, agent=agent)
+    result = step.execute(context)
+
+    testbase.assert_equal(result.status, StepExecutionStatus.COMPLETED,
+        "Result status should be COMPLETED, error={}.".format(result.error))
+    testbase.assert_equal(result.output, {"status": "done", "count": 2},
+        "Output should be the response payload.")
+
+    sent_message = transport.sent_messages[0]
+    testbase.assert_equal(sent_message.pattern, MessagePattern.REQUEST,
+        "AgentStep should send a REQUEST message.")
+    testbase.assert_equal(sent_message.payload["inputs"], {"task": "process"},
+        "The request payload should carry the workflow inputs.")
+
+    return
+
+
+def test_agentstep_execute_without_timeout_returns_response_payload():
+    """
+        Verifies an AgentStep without a timeout waits for the response
+        and uses a non-dictionary response payload as the 'response'
+        output value.
+    """
+    agent, transport = _create_agent_with_responding_transport(
+        name="agentstep-default-timeout-agent",
+        response_payload="accepted"
+    )
+
+    step = AgentStep(
+        step_id="as-007",
+        name="Delegate Default Timeout",
+        target_agent_id="agent-worker",
+        transport_name="test-transport"
+    )
+
+    context = WorkflowContext(inputs={}, agent=agent)
+    result = step.execute(context)
+
+    testbase.assert_equal(result.status, StepExecutionStatus.COMPLETED,
+        "Result status should be COMPLETED, error={}.".format(result.error))
+    testbase.assert_equal(result.output, {"response": "accepted"},
+        "Output should hold the response payload.")
+
+    return
+
+
+def test_agentstep_execute_no_response_within_timeout_fails():
+    """
+        Verifies AgentStep returns a FAILED StepResult reporting a
+        MessageTimeoutError when the target agent does not respond
+        within the step timeout.
+    """
+    agent, transport = _create_agent_with_responding_transport(
+        name="agentstep-no-response-agent",
+        respond=False
+    )
+
+    step = AgentStep(
+        step_id="as-008",
+        name="Delegate No Response",
+        target_agent_id="agent-worker",
+        transport_name="test-transport",
+        timeout=0.05
+    )
+
+    context = WorkflowContext(inputs={}, agent=agent)
+    result = step.execute(context)
+
+    testbase.assert_equal(result.status, StepExecutionStatus.FAILED,
+        "Result status should be FAILED when no response arrives.")
+    testbase.assert_true("MessageTimeoutError" in result.error,
+        "Error should report the MessageTimeoutError, got: {}".format(result.error))
+    testbase.assert_equal(len(transport.sent_messages), 1,
+        "The request should have been sent once.")
 
     return
 

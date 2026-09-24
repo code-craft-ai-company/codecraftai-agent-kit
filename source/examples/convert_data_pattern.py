@@ -2,9 +2,22 @@
 """
 Converts st.data() patterns in test files to explicit @given parameters.
 Handles the common pattern where data.draw() is used with independent strategies.
+
+The other @given arguments are kept: strategy parameters stay in front of the
+new parameters and the run configuration arguments (settings=, constraints=)
+are moved to the end. When the decorator has no run configuration, the
+default settings=settings(max_examples=100) is added as before. Decorators
+stacked between @given and the function are kept as well. The @given
+arguments are split by split_given_arguments from convert_data_draws.py,
+which must be in the same directory as this script.
 """
 import re
 import sys
+
+from convert_data_draws import split_given_arguments
+
+
+DEFAULT_SETTINGS_PARAM = 'settings=settings(max_examples=100)'
 
 
 def process_file(filepath):
@@ -87,19 +100,48 @@ def process_file(filepath):
                 if m:
                     draw_calls.append((m.group(2), m.group(3), bi))
 
+            given_arguments = None
             if draw_calls:
-                # Build new @given decorator
                 dec_text = '\n'.join(dec_lines)
+                given_arguments = split_given_arguments(dec_text)
 
-                # Extract settings parameter
-                settings_match = re.search(r'settings=settings\([^)]+\)', dec_text)
-                settings_str = settings_match.group(0) if settings_match else 'settings=settings(max_examples=100)'
+                if given_arguments is None:
+                    print('  Skipped @given at {}:{}: its arguments cannot be rewritten as keywords.'.format(
+                        filepath, i + 1))
+                else:
+                    kept_strategy_params, kept_configuration_params = given_arguments
+
+                    existing_names = set()
+                    for existing_param in kept_strategy_params + kept_configuration_params:
+                        existing_name, _ = existing_param.split('=', 1)
+                        existing_names.add(existing_name)
+
+                    clashing_names = []
+                    for var_name, _, _ in draw_calls:
+                        if var_name in existing_names:
+                            clashing_names.append(var_name)
+
+                    if len(clashing_names) > 0:
+                        print('  Skipped @given at {}:{}: drawn names {} are already @given parameters.'.format(
+                            filepath, i + 1, clashing_names))
+                        given_arguments = None
+
+            if given_arguments is not None:
+                # Build new @given decorator: the other strategy parameters,
+                # the drawn parameters, then the run configuration
+                existing_params, configuration_params = given_arguments
+
+                if len(configuration_params) == 0:
+                    configuration_params = [DEFAULT_SETTINGS_PARAM]
 
                 # Build parameter list
                 params = []
+                for existing_param in existing_params:
+                    params.append('    {}'.format(existing_param))
                 for var_name, strategy_expr, _ in draw_calls:
                     params.append('    {}={}'.format(var_name, strategy_expr))
-                params.append('    {}'.format(settings_str))
+                for configuration_param in configuration_params:
+                    params.append('    {}'.format(configuration_param))
 
                 new_dec = '@given(\n' + ',\n'.join(params) + '\n)'
 
@@ -123,6 +165,9 @@ def process_file(filepath):
 
                 # Output
                 result.append(new_dec)
+                # Keep any decorators or comments between @given and the def
+                for between_idx in range(dec_end + 1, func_idx):
+                    result.append(lines[between_idx])
                 result.append(new_func_line)
                 # Docstring lines
                 for di in range(func_idx + 1, body_idx):

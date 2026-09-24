@@ -2,15 +2,20 @@
     Unit tests for the ccai.agentkit.transport module.
 
     Tests the Transport abstract base class including construction
-    validation, property access, is_connected, __repr__, and __str__.
-    A minimal concrete Transport subclass is used for testing.
+    validation, property access, is_connected, serializer resolution,
+    __repr__, and __str__. A minimal concrete Transport subclass is used
+    for testing.
 
     Requirements: 1.1-1.11
 """
 
 from ccai.agentkit.errors import SemanticError
+from ccai.agentkit.jsonmessageserializer import JsonMessageSerializer
 from ccai.agentkit.message import Message
 from ccai.agentkit.messageenvelope import MessageEnvelope
+from ccai.agentkit.messageserializerregistry import MessageSerializerRegistry
+from ccai.agentkit.messagingerrors import MessageSerializationError
+from ccai.agentkit.msgpackmessageserializer import MsgpackMessageSerializer
 from ccai.agentkit.transport import Transport
 from ccai.agentkit.transportconfiguration import TransportConfiguration
 
@@ -459,6 +464,103 @@ def test_str_shows_connected_status():
 
     assert "connected" in str_val, \
         "__str__ should show 'connected' after connect"
+    return
+
+
+# =========================================================================
+# Serializer resolution
+# =========================================================================
+
+def test_resolve_serializer_defaults_to_builtin_json():
+    """
+        Verify resolve_serializer returns a JsonMessageSerializer when no
+        format is requested and no registry is attached.
+    """
+    transport = StubTransport(
+        name="t1", protocol_type="http", configuration=_create_configuration()
+    )
+
+    serializer = transport.resolve_serializer()
+
+    assert transport.serializer_registry is None, \
+        "No serializer registry should be attached by default"
+    assert isinstance(serializer, JsonMessageSerializer), \
+        "The default serializer should be JSON, got {!r}".format(serializer)
+    return
+
+
+def test_resolve_serializer_uses_attached_registry():
+    """
+        Verify resolve_serializer returns the serializer registered for
+        the requested format in the attached registry.
+    """
+    transport = StubTransport(
+        name="t1", protocol_type="http", configuration=_create_configuration()
+    )
+    registry = MessageSerializerRegistry()
+    msgpack_serializer = MsgpackMessageSerializer()
+    registry.register(msgpack_serializer)
+
+    transport.attach_serializer_registry(registry)
+    serializer = transport.resolve_serializer("msgpack")
+
+    assert transport.serializer_registry is registry, \
+        "The attached registry should be exposed by serializer_registry"
+    assert serializer is msgpack_serializer, \
+        "The registered msgpack serializer should be returned, got {!r}".format(serializer)
+    return
+
+
+def test_resolve_serializer_uses_configured_format_when_none_requested():
+    """
+        Verify resolve_serializer uses the serialization_format option of
+        the TransportConfiguration when no format is requested.
+    """
+    cfg = TransportConfiguration(
+        protocol_type="http",
+        host="localhost",
+        port=8080,
+        options={"serialization_format": "msgpack"},
+    )
+    transport = StubTransport(name="t1", protocol_type="http", configuration=cfg)
+    registry = MessageSerializerRegistry()
+    registry.register(MsgpackMessageSerializer())
+    transport.attach_serializer_registry(registry)
+
+    serializer = transport.resolve_serializer()
+
+    assert serializer.format_name == "msgpack", \
+        "The configured format should be used, got {}".format(serializer.format_name)
+    return
+
+
+def test_resolve_serializer_unregistered_format_raises_serialization_error():
+    """
+        Verify resolve_serializer raises MessageSerializationError naming
+        the format and the registered formats when no serializer is
+        available, rather than falling back to JSON.
+    """
+    transport = StubTransport(
+        name="t1", protocol_type="http", configuration=_create_configuration()
+    )
+    registry = MessageSerializerRegistry()
+    registry.register(JsonMessageSerializer())
+    transport.attach_serializer_registry(registry)
+
+    caught = None
+    try:
+        transport.resolve_serializer("protobuf", direction="deserialize")
+    except MessageSerializationError as err:
+        caught = err
+
+    assert caught is not None, \
+        "MessageSerializationError should be raised for an unregistered format"
+    assert caught.format_name == "protobuf", \
+        "The error should name the format, got {}".format(caught.format_name)
+    assert caught.direction == "deserialize", \
+        "The error should report the direction, got {}".format(caught.direction)
+    assert "['json']" in caught.detail, \
+        "The error should list the registered formats, got {}".format(caught.detail)
     return
 
 

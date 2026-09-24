@@ -10,6 +10,7 @@
 
 from ccai.agentkit.addressresolver import AddressResolver
 from ccai.agentkit.agentaddress import AgentAddress
+from ccai.agentkit.agentregistry import AgentRegistry
 from ccai.agentkit.messagingerrors import MessageRoutingError
 from ccai.testbase.mocking import Mock
 
@@ -20,8 +21,8 @@ from ccai.testbase.mocking import Mock
 
 def _create_mock_registry(agent_identifier=None, agent=None):
     """
-        Creates a mock AgentRegistry that returns the given agent
-        when looked up by the given identifier.
+        Creates a mock AgentRegistry whose lookup_by_id returns the given
+        agent for the given identifier.
     """
     mock_registry = Mock()
     mock_registry.configure(recursive=True)
@@ -32,9 +33,9 @@ def _create_mock_registry(agent_identifier=None, agent=None):
                 return agent
             return None
 
-        mock_registry.mock_context().mock_method("lookup", side_effect=lookup_side_effect)
+        mock_registry.mock_context().mock_method("lookup_by_id", side_effect=lookup_side_effect)
     else:
-        mock_registry.mock_context().mock_method("lookup", return_value=None)
+        mock_registry.mock_context().mock_method("lookup_by_id", return_value=None)
 
     return mock_registry
 
@@ -246,6 +247,55 @@ def test_resolve_raises_routing_error_when_not_found():
         "MessageRoutingError should be raised for unresolvable agent"
     assert "unknown-agent" in str(error), \
         "Error message should contain the agent identifier"
+    return
+
+
+class _IdentifiedAgent:
+    """
+        Minimal object with the identity.identifier shape AgentRegistry
+        registers agents by.
+    """
+
+    def __init__(self, identifier):
+        self.identity = _AgentIdentityStub(identifier)
+        return
+
+
+class _AgentIdentityStub:
+    """
+        Minimal identity carrying an identifier.
+    """
+
+    def __init__(self, identifier):
+        self.identifier = identifier
+        return
+
+
+def test_resolve_dynamic_with_real_agent_registry():
+    """
+        Verify dynamic resolution works against a real AgentRegistry,
+        which looks agents up with lookup_by_id.
+    """
+    registry = AgentRegistry()
+    registry.register(_IdentifiedAgent("agent-real-001"))
+
+    resolver = AddressResolver(agent_registry=registry)
+
+    address = resolver.resolve("agent-real-001", "mq")
+
+    assert address.agent_identifier == "agent-real-001", \
+        "Resolved address should have the registered agent identifier"
+    assert address.transport_name == "mq", \
+        "Resolved address should have the requested transport name"
+
+    raised = False
+    try:
+        resolver.resolve("agent-not-registered", "mq")
+    except MessageRoutingError:
+        raised = True
+
+    assert raised is True, \
+        "An agent missing from the real registry should raise MessageRoutingError"
     return
 
 

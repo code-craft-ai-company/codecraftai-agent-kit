@@ -131,6 +131,7 @@ from ccai.agentkit.messagingerrors import TransportError
 from ccai.agentkit.messagingerrors import MessageSerializationError
 from ccai.agentkit.messagingerrors import MessageRoutingError
 from ccai.agentkit.messagingerrors import MessageTimeoutError
+from ccai.agentkit.messagingerrors import NoMessageAvailableError
 from ccai.agentkit.messagepattern import MessagePattern
 from ccai.agentkit.agentaddress import AgentAddress
 from ccai.agentkit.message import Message
@@ -289,6 +290,7 @@ __all__ = [
     "MessageTimeoutError",
     "MessagingConfiguration",
     "MsgpackMessageSerializer",
+    "NoMessageAvailableError",
     "ProtobufMessageSerializer",
     "PubSubBroker",
     "RequestResponseHandler",

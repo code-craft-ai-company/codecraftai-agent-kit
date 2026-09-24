@@ -3,7 +3,8 @@
     that uses gRPC protocol semantics for sending messages between agents.
 
     The GrpcTransport creates a gRPC channel to the configured endpoint
-    and sends messages as gRPC unary calls with JSON-serialized payloads.
+    and sends messages as gRPC unary calls with payloads serialized in the
+    message's serialization format (JSON by default).
     The channel is constructed from the TransportConfiguration host and
     port fields.
 
@@ -32,7 +33,6 @@
     Requirements: 18.1-18.8
 """
 
-import json
 import logging
 
 from typing import Dict
@@ -65,7 +65,8 @@ class GrpcTransport(Transport):
         The connect method establishes a gRPC channel (insecure or
         secure based on TLS configuration). The disconnect method
         closes the channel. The send method serializes the message
-        to JSON bytes and sends it via a generic unary call, returning
+        with the MessageSerializer for its serialization format (JSON
+        by default) and sends it via a generic unary call, returning
         a MessageEnvelope.
 
         The receive method raises TransportError because gRPC receive
@@ -266,21 +267,24 @@ class GrpcTransport(Transport):
 
     def send(self, message: Message) -> MessageEnvelope:
         """
-            Sends a Message as a gRPC unary call with JSON-serialized
+            Sends a Message as a gRPC unary call with a serialized
             payload.
 
-            The message is serialized to JSON bytes via its as_dict
-            method and sent as a generic unary-unary call over the
-            gRPC channel. The call uses the configured timeout from
-            the TransportConfiguration.
+            The message dictionary from its as_dict method is serialized
+            with the MessageSerializer that resolve_serializer returns
+            for the message's serialization_format (JSON by default) and
+            sent as a generic unary-unary call over the gRPC channel.
+            The call uses the configured timeout from the
+            TransportConfiguration.
 
             :param message: The Message to send.
 
             :returns: A MessageEnvelope with delivery metadata.
 
             :raises TransportError: If the transport is not connected,
-                if a connection error occurs, or if the deadline is
-                exceeded.
+                if the message cannot be serialized in its serialization
+                format, if a connection error occurs, or if the deadline
+                is exceeded.
         """
         if not self._connected or self._channel is None:
             errmsg = "Transport '{}' is not connected.".format(self._name)
@@ -296,8 +300,10 @@ class GrpcTransport(Transport):
             )
 
         try:
+            serializer = self.resolve_serializer(message.serialization_format)
+
             message_data = message.as_dict()
-            body_bytes = json.dumps(message_data).encode("utf-8")
+            body_bytes = serializer.serialize(message_data)
 
             timeout_seconds = self._configuration.timeout
 

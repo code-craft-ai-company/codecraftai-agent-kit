@@ -3,10 +3,10 @@
     execution to another Agent via the Communication & Messaging system.
 
     AgentStep constructs a request message from the WorkflowContext,
-    sends the message to the target agent through the agent's messaging
-    system, awaits a response, and returns a StepResult containing the
-    response payload on success or a FAILED status on timeout or
-    transport error.
+    sends it to the target agent with the executing agent's request
+    method, awaits the correlated response for up to the configured
+    timeout, and returns a StepResult containing the response payload
+    on success or a FAILED status on timeout or transport error.
 
     .. module:: ccai.agentkit.steps.agentstep
     :platform: Darwin, Linux, Unix, Windows
@@ -32,9 +32,12 @@ class AgentStep(WorkflowStep):
         AgentStep is a concrete WorkflowStep subclass that integrates
         with the Communication & Messaging system. At execution time,
         it constructs a request message payload from the WorkflowContext
-        inputs and accumulated step outputs, sends the message to the
-        target agent through the executing agent's send_message method,
-        and wraps the response in a StepResult.
+        inputs and accumulated step outputs, sends it to the target agent
+        through the executing agent's request method, which waits for
+        the correlated response, and wraps the response payload in a
+        StepResult. The executing agent must be receiving from the
+        transport, for example with Agent.start_receiving, so the reply
+        reaches the waiting request.
 
         The target_agent_id identifies the remote agent to delegate to.
         The optional transport_name specifies which communication
@@ -52,7 +55,7 @@ class AgentStep(WorkflowStep):
             uses the agent's default transport.
         :param timeout: An optional float specifying the maximum
             number of seconds to wait for a response. Defaults to
-            None, which uses the agent's default timeout.
+            None, which uses the agent's default request timeout.
         :param kwargs: Additional keyword arguments passed to the
             WorkflowStep base class constructor (e.g. input_schema,
             output_schema, tags, retry_policy).
@@ -127,16 +130,20 @@ class AgentStep(WorkflowStep):
 
             Retrieves the Agent from the context, constructs a request
             message payload from the WorkflowContext inputs and step
-            outputs, sends the message to the target agent through the
-            agent's send_message method, and returns a StepResult with
-            the execution outcome.
+            outputs, and sends it to the target agent through the
+            agent's request method with the step's transport name and
+            timeout. The request method waits for the correlated
+            response Message, and the response payload becomes the
+            step output: a dictionary payload is used as the output
+            directly and any other payload is stored under the
+            "response" key.
 
             If the Agent is None, a StepResult with FAILED status is
-            returned. If the message send raises a timeout error, a
-            StepResult with FAILED status and the timeout information
-            is returned. If the message send raises any other transport
-            error, a StepResult with FAILED status and the error
-            message is returned.
+            returned. If no response arrives within the timeout, the
+            MessageTimeoutError is reported in a StepResult with FAILED
+            status. If the request raises any other transport error, a
+            StepResult with FAILED status and the error message is
+            returned.
 
             :param context: The WorkflowContext with inputs and prior
                 step outputs.
@@ -166,21 +173,24 @@ class AgentStep(WorkflowStep):
         payload = self._build_payload(context)
 
         try:
-            send_kwargs = {}
-
-            if self._transport_name is not None:
-                send_kwargs["transport_name"] = self._transport_name
-
-            if self._timeout is not None:
-                send_kwargs["timeout"] = self._timeout
-
-            response = agent.send_message(
-                self._target_agent_id, payload, **send_kwargs
+            # request() sends a REQUEST message and waits for the correlated
+            # response; None for the transport name or timeout selects the
+            # agent's messaging defaults.
+            response = agent.request(
+                recipient_id=self._target_agent_id,
+                payload=payload,
+                transport_name=self._transport_name,
+                timeout=self._timeout
             )
 
             duration = time.monotonic() - start_time
 
-            output = response if isinstance(response, dict) else {"response": response}
+            response_payload = response.payload
+
+            if isinstance(response_payload, dict):
+                output = dict(response_payload)
+            else:
+                output = {"response": response_payload}
 
             result = StepResult(
                 step_id=self._step_id,
@@ -195,7 +205,7 @@ class AgentStep(WorkflowStep):
             duration = time.monotonic() - start_time
 
             error_type_name = type(exec_err).__name__
-            errmsg = "AgentStep '{}' failed sending message to agent '{}': [{}] {}".format(
+            errmsg = "AgentStep '{}' failed requesting a response from agent '{}': [{}] {}".format(
                 self._name, self._target_agent_id, error_type_name,
                 str(exec_err)
             )

@@ -2,9 +2,89 @@
 """
 Converts st.data() patterns to explicit @given parameters or @composite strategies.
 This handles Pattern A: when data.draw() calls use fixed strategies.
+
+The other @given arguments are kept: strategy parameters stay in front of the
+new parameters and the run configuration arguments (settings=, constraints=)
+are moved to the end. Decorators stacked between @given and the function are
+kept as well.
 """
+import ast
 import re
 import sys
+
+from typing import List
+from typing import Optional
+from typing import Tuple
+
+
+# The @given keyword arguments that configure the test run instead of drawing
+# a value for a test parameter.
+CONFIGURATION_KEYWORDS = ("settings", "constraints")
+
+
+def split_given_arguments(decorator_text: str) -> Optional[Tuple[List[str], List[str]]]:
+    """
+        Splits the keyword arguments of an ``@given(...)`` decorator into the
+        strategy parameters to keep and the run configuration parameters.
+
+        The ``data=st.data()`` argument is dropped because its draws are
+        replaced by explicit parameters. The ``settings=`` and ``constraints=``
+        arguments configure the test run rather than drawing a value, so they
+        are returned separately to be placed after the new parameters. The
+        arguments are parsed with the ``ast`` module so nested calls and
+        arguments that span several lines are kept intact.
+
+        :param decorator_text: The text of the decorator, from '@given(' to its
+            closing parenthesis.
+
+        :returns: A tuple of (strategy_params, configuration_params), each a
+            list of 'name=expression' strings in their original order, or None
+            when the decorator cannot be parsed or has arguments that cannot be
+            rewritten as keywords (positional strategies or ``**kwargs``).
+    """
+    call_text = decorator_text.strip()
+    if call_text.startswith("@"):
+        call_text = call_text[1:]
+
+    try:
+        tree = ast.parse(call_text, mode="eval")
+    except SyntaxError:
+        return None
+
+    call_node = tree.body
+    if not isinstance(call_node, ast.Call):
+        return None
+
+    # A positional st.data() is dropped like data=st.data(); any other
+    # positional strategy is bound by position and cannot be moved.
+    for arg_node in call_node.args:
+        arg_source = ast.get_source_segment(call_text, arg_node)
+        compact_arg_source = arg_source.replace(" ", "")
+        if compact_arg_source != "st.data()":
+            return None
+
+    strategy_params = []
+    configuration_params = []
+
+    for keyword_node in call_node.keywords:
+        if keyword_node.arg is None:
+            return None
+
+        value_source = ast.get_source_segment(call_text, keyword_node.value)
+        compact_value_source = value_source.replace(" ", "")
+
+        if keyword_node.arg == "data" and compact_value_source == "st.data()":
+            continue
+
+        param_text = "{}={}".format(keyword_node.arg, value_source)
+
+        if keyword_node.arg in CONFIGURATION_KEYWORDS:
+            configuration_params.append(param_text)
+        else:
+            strategy_params.append(param_text)
+
+    rtnval = (strategy_params, configuration_params)
+    return rtnval
 
 
 def convert_file(filepath):
@@ -105,29 +185,51 @@ def convert_file(filepath):
                     strategy = m.group(3)
                     draw_calls.append((var_name, strategy, bl))
             
+            given_arguments = None
             if len(draw_calls) > 0:
+                given_arguments = split_given_arguments(decorator_text)
+
+                if given_arguments is None:
+                    print('  Skipped @given at {}:{}: its arguments cannot be rewritten as keywords.'.format(
+                        filepath, i + 1))
+                else:
+                    kept_strategy_params, kept_configuration_params = given_arguments
+
+                    existing_names = set()
+                    for existing_param in kept_strategy_params + kept_configuration_params:
+                        existing_name, _ = existing_param.split('=', 1)
+                        existing_names.add(existing_name)
+
+                    clashing_names = []
+                    for var_name, _, _ in draw_calls:
+                        if var_name in existing_names:
+                            clashing_names.append(var_name)
+
+                    if len(clashing_names) > 0:
+                        print('  Skipped @given at {}:{}: drawn names {} are already @given parameters.'.format(
+                            filepath, i + 1, clashing_names))
+                        given_arguments = None
+
+            if given_arguments is not None:
                 # Convert to explicit @given parameters
                 # Remove data=st.data() from decorator
-                # Add new parameters
+                # Keep the other strategy parameters, add the new parameters,
+                # and keep the run configuration (settings=, constraints=) last
                 # Remove data.draw() lines from body
                 # Update function signature
-                
-                # Build new @given parameters
-                # Extract existing non-data params from decorator
-                existing_params = re.findall(r'(\w+)=(?!st\.data\(\))([^,\n]+(?:\([^)]*\))?)', decorator_text)
-                
-                # Extract settings parameter
-                settings_match = re.search(r'settings=settings\([^)]+\)', decorator_text)
-                settings_param = settings_match.group(0) if settings_match else None
-                
+                existing_params, configuration_params = given_arguments
+
                 # Build new decorator
                 new_params = []
+                for existing_param in existing_params:
+                    new_params.append('    {}'.format(existing_param))
+
                 for var_name, strategy, _ in draw_calls:
                     new_params.append('    {}={}'.format(var_name, strategy))
-                
-                if settings_param:
-                    new_params.append('    {}'.format(settings_param))
-                
+
+                for configuration_param in configuration_params:
+                    new_params.append('    {}'.format(configuration_param))
+
                 new_decorator = '@given(\n' + ',\n'.join(new_params) + '\n)'
                 
                 # Update function signature
@@ -154,6 +256,9 @@ def convert_file(filepath):
                 
                 # Write the converted lines
                 new_lines.append(new_decorator)
+                # Keep any decorators or comments between @given and the def
+                for between_idx in range(j, func_line_idx):
+                    new_lines.append(lines[between_idx])
                 new_lines.append(new_func_def)
                 # Add docstring lines
                 for dl_idx in range(func_line_idx + 1, func_body_start):
@@ -164,7 +269,8 @@ def convert_file(filepath):
                 i = func_body_end
                 continue
             else:
-                # No simple data.draw() calls found, keep as-is but this shouldn't happen
+                # No simple data.draw() calls found, or the @given arguments
+                # cannot be rewritten; keep the decorator as-is
                 pass
         
         new_lines.append(line)

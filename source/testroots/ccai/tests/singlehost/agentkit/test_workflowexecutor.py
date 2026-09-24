@@ -26,6 +26,8 @@ from ccai.agentkit.workflowconfiguration import WorkflowConfiguration
 from ccai.agentkit.workflowdefinition import WorkflowDefinition
 from ccai.agentkit.workflowedge import WorkflowEdge
 from ccai.agentkit.workflowerrors import WorkflowCheckpointError
+from ccai.agentkit.workflowerrors import WorkflowDefinitionError
+from ccai.agentkit.workflowerrors import WorkflowExecutionError
 from ccai.agentkit.workflowexecutionstatus import WorkflowExecutionStatus
 from ccai.agentkit.workflowexecutor import WorkflowExecutor
 from ccai.agentkit.workflowstep import WorkflowStep
@@ -209,32 +211,146 @@ def test_linear_workflow_stores_step_outputs_in_context():
 
 
 # =========================================================================
+# Helper: build a workflow of recording steps from step ids and edges
+# =========================================================================
+
+def _build_recording_workflow(name, execution_log, step_ids, edges,
+                              start_step_id, outputs=None,
+                              parallel_branches=None):
+    """
+        Builds a WorkflowDefinition whose steps are _RecordingStep
+        instances that append their step_id to the execution log.
+
+        :param name: The workflow name.
+        :param execution_log: Shared list for recording execution order.
+        :param step_ids: The identifiers of the steps to create.
+        :param edges: The list of WorkflowEdge objects.
+        :param start_step_id: The identifier of the start step.
+        :param outputs: Optional dict mapping step_id to output dict.
+        :param parallel_branches: Optional list of ParallelBranch objects.
+
+        :returns: A WorkflowDefinition.
+    """
+    if outputs is None:
+        outputs = {}
+
+    steps = {}
+    for step_id in step_ids:
+        default_output = {"{}_done".format(step_id): True}
+        step_output = outputs.get(step_id, default_output)
+        steps[step_id] = _RecordingStep(
+            step_id=step_id, name=step_id,
+            execution_log=execution_log,
+            output=step_output
+        )
+
+    workflow = WorkflowDefinition(
+        name=name,
+        version="1.0",
+        steps=steps,
+        edges=edges,
+        start_step_id=start_step_id,
+        parallel_branches=parallel_branches
+    )
+    return workflow
+
+
+def _get_step_status(result, step_id):
+    """
+        Returns the StepExecutionStatus recorded for a step in a
+        WorkflowResult, or None when the result has no entry for it.
+
+        :param result: The WorkflowResult to inspect.
+        :param step_id: The step identifier to look up.
+
+        :returns: The StepExecutionStatus or None.
+    """
+    step_result = result.get_step_result(step_id)
+
+    if step_result is None:
+        return None
+
+    status = step_result.status
+    return status
+
+
+def _build_level_routing_workflow(execution_log, include_default=False,
+                                  include_unconditional=False):
+    """
+        Builds a workflow whose start step routes on the 'level'
+        workflow input:
+
+        - start -> high_path when inputs.level == 'high' (priority 1)
+        - start -> low_path when inputs.level == 'low' (priority 2)
+        - start -> default_path with condition 'True' (priority 99),
+          when include_default is True
+        - start -> audit unconditionally, when include_unconditional
+          is True
+
+        :param execution_log: Shared list for recording execution order.
+        :param include_default: Whether to add the default edge.
+        :param include_unconditional: Whether to add the unconditional
+            edge to the audit step.
+
+        :returns: A WorkflowDefinition.
+    """
+    step_ids = ["start", "high_path", "low_path"]
+
+    # The edges are declared in reverse priority order so the test also
+    # verifies that the executor orders them by priority.
+    edges = [
+        WorkflowEdge(
+            source_step_id="start",
+            target_step_id="low_path",
+            condition="inputs.level == 'low'",
+            priority=2
+        ),
+        WorkflowEdge(
+            source_step_id="start",
+            target_step_id="high_path",
+            condition="inputs.level == 'high'",
+            priority=1
+        ),
+    ]
+
+    if include_default is True:
+        step_ids.append("default_path")
+        edges.insert(0, WorkflowEdge(
+            source_step_id="start",
+            target_step_id="default_path",
+            condition="True",
+            priority=99
+        ))
+
+    if include_unconditional is True:
+        step_ids.append("audit")
+        edges.append(WorkflowEdge(
+            source_step_id="start",
+            target_step_id="audit"
+        ))
+
+    workflow = _build_recording_workflow(
+        name="level-routing-workflow",
+        execution_log=execution_log,
+        step_ids=step_ids,
+        edges=edges,
+        start_step_id="start"
+    )
+    return workflow
+
+
+# =========================================================================
 # Test: Conditional branching
-# Requirements: 3.4, 4.4
+# Requirements: 3.3, 3.4, 4.4, 4.5
 # =========================================================================
 
 def test_conditional_branching_evaluates_priority_order():
     """
         Verify that when a step has multiple outgoing conditional
         edges, the executor evaluates them in ascending priority
-        order and traverses the first edge whose condition is True.
-
-        The executor traverses the DAG in topological order. When
-        a step has conditional outgoing edges, the condition
-        evaluation determines which successor steps are reachable.
-        Both conditional targets are in the topological order, but
-        the executor checks predecessor completion via
-        _should_execute_step before executing each step.
-
-        In this test, the start step has two conditional edges.
-        Both high_path and low_path have start as their only
-        predecessor, so both will be executed in topological order
-        since their predecessor (start) has completed. The
-        condition evaluation is used at the edge level, not to
-        skip steps from the topological order.
-
-        We verify that the start step executes first and both
-        conditional paths execute after it.
+        order and traverses only the first edge whose condition is
+        True. The target of the edge that is not traversed is not
+        executed and is reported as SKIPPED.
     """
     execution_log = []
 
@@ -289,17 +405,449 @@ def test_conditional_branching_evaluates_priority_order():
     result = executor.execute(workflow=workflow, inputs={})
 
     assert result.is_success is True, \
-        "Workflow should complete successfully"
-    assert "start" in execution_log, \
-        "Start step should have executed"
-    assert "high_path" in execution_log, \
-        "High path should have been executed"
+        "Workflow should complete successfully, error={}".format(result.error)
+    assert execution_log == ["start", "high_path"], \
+        "Only start and high_path should execute, got {}".format(execution_log)
 
-    # Verify start executes before both paths.
-    start_pos = execution_log.index("start")
-    high_pos = execution_log.index("high_path")
-    assert start_pos < high_pos, \
-        "Start should execute before high_path"
+    high_status = _get_step_status(result, "high_path")
+    assert high_status == StepExecutionStatus.COMPLETED, \
+        "high_path should be COMPLETED, got {}".format(high_status)
+
+    low_status = _get_step_status(result, "low_path")
+    assert low_status == StepExecutionStatus.SKIPPED, \
+        "low_path should be SKIPPED, got {}".format(low_status)
+
+    assert result.final_output == {"path": "high"}, \
+        "Final output should only hold the taken branch output, got {}".format(
+            result.final_output)
+    return
+
+
+def test_conditional_branching_first_true_edge_by_priority_wins():
+    """
+        Verify that when more than one condition is True, only the
+        edge with the lowest priority value is traversed, regardless
+        of the order in which the edges are declared.
+    """
+    execution_log = []
+
+    edges = [
+        WorkflowEdge(
+            source_step_id="start",
+            target_step_id="big_path",
+            condition="steps.start.score > 10",
+            priority=5
+        ),
+        WorkflowEdge(
+            source_step_id="start",
+            target_step_id="medium_path",
+            condition="steps.start.score > 5",
+            priority=1
+        ),
+    ]
+
+    workflow = _build_recording_workflow(
+        name="first-true-workflow",
+        execution_log=execution_log,
+        step_ids=["start", "big_path", "medium_path"],
+        edges=edges,
+        start_step_id="start",
+        outputs={"start": {"score": 20}}
+    )
+
+    executor = WorkflowExecutor()
+    result = executor.execute(workflow=workflow, inputs={})
+
+    assert result.is_success is True, \
+        "Workflow should complete successfully, error={}".format(result.error)
+    assert execution_log == ["start", "medium_path"], \
+        "Only the priority 1 edge should be traversed, got {}".format(
+            execution_log)
+
+    big_status = _get_step_status(result, "big_path")
+    assert big_status == StepExecutionStatus.SKIPPED, \
+        "big_path should be SKIPPED, got {}".format(big_status)
+    return
+
+
+def test_conditional_branching_no_match_skips_conditional_targets():
+    """
+        Verify that when no conditional edge matches, none of the
+        conditional targets is executed, the steps after them are
+        skipped as well, and the workflow still completes.
+    """
+    execution_log = []
+
+    edges = [
+        WorkflowEdge(
+            source_step_id="start",
+            target_step_id="high_path",
+            condition="inputs.level == 'high'",
+            priority=1
+        ),
+        WorkflowEdge(
+            source_step_id="start",
+            target_step_id="low_path",
+            condition="inputs.level == 'low'",
+            priority=2
+        ),
+        WorkflowEdge(
+            source_step_id="high_path",
+            target_step_id="high_followup"
+        ),
+    ]
+
+    workflow = _build_recording_workflow(
+        name="no-match-workflow",
+        execution_log=execution_log,
+        step_ids=["start", "high_path", "low_path", "high_followup"],
+        edges=edges,
+        start_step_id="start"
+    )
+
+    executor = WorkflowExecutor()
+    result = executor.execute(workflow=workflow, inputs={"level": "medium"})
+
+    assert result.status == WorkflowExecutionStatus.COMPLETED, \
+        "Workflow should complete when no condition matches, got {} ({})".format(
+            result.status, result.error)
+    assert execution_log == ["start"], \
+        "Only the start step should execute, got {}".format(execution_log)
+
+    for skipped_id in ["high_path", "low_path", "high_followup"]:
+        skipped_status = _get_step_status(result, skipped_id)
+        assert skipped_status == StepExecutionStatus.SKIPPED, \
+            "{} should be SKIPPED, got {}".format(skipped_id, skipped_status)
+
+    assert len(result.step_results) == 4, \
+        "Every step should have a result, got {}".format(
+            len(result.step_results))
+    assert result.final_output == {}, \
+        "No terminal step ran, so the final output should be empty, got {}".format(
+            result.final_output)
+    return
+
+
+def test_conditional_branching_default_edge_taken_when_no_condition_matches():
+    """
+        Verify that a conditional edge with the condition 'True' and
+        the largest priority value acts as the default branch: it is
+        traversed when no other condition matches and is not
+        evaluated when an earlier condition matches.
+    """
+    execution_log = []
+    workflow = _build_level_routing_workflow(
+        execution_log, include_default=True
+    )
+
+    executor = WorkflowExecutor()
+    result = executor.execute(workflow=workflow, inputs={"level": "medium"})
+
+    assert result.is_success is True, \
+        "Workflow should complete successfully, error={}".format(result.error)
+    assert execution_log == ["start", "default_path"], \
+        "Only the default branch should run, got {}".format(execution_log)
+
+    del execution_log[:]
+    result = executor.execute(workflow=workflow, inputs={"level": "low"})
+
+    assert result.is_success is True, \
+        "Workflow should complete successfully, error={}".format(result.error)
+    assert execution_log == ["start", "low_path"], \
+        "The matching branch should run instead of the default, got {}".format(
+            execution_log)
+
+    default_status = _get_step_status(result, "default_path")
+    assert default_status == StepExecutionStatus.SKIPPED, \
+        "default_path should be SKIPPED, got {}".format(default_status)
+    return
+
+
+def test_unconditional_edge_traversed_alongside_conditional_edges():
+    """
+        Verify that an unconditional edge is always traversed, even
+        when it leaves a step that also has conditional edges, while
+        only the first matching conditional edge is traversed.
+    """
+    execution_log = []
+    workflow = _build_level_routing_workflow(
+        execution_log, include_unconditional=True
+    )
+
+    executor = WorkflowExecutor()
+    result = executor.execute(workflow=workflow, inputs={"level": "low"})
+
+    assert result.is_success is True, \
+        "Workflow should complete successfully, error={}".format(result.error)
+
+    executed = sorted(execution_log)
+    assert executed == ["audit", "low_path", "start"], \
+        "start, audit and low_path should execute, got {}".format(execution_log)
+
+    high_status = _get_step_status(result, "high_path")
+    assert high_status == StepExecutionStatus.SKIPPED, \
+        "high_path should be SKIPPED, got {}".format(high_status)
+
+    del execution_log[:]
+    result = executor.execute(workflow=workflow, inputs={"level": "none"})
+
+    assert result.is_success is True, \
+        "Workflow should complete when no condition matches, error={}".format(result.error)
+
+    assert execution_log == ["start", "audit"], \
+        "The unconditional edge should be traversed when no condition " \
+        "matches, got {}".format(execution_log)
+    return
+
+
+def test_conditional_branches_rejoin_at_merge_step():
+    """
+        Verify that a merge step reached from two conditional
+        branches runs when the branch that was taken completes, even
+        though the other branch was skipped.
+    """
+    execution_log = []
+
+    edges = [
+        WorkflowEdge(
+            source_step_id="start",
+            target_step_id="high_path",
+            condition="inputs.level == 'high'",
+            priority=1
+        ),
+        WorkflowEdge(
+            source_step_id="start",
+            target_step_id="low_path",
+            condition="inputs.level == 'low'",
+            priority=2
+        ),
+        WorkflowEdge(source_step_id="high_path", target_step_id="merge"),
+        WorkflowEdge(source_step_id="low_path", target_step_id="merge"),
+    ]
+
+    workflow = _build_recording_workflow(
+        name="rejoin-workflow",
+        execution_log=execution_log,
+        step_ids=["start", "high_path", "low_path", "merge"],
+        edges=edges,
+        start_step_id="start",
+        outputs={"merge": {"merged": True}}
+    )
+
+    executor = WorkflowExecutor()
+    result = executor.execute(workflow=workflow, inputs={"level": "high"})
+
+    assert result.is_success is True, \
+        "Workflow should complete successfully, error={}".format(result.error)
+    assert execution_log == ["start", "high_path", "merge"], \
+        "start, high_path and merge should execute, got {}".format(
+            execution_log)
+
+    low_status = _get_step_status(result, "low_path")
+    assert low_status == StepExecutionStatus.SKIPPED, \
+        "low_path should be SKIPPED, got {}".format(low_status)
+    assert result.final_output == {"merged": True}, \
+        "Final output should come from the merge step, got {}".format(
+            result.final_output)
+    return
+
+
+def test_parallel_branch_with_untraversed_conditional_start_is_skipped():
+    """
+        Verify that a parallel branch whose start edge from the fork
+        has a condition that is not met is skipped, while the other
+        branch and the join step still run.
+    """
+    execution_log = []
+
+    edges = [
+        WorkflowEdge(
+            source_step_id="fork",
+            target_step_id="branch1",
+            condition="inputs.run_branch1 == True",
+            priority=1
+        ),
+        WorkflowEdge(source_step_id="fork", target_step_id="branch2"),
+        WorkflowEdge(source_step_id="branch1", target_step_id="branch1_tail"),
+        WorkflowEdge(source_step_id="branch1_tail", target_step_id="join"),
+        WorkflowEdge(source_step_id="branch2", target_step_id="join"),
+    ]
+
+    workflow = _build_recording_workflow(
+        name="parallel-conditional-workflow",
+        execution_log=execution_log,
+        step_ids=["fork", "branch1", "branch1_tail", "branch2", "join"],
+        edges=edges,
+        start_step_id="fork",
+        parallel_branches=[
+            ParallelBranch(fork_step_id="fork", join_step_id="join")
+        ]
+    )
+
+    executor = WorkflowExecutor()
+    result = executor.execute(workflow=workflow, inputs={"run_branch1": False})
+
+    assert result.is_success is True, \
+        "Workflow should complete successfully, error={}".format(result.error)
+    assert execution_log == ["fork", "branch2", "join"], \
+        "fork, branch2 and join should execute, got {}".format(execution_log)
+
+    for skipped_id in ["branch1", "branch1_tail"]:
+        skipped_status = _get_step_status(result, skipped_id)
+        assert skipped_status == StepExecutionStatus.SKIPPED, \
+            "{} should be SKIPPED, got {}".format(skipped_id, skipped_status)
+    return
+
+
+def test_resume_follows_conditional_branch_from_checkpoint():
+    """
+        Verify that resuming a workflow re-derives the conditional
+        branch taken from a step completed before the checkpoint and
+        only executes the steps on that branch.
+    """
+    execution_log = []
+
+    edges = [
+        WorkflowEdge(
+            source_step_id="start",
+            target_step_id="high_path",
+            condition="steps.start.status == 'high'",
+            priority=1
+        ),
+        WorkflowEdge(
+            source_step_id="start",
+            target_step_id="low_path",
+            condition="steps.start.status == 'low'",
+            priority=2
+        ),
+    ]
+
+    workflow = _build_recording_workflow(
+        name="resume-conditional-workflow",
+        execution_log=execution_log,
+        step_ids=["start", "high_path", "low_path"],
+        edges=edges,
+        start_step_id="start"
+    )
+
+    checkpoint = WorkflowCheckpoint(
+        workflow_name="resume-conditional-workflow",
+        execution_id="exec-cond-1",
+        completed_step_ids={"start"},
+        context_state={
+            "inputs": {},
+            "step_outputs": {"start": {"status": "low"}},
+            "metadata": {}
+        },
+        current_step_id="start"
+    )
+
+    mock_cm = Mock()
+    mock_cm.configure(recursive=True)
+    cm_ctx = mock_cm.mock_context()
+    cm_ctx.mock_method("load_checkpoint", return_value=checkpoint)
+    cm_ctx.mock_method("save_checkpoint", return_value=None)
+
+    executor = WorkflowExecutor(checkpoint_manager=mock_cm)
+    result = executor.resume(execution_id="exec-cond-1", workflow=workflow)
+
+    assert result.is_success is True, \
+        "Resumed workflow should complete successfully, error={}".format(
+            result.error)
+    assert execution_log == ["low_path"], \
+        "Only low_path should execute on resume, got {}".format(execution_log)
+
+    high_status = _get_step_status(result, "high_path")
+    assert high_status == StepExecutionStatus.SKIPPED, \
+        "high_path should be SKIPPED, got {}".format(high_status)
+    return
+
+
+def test_invalid_edge_condition_raises_definition_error():
+    """
+        Verify that an edge condition using a disallowed construct
+        raises a WorkflowDefinitionError that names the workflow and
+        the edge instead of silently traversing the edge.
+    """
+    execution_log = []
+
+    edges = [
+        WorkflowEdge(
+            source_step_id="start",
+            target_step_id="next_step",
+            condition="len(inputs.items) > 1",
+            priority=1
+        ),
+    ]
+
+    workflow = _build_recording_workflow(
+        name="invalid-condition-workflow",
+        execution_log=execution_log,
+        step_ids=["start", "next_step"],
+        edges=edges,
+        start_step_id="start"
+    )
+
+    executor = WorkflowExecutor()
+
+    caught = None
+    try:
+        executor.execute(workflow=workflow, inputs={"items": [1, 2]})
+    except WorkflowDefinitionError as def_err:
+        caught = def_err
+
+    assert caught is not None, \
+        "An invalid edge condition should raise WorkflowDefinitionError"
+    assert caught.workflow_name == "invalid-condition-workflow", \
+        "The error should name the workflow, got {}".format(
+            caught.workflow_name)
+    assert "'start' -> 'next_step'" in caught.detail, \
+        "The error should name the edge, got {}".format(caught.detail)
+    assert "next_step" not in execution_log, \
+        "The edge target should not execute, got {}".format(execution_log)
+    return
+
+
+def test_edge_condition_referencing_unexecuted_step_raises_execution_error():
+    """
+        Verify that an edge condition referencing a step that has not
+        been executed raises a WorkflowExecutionError that names the
+        workflow and the step whose edge was being evaluated.
+    """
+    execution_log = []
+
+    edges = [
+        WorkflowEdge(
+            source_step_id="start",
+            target_step_id="next_step",
+            condition="steps.next_step.ready == True",
+            priority=1
+        ),
+    ]
+
+    workflow = _build_recording_workflow(
+        name="unresolved-condition-workflow",
+        execution_log=execution_log,
+        step_ids=["start", "next_step"],
+        edges=edges,
+        start_step_id="start"
+    )
+
+    executor = WorkflowExecutor()
+
+    caught = None
+    try:
+        executor.execute(workflow=workflow, inputs={})
+    except WorkflowExecutionError as exec_err:
+        caught = exec_err
+
+    assert caught is not None, \
+        "An unresolved step reference should raise WorkflowExecutionError"
+    assert caught.workflow_name == "unresolved-condition-workflow", \
+        "The error should name the workflow, got {}".format(
+            caught.workflow_name)
+    assert caught.step_id == "start", \
+        "The error should name the source step, got {}".format(caught.step_id)
     return
 
 

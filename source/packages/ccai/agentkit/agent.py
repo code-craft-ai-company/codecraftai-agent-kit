@@ -9,6 +9,7 @@
 import abc
 import logging
 import os
+import threading
 import time
 
 from typing import Callable
@@ -74,9 +75,11 @@ from ccai.agentkit.messagepattern import MessagePattern
 from ccai.agentkit.messagerouter import MessageRouter
 from ccai.agentkit.messageserializerregistry import MessageSerializerRegistry
 from ccai.agentkit.messagingconfiguration import MessagingConfiguration
+from ccai.agentkit.messagingerrors import NoMessageAvailableError
 from ccai.agentkit.pubsubbroker import PubSubBroker
 from ccai.agentkit.requestresponsehandler import RequestResponseHandler
 from ccai.agentkit.subscription import Subscription
+from ccai.agentkit.transport import DEFAULT_SERIALIZATION_FORMAT
 from ccai.agentkit.transport import Transport
 from ccai.agentkit.transportregistry import TransportRegistry
 
@@ -89,6 +92,14 @@ VALID_TRANSITION_POINTS = [
     "on_stop",
     "on_error",
 ]
+
+
+# The number of seconds a receive loop waits before polling a transport again
+# after it found no message or the receive failed.
+DEFAULT_RECEIVE_POLL_INTERVAL = 0.05
+
+# The number of seconds stop_receiving waits for a receive loop thread to end.
+DEFAULT_RECEIVE_STOP_TIMEOUT = 5.0
 
 
 class Agent(abc.ABC):
@@ -160,6 +171,10 @@ class Agent(abc.ABC):
         self._address_resolver: AddressResolver = AddressResolver(agent_registry=AgentRegistry.instance())
         self._request_response_handler: RequestResponseHandler = RequestResponseHandler()
         self._messaging_configuration: Optional[MessagingConfiguration] = None
+        # Background receive loops keyed by transport name; each entry holds
+        # the loop thread and the event that stops it.
+        self._receive_loops: Dict[str, dict] = {}
+        self._receive_loops_lock = threading.Lock()
 
         self._platform_runtime = None
 
@@ -1036,6 +1051,7 @@ class Agent(abc.ABC):
                         continue
 
                     self._transport_registry.register(transport=transport_instance)
+                    transport_instance.attach_serializer_registry(self._message_serializer_registry)
 
                 except Exception as plugin_err:
                     self._logger.warning(
@@ -1108,13 +1124,16 @@ class Agent(abc.ABC):
 
     def _stop_messaging(self) -> None:
         """
-            Disconnects all connected transports, clears the
-            TransportRegistry, removes all PubSubBroker subscriptions,
-            and resets the messaging configuration.
+            Stops all receive loops, disconnects all connected transports,
+            clears the TransportRegistry, removes all PubSubBroker
+            subscriptions, and resets the messaging configuration.
 
             Subclasses should call this method during their stop()
             implementation to clean up messaging resources.
         """
+        # Stop the receive loops before their transports go away
+        self.stop_receiving()
+
         # Disconnect all connected transports
         all_transports = self._transport_registry.list_all()
 
@@ -1728,11 +1747,86 @@ class Agent(abc.ABC):
 
     def register_transport(self, transport: Transport) -> None:
         """
-            Registers a Transport with this Agent's TransportRegistry.
+            Registers a Transport with this Agent's TransportRegistry and
+            attaches the Agent's MessageSerializerRegistry to it, so the
+            transport serializes messages with the serializers registered
+            with this Agent.
 
             :param transport: The Transport instance to register.
         """
         self._transport_registry.register(transport=transport)
+        transport.attach_serializer_registry(self._message_serializer_registry)
+        return
+
+    def _prepare_message_serialization(self, transport: Transport,
+                                       serialization_format: Optional[str]) -> str:
+        """
+            Resolves the serialization format for an outgoing message and
+            makes sure the transport can serialize the message in it.
+
+            The format is the explicitly requested format, else the
+            MessagingConfiguration default, else the built-in 'json'
+            format. The format must be provided by a MessageSerializer
+            registered with this Agent, except for 'json', which is always
+            available. The Agent's MessageSerializerRegistry is attached to
+            the transport when it is not attached already, which covers
+            transports registered directly with the TransportRegistry.
+
+            :param transport: The Transport the message will be sent through.
+            :param serialization_format: The requested serialization format
+                name or None.
+
+            :returns: The effective serialization format name to set on the
+                Message.
+
+            :raises SemanticError: If no MessageSerializer is registered with
+                this Agent for the format.
+        """
+        effective_serialization_format = serialization_format
+        if effective_serialization_format is None and self._messaging_configuration is not None:
+            effective_serialization_format = self._messaging_configuration.default_serialization_format
+
+        if effective_serialization_format is None:
+            effective_serialization_format = DEFAULT_SERIALIZATION_FORMAT
+
+        has_serializer = self._message_serializer_registry.has_serializer(effective_serialization_format)
+        is_default_format = effective_serialization_format == DEFAULT_SERIALIZATION_FORMAT
+
+        if has_serializer is not True and is_default_format is not True:
+            registered_formats = []
+            for registered_serializer in self._message_serializer_registry.list_all():
+                registered_formats.append(registered_serializer.format_name)
+            registered_formats.sort()
+
+            errmsg_lines = [
+                "Serialization format '{}' is not available in agent '{}'.".format(
+                    effective_serialization_format, self._identity.identifier
+                ),
+                "    REGISTERED FORMATS: {}".format(registered_formats),
+                "    The '{}' format is always available. Other formats need a MessageSerializer".format(
+                    DEFAULT_SERIALIZATION_FORMAT
+                ),
+                "    registered through the 'ccai.agentkit.message_serializers' extension point.",
+            ]
+            errmsg = os.linesep.join(errmsg_lines)
+            raise SemanticError(errmsg)
+
+        self._attach_serializers_to_transport(transport)
+
+        return effective_serialization_format
+
+    def _attach_serializers_to_transport(self, transport: Transport) -> None:
+        """
+            Attaches the Agent's MessageSerializerRegistry to a transport when
+            it is not attached already, so the transport encodes and decodes
+            messages with the serializers registered with this Agent. This
+            covers transports registered directly with the TransportRegistry.
+
+            :param transport: The Transport to attach the registry to.
+        """
+        if transport.serializer_registry is not self._message_serializer_registry:
+            transport.attach_serializer_registry(self._message_serializer_registry)
+
         return
 
     def send_message(self, recipient_id: str, payload: object,
@@ -1747,14 +1841,17 @@ class Agent(abc.ABC):
             from the MessagingConfiguration when not provided. Looks up
             the transport from the TransportRegistry, resolves the
             recipient address via the AddressResolver, constructs a
-            Message, and sends it through the transport.
+            Message that carries the serialization format, and sends it
+            through the transport, which serializes the message with the
+            MessageSerializer registered for that format.
 
             :param recipient_id: The recipient agent identifier.
             :param payload: The message payload.
             :param transport_name: Optional transport name. Defaults to
                 the MessagingConfiguration default.
             :param serialization_format: Optional serialization format
-                name. Defaults to the MessagingConfiguration default.
+                name. Defaults to the MessagingConfiguration default, or
+                'json' when no MessagingConfiguration is provided.
             :param pattern: The MessagePattern. Defaults to
                 FIRE_AND_FORGET.
             :param headers: Optional headers dictionary.
@@ -1762,15 +1859,13 @@ class Agent(abc.ABC):
             :returns: A MessageEnvelope with delivery metadata.
 
             :raises SemanticError: If the requested transport is not
-                found in the TransportRegistry.
+                found in the TransportRegistry, or if no
+                MessageSerializer is registered for the serialization
+                format.
         """
         effective_transport_name = transport_name
         if effective_transport_name is None and self._messaging_configuration is not None:
             effective_transport_name = self._messaging_configuration.default_transport
-
-        effective_serialization_format = serialization_format
-        if effective_serialization_format is None and self._messaging_configuration is not None:
-            effective_serialization_format = self._messaging_configuration.default_serialization_format
 
         transport = self._transport_registry.lookup(effective_transport_name)
 
@@ -1782,6 +1877,11 @@ class Agent(abc.ABC):
             ]
             errmsg = os.linesep.join(errmsg_lines)
             raise SemanticError(errmsg)
+
+        effective_serialization_format = self._prepare_message_serialization(
+            transport=transport,
+            serialization_format=serialization_format,
+        )
 
         recipient_address = self._address_resolver.resolve(
             agent_identifier=recipient_id,
@@ -1799,6 +1899,7 @@ class Agent(abc.ABC):
             payload=payload,
             pattern=pattern,
             headers=headers,
+            serialization_format=effective_serialization_format,
         )
 
         envelope = transport.send(message)
@@ -1815,32 +1916,39 @@ class Agent(abc.ABC):
 
             Resolves the default transport name and serialization format
             from the MessagingConfiguration when not provided. Constructs
-            a REQUEST Message and delegates to the RequestResponseHandler
-            for correlated response tracking.
+            a REQUEST Message that carries the serialization format and
+            delegates to the RequestResponseHandler for correlated
+            response tracking. The transport serializes the request with
+            the MessageSerializer registered for that format.
+
+            The call blocks until the response is delivered by
+            receive_message, so the replies must be received on another
+            thread while it waits: start a receive loop for the transport
+            with start_receiving, or have the transport hand incoming
+            messages to receive_message.
 
             :param recipient_id: The recipient agent identifier.
             :param payload: The request payload.
             :param transport_name: Optional transport name. Defaults to
                 the MessagingConfiguration default.
             :param serialization_format: Optional serialization format
-                name. Defaults to the MessagingConfiguration default.
+                name. Defaults to the MessagingConfiguration default, or
+                'json' when no MessagingConfiguration is provided.
             :param timeout: Optional timeout in seconds.
             :param headers: Optional headers dictionary.
 
             :returns: The correlated response Message.
 
             :raises SemanticError: If the requested transport is not
-                found in the TransportRegistry.
+                found in the TransportRegistry, or if no
+                MessageSerializer is registered for the serialization
+                format.
             :raises MessageTimeoutError: If no response is received
                 within the timeout duration.
         """
         effective_transport_name = transport_name
         if effective_transport_name is None and self._messaging_configuration is not None:
             effective_transport_name = self._messaging_configuration.default_transport
-
-        effective_serialization_format = serialization_format
-        if effective_serialization_format is None and self._messaging_configuration is not None:
-            effective_serialization_format = self._messaging_configuration.default_serialization_format
 
         transport = self._transport_registry.lookup(effective_transport_name)
 
@@ -1852,6 +1960,11 @@ class Agent(abc.ABC):
             ]
             errmsg = os.linesep.join(errmsg_lines)
             raise SemanticError(errmsg)
+
+        effective_serialization_format = self._prepare_message_serialization(
+            transport=transport,
+            serialization_format=serialization_format,
+        )
 
         recipient_address = self._address_resolver.resolve(
             agent_identifier=recipient_id,
@@ -1869,6 +1982,7 @@ class Agent(abc.ABC):
             payload=payload,
             pattern=MessagePattern.REQUEST,
             headers=headers,
+            serialization_format=effective_serialization_format,
         )
 
         response = self._request_response_handler.send_request(
@@ -1878,6 +1992,413 @@ class Agent(abc.ABC):
         )
 
         return response
+
+    def receive_message(self, message: Message, transport_name: Optional[str] = None) -> None:
+        """
+            Dispatches a message received by this Agent.
+
+            This is the single entry point for incoming messages.
+            poll_transport and the receive loops started with
+            start_receiving call it for every message they receive, and a
+            transport or server that is handed messages calls it directly.
+
+            A RESPONSE message that carries a correlation identifier is a
+            reply to a request sent with request(). It is delivered to the
+            RequestResponseHandler, which completes the waiting request()
+            call. A reply that matches no pending request, because it is
+            unknown or arrived after the request timed out, is logged at
+            WARNING and ignored, as RequestResponseHandler.handle_response
+            documents; it is not routed. Every other message is routed
+            through the MessageRouter to the registered handlers. A handler
+            answers a REQUEST message by calling reply().
+
+            :param message: The received Message.
+            :param transport_name: The name of the transport the message was
+                received on, used for logging.
+
+            :raises MessageRoutingError: If a message that is not a reply
+                matches no registered handler.
+        """
+        pattern_value = message.pattern.value if message.pattern is not None else None
+        sender_identifier = message.sender.agent_identifier if message.sender is not None else None
+
+        self._logger.info(
+            "Message received: agent='%s', message_id='%s', sender='%s', "
+            "transport='%s', pattern='%s', correlation_id='%s'",
+            self._identity.identifier, message.identifier, sender_identifier,
+            transport_name, pattern_value, message.correlation_id,
+        )
+
+        is_response = message.pattern == MessagePattern.RESPONSE
+        has_correlation_id = message.correlation_id is not None
+
+        if is_response is True and has_correlation_id is True:
+            self._request_response_handler.handle_response(message)
+            return
+
+        self._message_router.route(message)
+
+        return
+
+    def reply(self, request_message: Message, payload: object,
+              transport_name: Optional[str] = None,
+              headers: Optional[Dict] = None) -> MessageEnvelope:
+        """
+            Sends the RESPONSE to a REQUEST message received by this Agent.
+
+            The response is addressed to the sender of the request and
+            carries the request's correlation identifier, so the requesting
+            Agent's request() call completes with it. It is serialized in the
+            request's serialization format.
+
+            :param request_message: The received REQUEST Message to answer.
+            :param payload: The response payload.
+            :param transport_name: Optional transport to send the response
+                through. Defaults to the transport named in the request's
+                sender address, which is the transport the requester used.
+            :param headers: Optional headers dictionary for the response.
+
+            :returns: A MessageEnvelope with delivery metadata.
+
+            :raises SemanticError: If the message is not a REQUEST with a
+                correlation identifier, if the transport is not found in the
+                TransportRegistry, or if no MessageSerializer is registered
+                for the request's serialization format.
+        """
+        is_request = request_message.pattern == MessagePattern.REQUEST
+        has_correlation_id = request_message.correlation_id is not None
+
+        if is_request is not True or has_correlation_id is not True:
+            pattern_value = request_message.pattern.value if request_message.pattern is not None else None
+            errmsg_lines = [
+                "Agent '{}' can only reply to a REQUEST message with a correlation identifier.".format(
+                    self._identity.identifier
+                ),
+                "    MESSAGE: {}".format(request_message.identifier),
+                "    PATTERN: {}".format(pattern_value),
+                "    CORRELATION ID: {}".format(request_message.correlation_id),
+            ]
+            errmsg = os.linesep.join(errmsg_lines)
+            raise SemanticError(errmsg)
+
+        effective_transport_name = transport_name
+        if effective_transport_name is None:
+            effective_transport_name = request_message.sender.transport_name
+
+        transport = self._transport_registry.lookup(effective_transport_name)
+
+        if transport is None:
+            errmsg_lines = [
+                "Transport '{}' not found in agent '{}'.".format(
+                    effective_transport_name, self._identity.identifier
+                ),
+                "    The reply to request '{}' is sent through the transport named in the".format(
+                    request_message.identifier
+                ),
+                "    request's sender address unless a transport_name is passed to reply().",
+            ]
+            errmsg = os.linesep.join(errmsg_lines)
+            raise SemanticError(errmsg)
+
+        effective_serialization_format = self._prepare_message_serialization(
+            transport=transport,
+            serialization_format=request_message.serialization_format,
+        )
+
+        sender_address = AgentAddress(
+            agent_identifier=self._identity.identifier,
+            transport_name=effective_transport_name,
+        )
+
+        response_message = Message(
+            sender=sender_address,
+            recipient=request_message.sender,
+            payload=payload,
+            pattern=MessagePattern.RESPONSE,
+            headers=headers,
+            correlation_id=request_message.correlation_id,
+            serialization_format=effective_serialization_format,
+        )
+
+        envelope = transport.send(response_message)
+
+        return envelope
+
+    def _receive_from_transport(self, transport_name: str) -> Optional[Message]:
+        """
+            Receives at most one message from a registered transport without
+            dispatching it.
+
+            :param transport_name: The name of the registered transport.
+
+            :returns: The received Message, or None when the transport has no
+                message available.
+
+            :raises SemanticError: If the transport is not registered.
+            :raises TransportError: If the receive fails for any reason other
+                than no message being available.
+        """
+        transport = self._transport_registry.lookup(transport_name)
+
+        if transport is None:
+            errmsg_lines = [
+                "Transport '{}' not found in agent '{}'.".format(
+                    transport_name, self._identity.identifier
+                ),
+            ]
+            errmsg = os.linesep.join(errmsg_lines)
+            raise SemanticError(errmsg)
+
+        self._attach_serializers_to_transport(transport)
+
+        try:
+            message = transport.receive()
+        except NoMessageAvailableError:
+            message = None
+
+        return message
+
+    def poll_transport(self, transport_name: str) -> Optional[Message]:
+        """
+            Receives at most one message from a registered transport and
+            dispatches it with receive_message.
+
+            :param transport_name: The name of the registered transport.
+
+            :returns: The Message that was received and dispatched, or None
+                when the transport has no message available.
+
+            :raises SemanticError: If the transport is not registered.
+            :raises TransportError: If the receive fails for any reason other
+                than no message being available.
+            :raises MessageRoutingError: If the received message is not a
+                reply and matches no registered handler.
+        """
+        message = self._receive_from_transport(transport_name)
+
+        if message is not None:
+            self.receive_message(message=message, transport_name=transport_name)
+
+        return message
+
+    def start_receiving(self, transport_name: str,
+                        poll_interval: float = DEFAULT_RECEIVE_POLL_INTERVAL) -> None:
+        """
+            Starts a background thread that keeps receiving messages from a
+            registered transport and dispatches each one with
+            receive_message. Replies then complete the request() calls that
+            are waiting for them and requests reach their handlers while the
+            calling threads are blocked.
+
+            The loop waits poll_interval seconds whenever the transport has
+            no message available. A failed receive is logged at WARNING for
+            the first failure of a run of consecutive failures and at DEBUG
+            for the repeats, and the loop waits poll_interval seconds and
+            continues. A message that cannot be dispatched, for example
+            because no handler matches it, is logged at WARNING and the loop
+            continues with the next message. SemanticError and
+            ConfigurationError are not caught. stop_receiving ends the loop.
+
+            A handler that runs on the receive loop must not call request()
+            through the same transport, because the loop cannot receive the
+            reply while the handler waits for it.
+
+            :param transport_name: The name of the registered transport to
+                receive from.
+            :param poll_interval: The number of seconds to wait before
+                polling again after an empty or failed receive. Must be
+                greater than 0.
+
+            :raises SemanticError: If the transport is not registered, if
+                poll_interval is not greater than 0, or if a receive loop is
+                already running for the transport.
+        """
+        if poll_interval is None or poll_interval <= 0:
+            errmsg = "The poll_interval for agent '{}' must be greater than 0, got {!r}.".format(
+                self._identity.identifier, poll_interval
+            )
+            raise SemanticError(errmsg)
+
+        transport = self._transport_registry.lookup(transport_name)
+
+        if transport is None:
+            errmsg_lines = [
+                "Transport '{}' not found in agent '{}'.".format(
+                    transport_name, self._identity.identifier
+                ),
+            ]
+            errmsg = os.linesep.join(errmsg_lines)
+            raise SemanticError(errmsg)
+
+        with self._receive_loops_lock:
+            existing_entry = self._receive_loops.get(transport_name, None)
+
+            if existing_entry is not None:
+                existing_thread = existing_entry["thread"]
+
+                if existing_thread.is_alive() is True:
+                    errmsg = "Agent '{}' is already receiving from transport '{}'.".format(
+                        self._identity.identifier, transport_name
+                    )
+                    raise SemanticError(errmsg)
+
+            stop_event = threading.Event()
+            thread_name = "AgentReceive-{}-{}".format(self._identity.identifier, transport_name)
+            receive_thread = threading.Thread(
+                target=self._receive_loop,
+                kwargs={
+                    "transport_name": transport_name,
+                    "poll_interval": poll_interval,
+                    "stop_event": stop_event,
+                },
+                name=thread_name,
+                daemon=True,
+            )
+
+            self._receive_loops[transport_name] = {
+                "thread": receive_thread,
+                "stop_event": stop_event,
+            }
+
+            receive_thread.start()
+
+        self._logger.info(
+            "Receive loop started: agent='%s', transport='%s', poll_interval=%s",
+            self._identity.identifier, transport_name, poll_interval,
+        )
+        return
+
+    def stop_receiving(self, transport_name: Optional[str] = None,
+                       timeout: float = DEFAULT_RECEIVE_STOP_TIMEOUT) -> None:
+        """
+            Stops the receive loop of a transport, or of every transport when
+            transport_name is None, and waits up to timeout seconds for each
+            loop thread to end. Stopping a transport that has no receive loop
+            does nothing.
+
+            A loop blocked inside a transport receive that waits for data,
+            such as a WebSocket receive, ends when that receive returns; a
+            WARNING is logged when it has not ended within the timeout.
+
+            :param transport_name: The transport whose receive loop to stop,
+                or None for all receive loops.
+            :param timeout: The number of seconds to wait for each loop thread
+                to end.
+        """
+        stopping_entries = []
+
+        with self._receive_loops_lock:
+            if transport_name is None:
+                loop_names = list(self._receive_loops.keys())
+            elif transport_name in self._receive_loops:
+                loop_names = [transport_name]
+            else:
+                loop_names = []
+
+            for loop_name in loop_names:
+                entry = self._receive_loops.pop(loop_name)
+                entry["stop_event"].set()
+                stopping_entries.append((loop_name, entry["thread"]))
+
+        current_thread = threading.current_thread()
+
+        for loop_name, receive_thread in stopping_entries:
+            if receive_thread is current_thread:
+                # A handler running on the loop asked it to stop; the loop ends
+                # when the handler returns.
+                continue
+
+            receive_thread.join(timeout)
+
+            if receive_thread.is_alive() is True:
+                self._logger.warning(
+                    "Receive loop did not stop within %s seconds: agent='%s', transport='%s'",
+                    timeout, self._identity.identifier, loop_name,
+                )
+            else:
+                self._logger.info(
+                    "Receive loop stopped: agent='%s', transport='%s'",
+                    self._identity.identifier, loop_name,
+                )
+
+        return
+
+    def is_receiving(self, transport_name: str) -> bool:
+        """
+            Returns whether a receive loop is running for a transport.
+
+            :param transport_name: The transport name to check.
+
+            :returns: True if a receive loop thread for the transport is
+                alive, False otherwise.
+        """
+        with self._receive_loops_lock:
+            entry = self._receive_loops.get(transport_name, None)
+
+        if entry is None:
+            return False
+
+        receive_thread = entry["thread"]
+        rtnval = receive_thread.is_alive()
+        return rtnval
+
+    def _receive_loop(self, transport_name: str, poll_interval: float,
+                      stop_event: threading.Event) -> None:
+        """
+            Body of a receive loop thread started by start_receiving.
+
+            Receives messages from the transport and dispatches them until
+            stop_event is set. See start_receiving for how empty receives
+            and failures are handled.
+
+            :param transport_name: The name of the transport to receive from.
+            :param poll_interval: The number of seconds to wait after an empty
+                or failed receive.
+            :param stop_event: The event that ends the loop when set.
+        """
+        consecutive_failures = 0
+
+        while stop_event.is_set() is not True:
+            try:
+                message = self._receive_from_transport(transport_name)
+            except Exception as receive_err:
+                consecutive_failures = consecutive_failures + 1
+
+                if consecutive_failures == 1:
+                    self._logger.warning(
+                        "Receive failed: agent='%s', transport='%s', error=[%s] %s. "
+                        "Retrying every %s seconds; repeated failures are logged at DEBUG.",
+                        self._identity.identifier, transport_name,
+                        type(receive_err).__name__, receive_err, poll_interval,
+                    )
+                else:
+                    self._logger.debug(
+                        "Receive failed again: agent='%s', transport='%s', "
+                        "consecutive_failures=%d, error=[%s] %s",
+                        self._identity.identifier, transport_name, consecutive_failures,
+                        type(receive_err).__name__, receive_err,
+                    )
+
+                stop_event.wait(poll_interval)
+                continue
+
+            consecutive_failures = 0
+
+            if message is None:
+                stop_event.wait(poll_interval)
+                continue
+
+            try:
+                self.receive_message(message=message, transport_name=transport_name)
+            except Exception as dispatch_err:
+                self._logger.warning(
+                    "Received message could not be dispatched: agent='%s', transport='%s', "
+                    "message_id='%s', error=[%s] %s",
+                    self._identity.identifier, transport_name, message.identifier,
+                    type(dispatch_err).__name__, dispatch_err,
+                )
+
+        return
 
     def publish(self, topic: str, payload: object) -> None:
         """

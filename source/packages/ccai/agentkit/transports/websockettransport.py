@@ -6,7 +6,9 @@
     The WebSocketTransport maintains a persistent WebSocket connection
     to the configured endpoint. It constructs ws:// or wss:// URLs
     from the TransportConfiguration (host, port, path), serializes
-    messages to JSON, and sends them as WebSocket text frames.
+    messages with the MessageSerializer for the message's serialization
+    format (JSON by default), and sends them as WebSocket text frames
+    for textual formats such as JSON and as binary frames otherwise.
 
     TLS is supported via wss:// URL scheme when the configuration
     options include ``{"tls": True}``.
@@ -36,7 +38,6 @@
     Requirements: 17.1-17.8
 """
 
-import json
 import logging
 import ssl
 
@@ -46,6 +47,7 @@ from typing import Optional
 
 from ccai.agentkit.message import Message
 from ccai.agentkit.messageenvelope import MessageEnvelope
+from ccai.agentkit.messagingerrors import MessageSerializationError
 from ccai.agentkit.messagingerrors import TransportError
 from ccai.agentkit.transport import Transport
 from ccai.agentkit.transportconfiguration import TransportConfiguration
@@ -65,9 +67,13 @@ class WebSocketTransport(Transport):
         The connect method establishes a persistent WebSocket
         connection to the configured endpoint. The disconnect method
         gracefully closes the connection. The send method serializes
-        the message to JSON and sends it as a WebSocket text frame.
-        The receive method reads a WebSocket text frame and
-        deserializes it to a Message.
+        the message with the MessageSerializer for its serialization
+        format (JSON by default) and sends it as a WebSocket text frame
+        when the serializer produces text (JSON or a text/* content
+        type) and as a binary frame otherwise. The receive method reads
+        a WebSocket frame and deserializes it to a Message with the
+        serializer for the transport's format, which is the
+        ``serialization_format`` configuration option or JSON.
 
         The connection_state property tracks the current state of
         the WebSocket connection as one of "disconnected",
@@ -291,19 +297,23 @@ class WebSocketTransport(Transport):
 
     def send(self, message: Message) -> MessageEnvelope:
         """
-            Sends a Message as a JSON-encoded WebSocket text frame.
+            Sends a Message as a WebSocket frame.
 
-            The message is serialized to JSON via its as_dict method
-            and sent as a text frame over the persistent WebSocket
-            connection.
+            The message dictionary from its as_dict method is serialized
+            with the MessageSerializer that resolve_serializer returns
+            for the message's serialization_format (JSON by default).
+            Textual formats (JSON or a text/* content type) are sent as
+            a text frame and other formats as a binary frame over the
+            persistent WebSocket connection.
 
             :param message: The Message to send.
 
             :returns: A MessageEnvelope with delivery metadata.
 
             :raises TransportError: If the transport is not connected,
-                if the WebSocket connection is lost, or if the send
-                operation fails.
+                if the message cannot be serialized in its serialization
+                format, if the WebSocket connection is lost, or if the
+                send operation fails.
         """
         if not self._connected or self._ws_client is None:
             errmsg = "Transport '{}' is not connected.".format(self._name)
@@ -318,11 +328,37 @@ class WebSocketTransport(Transport):
                 cause=ConnectionError(errmsg)
             )
 
+        # Encode the message before touching the connection so that a message
+        # that cannot be serialized is not reported as a connection loss.
         try:
-            message_data = message.as_dict()
-            json_payload = json.dumps(message_data)
+            serializer = self.resolve_serializer(message.serialization_format)
 
-            self._ws_client.send(json_payload)
+            message_data = message.as_dict()
+            serialized_data = serializer.serialize(message_data)
+
+            content_type = serializer.content_type
+            is_text_format = content_type == "application/json" or content_type.startswith("text/")
+
+            if is_text_format is True:
+                frame_data = serialized_data.decode("utf-8")
+            else:
+                frame_data = serialized_data
+
+        except Exception as ser_err:
+            self._ws_logger.warning(
+                "WebSocket transport send failed (serialization): "
+                "name=%s, message_id=%s, format=%s, error=%s",
+                self._name, message.identifier,
+                message.serialization_format, ser_err
+            )
+            raise TransportError(
+                transport_name=self._name,
+                operation="send",
+                cause=ser_err
+            )
+
+        try:
+            self._ws_client.send(frame_data)
 
             self._ws_logger.info(
                 "WebSocket transport message sent: name=%s, "
@@ -361,8 +397,10 @@ class WebSocketTransport(Transport):
         """
             Receives a Message from the WebSocket connection.
 
-            Reads a text frame from the persistent WebSocket connection
-            and deserializes the JSON payload into a Message instance.
+            Reads a frame from the persistent WebSocket connection and
+            deserializes it into a Message instance with the
+            MessageSerializer for the transport's format, which is the
+            ``serialization_format`` configuration option or JSON.
 
             :returns: The received Message.
 
@@ -386,7 +424,15 @@ class WebSocketTransport(Transport):
         try:
             raw_data = self._ws_client.recv()
 
-            message_data = json.loads(raw_data)
+            serializer = self.resolve_serializer(direction="deserialize")
+
+            # Text frames arrive as str and binary frames as bytes.
+            if isinstance(raw_data, str):
+                raw_bytes = raw_data.encode("utf-8")
+            else:
+                raw_bytes = raw_data
+
+            message_data = serializer.deserialize(raw_bytes)
             message = Message.from_dict(message_data)
 
             self._ws_logger.info(
@@ -399,7 +445,7 @@ class WebSocketTransport(Transport):
 
             return message
 
-        except (json.JSONDecodeError, KeyError, TypeError, ValueError) as parse_err:
+        except (MessageSerializationError, KeyError, TypeError, ValueError) as parse_err:
             self._ws_logger.warning(
                 "WebSocket transport receive failed (deserialization): "
                 "name=%s, error=%s",

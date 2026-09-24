@@ -3,8 +3,8 @@
     ccai.agentkit.messageenvelope modules.
 
     Tests Message construction, auto-generated identifier and timestamp,
-    property access, as_dict, to_json, from_dict, from_json, __repr__,
-    and __str__.
+    property access, serialization format, as_dict, to_json, from_dict,
+    from_json, __repr__, and __str__.
 
     Tests MessageEnvelope construction, default values, property access,
     as_dict, __repr__, __str__, and delivery_status validation.
@@ -590,6 +590,87 @@ def test_payload_as_string():
 
     assert msg.payload == "hello", \
         "payload should be the string 'hello'"
+    return
+
+
+# =========================================================================
+# Serialization format
+# =========================================================================
+
+def test_serialization_format_defaults_to_none():
+    """
+        Verify a Message created without a serialization format reports
+        None, meaning the Transport default is used, and includes it in
+        as_dict.
+    """
+    msg = Message(
+        sender=_make_sender(),
+        recipient=_make_recipient(),
+        payload={"key": "value"},
+        pattern=MessagePattern.FIRE_AND_FORGET,
+    )
+
+    assert msg.serialization_format is None, \
+        "serialization_format should default to None, got {}".format(
+            msg.serialization_format)
+
+    result = msg.as_dict()
+    assert "serialization_format" in result, \
+        "as_dict should include the serialization_format key"
+    assert result["serialization_format"] is None, \
+        "as_dict serialization_format should be None"
+    return
+
+
+def test_serialization_format_json_round_trip():
+    """
+        Verify the serialization format is carried through as_dict,
+        to_json, and from_json.
+    """
+    original = Message(
+        sender=_make_sender(),
+        recipient=_make_recipient(),
+        payload={"key": "value"},
+        pattern=MessagePattern.REQUEST,
+        serialization_format="msgpack",
+    )
+
+    assert original.serialization_format == "msgpack", \
+        "serialization_format should be 'msgpack', got {}".format(
+            original.serialization_format)
+    assert original.as_dict()["serialization_format"] == "msgpack", \
+        "as_dict should carry the serialization format"
+
+    restored = Message.from_json(original.to_json())
+
+    assert restored.serialization_format == "msgpack", \
+        "Round-trip serialization_format mismatch, got {}".format(
+            restored.serialization_format)
+    return
+
+
+def test_from_dict_without_serialization_format_key():
+    """
+        Verify from_dict accepts a dictionary written before the
+        serialization_format field existed and sets it to None.
+    """
+    msg = Message(
+        sender=_make_sender(),
+        recipient=_make_recipient(),
+        payload={"key": "value"},
+        pattern=MessagePattern.EVENT,
+        serialization_format="json",
+    )
+    data = msg.as_dict()
+    del data["serialization_format"]
+
+    restored = Message.from_dict(data)
+
+    assert restored.serialization_format is None, \
+        "serialization_format should be None when the key is missing, got {}".format(
+            restored.serialization_format)
+    assert restored.identifier == msg.identifier, \
+        "The rest of the message should be restored"
     return
 
 

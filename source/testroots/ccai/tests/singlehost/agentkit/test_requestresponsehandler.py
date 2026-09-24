@@ -18,6 +18,7 @@ from ccai.agentkit.message import Message
 from ccai.agentkit.messageenvelope import MessageEnvelope
 from ccai.agentkit.messagepattern import MessagePattern
 from ccai.agentkit.messagingerrors import MessageTimeoutError
+from ccai.agentkit.messagingerrors import TransportError
 from ccai.agentkit.requestresponsehandler import RequestResponseHandler
 from ccai.agentkit.transport import Transport
 from ccai.agentkit.transportconfiguration import TransportConfiguration
@@ -533,6 +534,42 @@ def test_pending_count_decreases_after_timeout():
 # =========================================================================
 # __repr__ (Requirement 12.9, 26.17)
 # =========================================================================
+
+class _FailingTransport(RecordingTransport):
+    """
+        RecordingTransport whose send raises a TransportError.
+    """
+
+    def send(self, message: Message) -> MessageEnvelope:
+        raise TransportError(
+            transport_name=self.name,
+            operation="send",
+            cause=ConnectionError("broker unreachable"),
+        )
+
+
+def test_send_request_failed_send_is_not_left_pending():
+    """
+        Verify that when the transport send fails, send_request raises the
+        send error and no longer tracks the request as pending.
+    """
+    handler = RequestResponseHandler(default_timeout=5.0)
+    transport = _FailingTransport()
+    request_message = _create_request_message()
+
+    caught = None
+    try:
+        handler.send_request(message=request_message, transport=transport, timeout=5.0)
+    except TransportError as err:
+        caught = err
+
+    assert caught is not None, \
+        "The send error should propagate to the caller"
+    assert handler.pending_count == 0, \
+        "A request whose send failed should not stay pending, got {}".format(
+            handler.pending_count)
+    return
+
 
 def test_repr_includes_class_name_and_pending_count():
     """

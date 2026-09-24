@@ -4,7 +4,9 @@
 
     A Message contains a unique identifier, sender and recipient AgentAddress
     instances, a payload, a MessagePattern, optional headers, an optional
-    correlation identifier for request/response tracking, and a UTC timestamp.
+    correlation identifier for request/response tracking, a UTC timestamp,
+    and an optional serialization format name that selects the
+    MessageSerializer a Transport uses to put the message on the wire.
     It supports serialization to dictionary and JSON formats, and
     deserialization from dictionary and JSON.
 
@@ -35,11 +37,17 @@ class Message:
         Contains a unique identifier, sender AgentAddress, recipient AgentAddress,
         payload (dictionary, list, string, or bytes), headers dictionary, optional
         correlation identifier for request/response tracking, a MessagePattern
-        value, and a UTC timestamp.
+        value, a UTC timestamp, and an optional serialization format name.
 
         When created without an explicit identifier, a UUID-based identifier is
         generated automatically. When created without an explicit timestamp, the
         current UTC time is used.
+
+        The serialization format name (e.g. 'json', 'msgpack') selects the
+        MessageSerializer that a Transport uses to encode the message. The Agent
+        sets it from the serialization_format passed to send_message or request,
+        or from the MessagingConfiguration default. When it is None, the
+        Transport uses its own default format.
 
         :param sender: The AgentAddress of the sending agent.
         :param recipient: The AgentAddress of the receiving agent.
@@ -53,6 +61,9 @@ class Message:
             generated.
         :param timestamp: Optional UTC timestamp. If not provided, the current UTC
             time is used.
+        :param serialization_format: Optional serialization format name that
+            selects the MessageSerializer used by the Transport. If not provided,
+            the Transport default is used.
     """
 
     def __init__(self, sender: AgentAddress, recipient: AgentAddress,
@@ -60,7 +71,8 @@ class Message:
                  headers: Optional[Dict] = None,
                  correlation_id: Optional[str] = None,
                  identifier: Optional[str] = None,
-                 timestamp: Optional[datetime] = None) -> None:
+                 timestamp: Optional[datetime] = None,
+                 serialization_format: Optional[str] = None) -> None:
 
         if identifier is not None:
             self._identifier = identifier
@@ -83,6 +95,8 @@ class Message:
             self._timestamp = timestamp
         else:
             self._timestamp = datetime.now(timezone.utc)
+
+        self._serialization_format = serialization_format
 
         return
 
@@ -158,6 +172,17 @@ class Message:
         """
         return self._timestamp
 
+    @property
+    def serialization_format(self) -> Optional[str]:
+        """
+            The optional serialization format name that selects the
+            MessageSerializer a Transport uses to encode the message.
+
+            :returns: The serialization format name string or None when the
+                Transport default should be used.
+        """
+        return self._serialization_format
+
     def as_dict(self) -> dict:
         """
             Returns a dictionary representation of the message fields.
@@ -176,7 +201,8 @@ class Message:
             "pattern": self._pattern.value,
             "headers": dict(self._headers),
             "correlation_id": self._correlation_id,
-            "timestamp": self._timestamp.isoformat()
+            "timestamp": self._timestamp.isoformat(),
+            "serialization_format": self._serialization_format
         }
         return result
 
@@ -197,7 +223,9 @@ class Message:
 
             Reconstructs AgentAddress instances from nested dictionaries,
             the MessagePattern from its string value, and the timestamp
-            from an ISO format string.
+            from an ISO format string. The serialization format is
+            optional so dictionaries written before the field existed
+            can still be read.
 
             :param data: A dictionary containing message fields.
 
@@ -212,6 +240,7 @@ class Message:
         identifier = data["identifier"]
         timestamp_str = data["timestamp"]
         timestamp = datetime.fromisoformat(timestamp_str)
+        serialization_format = data.get("serialization_format", None)
 
         message = cls(
             sender=sender,
@@ -221,7 +250,8 @@ class Message:
             headers=headers,
             correlation_id=correlation_id,
             identifier=identifier,
-            timestamp=timestamp
+            timestamp=timestamp,
+            serialization_format=serialization_format
         )
         return message
 

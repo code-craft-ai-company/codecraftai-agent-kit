@@ -96,7 +96,7 @@ class AddressResolver:
 
             :returns: The resolved AgentAddress or None if not found.
         """
-        agent = self._agent_registry.lookup(agent_identifier)
+        agent = self._agent_registry.lookup_by_id(agent_identifier)
 
         if agent is None:
             return None

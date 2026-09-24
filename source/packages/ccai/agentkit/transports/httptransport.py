@@ -4,7 +4,8 @@
 
     The HttpTransport uses Python's standard library urllib.request module
     for HTTP operations. It constructs URLs from the TransportConfiguration
-    (host, port, path), serializes messages to JSON, and sends them via
+    (host, port, path), serializes messages with the MessageSerializer for
+    the message's serialization format (JSON by default), and sends them via
     HTTP POST. Configurable headers, TLS (via https:// URLs), and
     credential resolution for Authorization headers are supported.
 
@@ -21,7 +22,6 @@
     Requirements: 16.1-16.8, 13.1-13.4, 25.2, 25.3, 25.4, 25.5, 25.6
 """
 
-import json
 import logging
 import ssl
 import urllib.error
@@ -59,8 +59,10 @@ class HttpTransport(Transport):
         validating the configuration and preparing the base URL and
         default headers. The disconnect method tears down the session.
 
-        The send method serializes the message to JSON and sends it
-        via HTTP POST to the recipient endpoint. For FIRE_AND_FORGET
+        The send method serializes the message with the MessageSerializer
+        for the message's serialization format (JSON by default) and sends
+        it via HTTP POST to the recipient endpoint, with the serializer's
+        content type as the Content-Type header. For FIRE_AND_FORGET
         pattern messages, the transport sends and returns immediately
         with a "delivered" status envelope.
 
@@ -249,10 +251,13 @@ class HttpTransport(Transport):
         """
             Sends a Message via HTTP POST to the recipient endpoint.
 
-            The message is serialized to JSON and sent as the request
-            body. The target URL is the base URL of this transport.
-            Default headers and any configured Authorization header
-            are included in the request.
+            The message is serialized with the MessageSerializer that
+            resolve_serializer returns for the message's
+            serialization_format (JSON by default) and sent as the
+            request body with the serializer's content type as the
+            Content-Type header. The target URL is the base URL of this
+            transport. Default headers and any configured Authorization
+            header are included in the request.
 
             For FIRE_AND_FORGET pattern messages, the transport sends
             the message and returns immediately with a "delivered"
@@ -263,8 +268,9 @@ class HttpTransport(Transport):
             :returns: A MessageEnvelope with delivery metadata.
 
             :raises TransportError: If the transport is not connected,
-                if a connection error occurs, if the request times out,
-                or if the server returns an HTTP 5xx response.
+                if the message cannot be serialized in its serialization
+                format, if a connection error occurs, if the request times
+                out, or if the server returns an HTTP 5xx response.
         """
         if not self._connected:
             errmsg = "Transport '{}' is not connected.".format(self._name)
@@ -279,8 +285,10 @@ class HttpTransport(Transport):
             )
 
         try:
+            serializer = self.resolve_serializer(message.serialization_format)
+
             message_data = message.as_dict()
-            body_bytes = json.dumps(message_data).encode("utf-8")
+            body_bytes = serializer.serialize(message_data)
 
             request = urllib.request.Request(
                 url=self._base_url,
@@ -290,6 +298,10 @@ class HttpTransport(Transport):
 
             for header_name, header_value in self._default_headers.items():
                 request.add_header(header_name, header_value)
+
+            # The body is encoded by the serializer, so its content type
+            # replaces the default JSON Content-Type header.
+            request.add_header("Content-Type", serializer.content_type)
 
             timeout_seconds = self._configuration.timeout
 
@@ -307,11 +319,11 @@ class HttpTransport(Transport):
 
             self._http_logger.info(
                 "HTTP transport message sent: name=%s, message_id=%s, "
-                "sender=%s, recipient=%s, pattern=%s",
+                "sender=%s, recipient=%s, pattern=%s, format=%s",
                 self._name, message.identifier,
                 message.sender.agent_identifier,
                 message.recipient.agent_identifier,
-                message.pattern.value
+                message.pattern.value, serializer.format_name
             )
 
             envelope = MessageEnvelope(

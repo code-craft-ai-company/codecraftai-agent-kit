@@ -21,7 +21,11 @@ import urllib.error
 from ccai.agentkit.agentaddress import AgentAddress
 from ccai.agentkit.message import Message
 from ccai.agentkit.messagepattern import MessagePattern
+from ccai.agentkit.messageserializerregistry import MessageSerializerRegistry
+from ccai.agentkit.messagingerrors import MessageSerializationError
+from ccai.agentkit.messagingerrors import NoMessageAvailableError
 from ccai.agentkit.messagingerrors import TransportError
+from ccai.agentkit.msgpackmessageserializer import MsgpackMessageSerializer
 from ccai.agentkit.transportconfiguration import TransportConfiguration
 
 from ccai.agentkit.transports.httptransport import HttpTransport
@@ -1955,6 +1959,408 @@ def test_mq_transport_str():
 
     assert "mq-test" in str_val, \
         "__str__ should include transport name"
+    return
+
+
+# =========================================================================
+# Serialization format selection (Message.serialization_format)
+# =========================================================================
+
+class _RecordingBrokerClient:
+    """
+        Broker client for MessageQueueTransport tests that records the
+        published bodies and returns a fixed body from consume.
+    """
+
+    def __init__(self, consume_data=None):
+        self.published = []
+        self._consume_data = consume_data
+        return
+
+    def connect(self, host, port, credentials=None):
+        return
+
+    def disconnect(self):
+        return
+
+    def publish(self, queue_name, body):
+        self.published.append((queue_name, body))
+        return
+
+    def consume(self, queue_name):
+        return self._consume_data
+
+
+class _RecordingWebSocketClient:
+    """
+        WebSocket client for WebSocketTransport tests that records the
+        sent frames and returns a fixed frame from recv.
+    """
+
+    def __init__(self, recv_data=None):
+        self.sent_frames = []
+        self._recv_data = recv_data
+        return
+
+    def send(self, data):
+        self.sent_frames.append(data)
+        return
+
+    def recv(self):
+        return self._recv_data
+
+    def close(self):
+        return
+
+
+def _create_msgpack_registry():
+    """
+        Creates a MessageSerializerRegistry with a MsgpackMessageSerializer.
+    """
+    registry = MessageSerializerRegistry()
+    registry.register(MsgpackMessageSerializer())
+    return registry
+
+
+def _create_formatted_message(serialization_format):
+    """
+        Creates a test Message that carries the given serialization format.
+    """
+    sender = AgentAddress(
+        agent_identifier="sender-agent",
+        transport_name="test-transport",
+    )
+    recipient = AgentAddress(
+        agent_identifier="recipient-agent",
+        transport_name="test-transport",
+    )
+    message = Message(
+        sender=sender,
+        recipient=recipient,
+        payload={"action": "test", "count": 3},
+        pattern=MessagePattern.FIRE_AND_FORGET,
+        serialization_format=serialization_format,
+    )
+    return message
+
+
+def _send_http_and_capture_request(transport, message):
+    """
+        Sends a message through an HttpTransport with urlopen patched and
+        returns the urllib Request that was passed to urlopen.
+    """
+    import urllib.request as urllib_request_module
+    patch = create_module_patch(urllib_request_module, "urlopen", recursive=True)
+    mock_urlopen = patch.activate()
+    mock_urlopen.configure(return_value=Mock())
+
+    try:
+        transport.send(message)
+        call_args, _ = mock_urlopen.mock_context().call_args
+    finally:
+        patch.deactivate()
+
+    request = call_args[0]
+    return request
+
+
+def test_http_transport_send_uses_message_serialization_format():
+    """
+        Verify HttpTransport send encodes the body with the serializer
+        for the message's serialization format and sets its content type.
+    """
+    cfg = _create_http_configuration()
+    transport = HttpTransport(name="http-test", configuration=cfg)
+    transport.attach_serializer_registry(_create_msgpack_registry())
+    transport.connect()
+    message = _create_formatted_message("msgpack")
+
+    request = _send_http_and_capture_request(transport, message)
+
+    decoded = MsgpackMessageSerializer().deserialize(request.data)
+    assert decoded == message.as_dict(), \
+        "The body should be the MessagePack encoding of the message, got {!r}".format(
+            request.data)
+
+    content_type = request.get_header("Content-type")
+    assert content_type == "application/x-msgpack", \
+        "Content-Type should be the msgpack content type, got {}".format(content_type)
+    return
+
+
+def test_http_transport_send_defaults_to_json():
+    """
+        Verify HttpTransport send encodes the body as JSON with the JSON
+        content type when the message names no serialization format.
+    """
+    cfg = _create_http_configuration()
+    transport = HttpTransport(name="http-test", configuration=cfg)
+    transport.connect()
+    message = _create_formatted_message(None)
+
+    request = _send_http_and_capture_request(transport, message)
+
+    decoded = json.loads(request.data.decode("utf-8"))
+    assert decoded == message.as_dict(), \
+        "The body should be the JSON encoding of the message"
+
+    content_type = request.get_header("Content-type")
+    assert content_type == "application/json", \
+        "Content-Type should be application/json, got {}".format(content_type)
+    return
+
+
+def test_http_transport_send_unregistered_format_raises_transport_error():
+    """
+        Verify HttpTransport send raises TransportError caused by a
+        MessageSerializationError when no serializer is registered for
+        the message's serialization format, instead of sending JSON.
+    """
+    cfg = _create_http_configuration()
+    transport = HttpTransport(name="http-test", configuration=cfg)
+    transport.connect()
+    message = _create_formatted_message("msgpack")
+
+    import urllib.request as urllib_request_module
+    patch = create_module_patch(urllib_request_module, "urlopen", recursive=True)
+    mock_urlopen = patch.activate()
+    mock_urlopen.configure(return_value=Mock())
+
+    caught = None
+    try:
+        transport.send(message)
+    except TransportError as err:
+        caught = err
+    finally:
+        patch.deactivate()
+
+    assert caught is not None, \
+        "TransportError should be raised for an unregistered format"
+    assert isinstance(caught.cause, MessageSerializationError), \
+        "The cause should be a MessageSerializationError, got {!r}".format(caught.cause)
+    assert caught.cause.format_name == "msgpack", \
+        "The error should name the format, got {}".format(caught.cause.format_name)
+    assert mock_urlopen.mock_context().call_count == 0, \
+        "Nothing should be sent when the message cannot be serialized"
+    return
+
+
+def test_ws_transport_send_binary_format_uses_binary_frame():
+    """
+        Verify WebSocketTransport send encodes a msgpack message as a
+        binary frame and a JSON message as a text frame.
+    """
+    cfg = _create_ws_configuration()
+    transport = WebSocketTransport(name="ws-test", configuration=cfg)
+    transport.attach_serializer_registry(_create_msgpack_registry())
+
+    ws_client = _RecordingWebSocketClient()
+    transport._ws_client = ws_client
+    transport._connected = True
+    transport._connection_state = "connected"
+
+    msgpack_message = _create_formatted_message("msgpack")
+    json_message = _create_formatted_message("json")
+
+    transport.send(msgpack_message)
+    transport.send(json_message)
+
+    binary_frame, text_frame = ws_client.sent_frames
+
+    assert isinstance(binary_frame, bytes), \
+        "The msgpack message should be sent as a binary frame, got {!r}".format(binary_frame)
+    decoded = MsgpackMessageSerializer().deserialize(binary_frame)
+    assert decoded == msgpack_message.as_dict(), \
+        "The binary frame should be the MessagePack encoding of the message"
+
+    assert isinstance(text_frame, str), \
+        "The JSON message should be sent as a text frame, got {!r}".format(text_frame)
+    assert json.loads(text_frame) == json_message.as_dict(), \
+        "The text frame should be the JSON encoding of the message"
+    return
+
+
+def test_ws_transport_send_serialization_failure_keeps_connection():
+    """
+        Verify WebSocketTransport send raises TransportError for a
+        message that cannot be serialized without marking the
+        connection as lost.
+    """
+    cfg = _create_ws_configuration()
+    transport = WebSocketTransport(name="ws-test", configuration=cfg)
+
+    ws_client = _RecordingWebSocketClient()
+    transport._ws_client = ws_client
+    transport._connected = True
+    transport._connection_state = "connected"
+
+    message = _create_formatted_message("unknown-format")
+
+    caught = None
+    try:
+        transport.send(message)
+    except TransportError as err:
+        caught = err
+
+    assert caught is not None, \
+        "TransportError should be raised for an unregistered format"
+    assert isinstance(caught.cause, MessageSerializationError), \
+        "The cause should be a MessageSerializationError, got {!r}".format(caught.cause)
+    assert transport.connection_state == "connected", \
+        "A serialization failure is not a connection loss, got {}".format(
+            transport.connection_state)
+    assert ws_client.sent_frames == [], \
+        "Nothing should be sent when the message cannot be serialized"
+    return
+
+
+def test_ws_transport_receive_uses_configured_serialization_format():
+    """
+        Verify WebSocketTransport receive decodes a frame with the
+        serializer named by the serialization_format option.
+    """
+    cfg = TransportConfiguration(
+        protocol_type="websocket",
+        host="localhost",
+        port=9090,
+        options={"serialization_format": "msgpack"},
+    )
+    transport = WebSocketTransport(name="ws-test", configuration=cfg)
+    transport.attach_serializer_registry(_create_msgpack_registry())
+
+    sent_message = _create_formatted_message("msgpack")
+    frame = MsgpackMessageSerializer().serialize(sent_message.as_dict())
+
+    transport._ws_client = _RecordingWebSocketClient(recv_data=frame)
+    transport._connected = True
+    transport._connection_state = "connected"
+
+    received = transport.receive()
+
+    assert received.identifier == sent_message.identifier, \
+        "The received message identifier should match"
+    assert received.payload == {"action": "test", "count": 3}, \
+        "The received payload should match, got {}".format(received.payload)
+    assert received.serialization_format == "msgpack", \
+        "The received message should carry its serialization format"
+    return
+
+
+def test_grpc_transport_send_uses_message_serialization_format():
+    """
+        Verify GrpcTransport send encodes the unary call body with the
+        serializer for the message's serialization format.
+    """
+    cfg = _create_grpc_configuration()
+    transport = GrpcTransport(name="grpc-test", configuration=cfg)
+    transport.attach_serializer_registry(_create_msgpack_registry())
+    message = _create_formatted_message("msgpack")
+
+    mock_callable = Mock()
+    mock_callable.configure(return_value=b"")
+
+    mock_channel = Mock()
+    mock_channel.configure(recursive=True)
+    mock_channel.mock_context().mock_method("unary_unary", return_value=mock_callable)
+
+    transport._channel = mock_channel
+    transport._connected = True
+    mock_grpc = Mock()
+    mock_grpc.configure(recursive=False)
+    transport._grpc_module = mock_grpc
+
+    transport.send(message)
+
+    call_args, _ = mock_callable.mock_context().call_args
+    body_bytes = call_args[0]
+    decoded = MsgpackMessageSerializer().deserialize(body_bytes)
+    assert decoded == message.as_dict(), \
+        "The unary call body should be the MessagePack encoding of the message"
+    return
+
+
+def test_mq_transport_send_uses_message_serialization_format():
+    """
+        Verify MessageQueueTransport send publishes the body encoded with
+        the serializer for the message's serialization format.
+    """
+    broker_client = _RecordingBrokerClient()
+    cfg = _create_mq_configuration(
+        broker_client=broker_client,
+        publish_queue="outbound",
+    )
+    transport = MessageQueueTransport(name="mq-test", configuration=cfg)
+    transport.attach_serializer_registry(_create_msgpack_registry())
+    transport.connect()
+    message = _create_formatted_message("msgpack")
+
+    transport.send(message)
+
+    queue_name, body = broker_client.published[0]
+    assert queue_name == "outbound", \
+        "The message should be published to the publish queue"
+    decoded = MsgpackMessageSerializer().deserialize(body)
+    assert decoded == message.as_dict(), \
+        "The published body should be the MessagePack encoding of the message"
+    return
+
+
+def test_mq_transport_receive_uses_configured_serialization_format():
+    """
+        Verify MessageQueueTransport receive decodes the consumed body
+        with the serializer named by the serialization_format option.
+    """
+    sent_message = _create_formatted_message("msgpack")
+    body = MsgpackMessageSerializer().serialize(sent_message.as_dict())
+
+    broker_client = _RecordingBrokerClient(consume_data=body)
+    cfg = TransportConfiguration(
+        protocol_type="message_queue",
+        host="localhost",
+        port=5672,
+        options={
+            "broker_client": broker_client,
+            "consume_queue": "inbound",
+            "serialization_format": "msgpack",
+        },
+    )
+    transport = MessageQueueTransport(name="mq-test", configuration=cfg)
+    transport.attach_serializer_registry(_create_msgpack_registry())
+    transport.connect()
+
+    received = transport.receive()
+
+    assert received.identifier == sent_message.identifier, \
+        "The received message identifier should match"
+    assert received.payload == {"action": "test", "count": 3}, \
+        "The received payload should match, got {}".format(received.payload)
+    return
+
+
+def test_mq_transport_receive_empty_queue_raises_no_message_available_error():
+    """
+        Verify MessageQueueTransport receive reports an empty queue with
+        NoMessageAvailableError, a TransportError subclass, so pollers can
+        tell it apart from a failed receive.
+    """
+    broker_client = _RecordingBrokerClient(consume_data=None)
+    cfg = _create_mq_configuration(
+        broker_client=broker_client,
+        consume_queue="inbound",
+    )
+    transport = MessageQueueTransport(name="mq-test", configuration=cfg)
+    transport.connect()
+
+    caught = None
+    try:
+        transport.receive()
+    except TransportError as err:
+        caught = err
+
+    assert isinstance(caught, NoMessageAvailableError), \
+        "An empty queue should raise NoMessageAvailableError, got {!r}".format(caught)
+    assert caught.operation == "receive", \
+        "The error should report the receive operation"
     return
 
 
