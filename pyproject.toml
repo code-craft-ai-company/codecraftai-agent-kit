@@ -23,8 +23,8 @@ dependencies = [
 
 [project.optional-dependencies]
 msgpack = ["msgpack>=1.0.0,<2.0.0"]
-protobuf = ["protobuf>=4.21.0,<5.0.0"]
-serialization = ["msgpack>=1.0.0,<2.0.0", "protobuf>=4.21.0,<5.0.0"]
+protobuf = ["protobuf>=5.29.6,<7.0.0"]
+serialization = ["msgpack>=1.0.0,<2.0.0", "protobuf>=5.29.6,<7.0.0"]
 
 [project.urls]
 Repository = "https://github.com/code-craft-ai-company/codecraftai-agent-kit"
